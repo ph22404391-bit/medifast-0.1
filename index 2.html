@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>MediFast — Medicine in 10 Minutes</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --emerald: #00C97F;
+  --navy: #0A1628;
+  --navy-card: #131F33;
+  --white: #FFFFFF;
+  --gray: rgba(255,255,255,0.5);
+  --border: rgba(255,255,255,0.08);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--navy);
+  color: var(--white);
+  min-height: 100vh;
+}
+nav {
+  background: rgba(10,22,40,0.95);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  padding: 1rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.logo {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 1.4rem;
+  text-decoration: none;
+  color: white;
+}
+.logo span { color: var(--emerald); }
+.hero {
+  text-align: center;
+  padding: 4rem 2rem 2rem;
+  position: relative;
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, rgba(0,201,127,0.12) 0%, transparent 70%);
+  top: 0; left: 50%;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(0,201,127,0.1);
+  border: 1px solid rgba(0,201,127,0.3);
+  border-radius: 50px;
+  padding: 0.4rem 1rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--emerald);
+  margin-bottom: 1.5rem;
+}
+.dot {
+  width: 6px; height: 6px;
+  background: var(--emerald);
+  border-radius: 50%;
+  animation: blink 1.5s infinite;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+h1 {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-weight: 800;
+  margin-bottom: 1rem;
+  letter-spacing: -1px;
+}
+h1 span { color: var(--emerald); }
+p.sub {
+  color: var(--gray);
+  font-size: 1.1rem;
+  margin-bottom: 2.5rem;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.pages-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+.page-card {
+  background: var(--navy-card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 2rem;
+  text-decoration: none;
+  color: white;
+  transition: all 0.3s;
+  position: relative;
+  overflow: hidden;
+}
+.page-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--emerald), #00A0FF);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.page-card:hover {
+  transform: translateY(-6px);
+  border-color: rgba(0,201,127,0.3);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+.page-card:hover::before { opacity: 1; }
+.card-icon { font-size: 2.5rem; margin-bottom: 1rem; display: block; }
+.card-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.2rem;
+  font-weight: 800;
+  margin-bottom: 0.5rem;
+}
+.card-desc { font-size: 0.88rem; color: var(--gray); line-height: 1.6; margin-bottom: 1.2rem; }
+.card-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: var(--emerald);
+  color: var(--navy);
+  border: none;
+  border-radius: 8px;
+  padding: 0.5rem 1.2rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+.card-btn:hover { background: #00A566; transform: translateY(-1px); }
+.card-tag {
+  position: absolute;
+  top: 1rem; right: 1rem;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 0.2rem 0.6rem;
+  border-radius: 50px;
+  text-transform: uppercase;
+}
+.tag-live { background: rgba(0,201,127,0.15); color: var(--emerald); border: 1px solid rgba(0,201,127,0.3); }
+.tag-soon { background: rgba(255,209,102,0.15); color: #FFD166; border: 1px solid rgba(255,209,102,0.3); }
+footer {
+  text-align: center;
+  padding: 2rem;
+  color: var(--gray);
+  font-size: 0.82rem;
+  border-top: 1px solid var(--border);
+  margin-top: 2rem;
+}
+footer span { color: var(--emerald); }
+</style>
+</head>
+<body>
+<nav>
+  <a href="index.html" class="logo">Medi<span>Fast</span> 💊</a>
+  <a href="medifast-auth.html" style="background:var(--emerald);color:#0A1628;padding:0.5rem 1.2rem;border-radius:8px;font-weight:700;text-decoration:none;font-size:0.9rem;">Login / Sign Up</a>
+</nav>
+
+<div class="hero">
+  <div class="badge"><span class="dot"></span> MediFast is Live!</div>
+  <h1>Medicine in <span>10 Minutes</span> 🚀</h1>
+  <p class="sub">Your complete healthcare platform. Explore all screens below.</p>
+</div>
+
+<div class="pages-grid">
+
+  <a href="medifast-landing.html" class="page-card">
+    <span class="card-tag tag-live">✅ Live</span>
+    <span class="card-icon">🌐</span>
+    <div class="card-title">Landing Page</div>
+    <p class="card-desc">The main MediFast homepage with all features, how it works, services and more.</p>
+    <span class="card-btn">Open Page →</span>
+  </a>
+
+  <a href="medifast-auth.html" class="page-card">
+    <span class="card-tag tag-live">✅ Live</span>
+    <span class="card-icon">🔐</span>
+    <div class="card-title">Login & Signup</div>
+    <p class="card-desc">Patient, pharmacy & lab registration with real Firebase authentication.</p>
+    <span class="card-btn">Open Page →</span>
+  </a>
+
+  <a href="medifast-patient-search.html" class="page-card">
+    <span class="card-tag tag-live">✅ Live</span>
+    <span class="card-icon">🔍</span>
+    <div class="card-title">Patient Search</div>
+    <p class="card-desc">Search medicines, find nearby pharmacies within 2km, compare prices & order.</p>
+    <span class="card-btn">Open Page →</span>
+  </a>
+
+  <div class="page-card" style="cursor:default;">
+    <span class="card-tag tag-soon">🔧 Building</span>
+    <span class="card-icon">🏪</span>
+    <div class="card-title">Pharmacy Dashboard</div>
+    <p class="card-desc">For pharmacists to manage inventory, accept orders & track deliveries.</p>
+    <span class="card-btn" style="background:rgba(255,255,255,0.08);color:white;">Coming Soon</span>
+  </div>
+
+  <div class="page-card" style="cursor:default;">
+    <span class="card-tag tag-soon">🔧 Building</span>
+    <span class="card-icon">👨‍💼</span>
+    <div class="card-title">Admin Panel</div>
+    <p class="card-desc">MediFast super admin to manage pharmacies, users, orders & analytics.</p>
+    <span class="card-btn" style="background:rgba(255,255,255,0.08);color:white;">Coming Soon</span>
+  </div>
+
+  <div class="page-card" style="cursor:default;">
+    <span class="card-tag tag-soon">⏳ Planned</span>
+    <span class="card-icon">📦</span>
+    <div class="card-title">Order Tracking</div>
+    <p class="card-desc">Live order tracking with real-time map, delivery status & notifications.</p>
+    <span class="card-btn" style="background:rgba(255,255,255,0.08);color:white;">Coming Soon</span>
+  </div>
+
+</div>
+
+<footer>
+  © 2026 <span>MediFast</span> — Empowering local pharmacies. Built with ❤️ for India.
+</footer>
+</body>
+</html>
