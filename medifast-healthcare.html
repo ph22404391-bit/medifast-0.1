@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>MediFast — Healthcare Discovery</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --emerald: #00C97F;
+  --emerald-dark: #00A566;
+  --emerald-light: rgba(0,201,127,0.08);
+  --navy: #0A1628;
+  --navy-mid: #0F1E35;
+  --navy-card: #131F33;
+  --white: #FFFFFF;
+  --gray: rgba(255,255,255,0.5);
+  --gray-dim: rgba(255,255,255,0.06);
+  --border: rgba(255,255,255,0.07);
+  --accent: #FFD166;
+  --red: #FF5C5C;
+  --blue: #4DA6FF;
+  --purple: #A78BFA;
+  --pink: #F472B6;
+  --orange: #FB923C;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--navy);
+  color: var(--white);
+  min-height: 100vh;
+}
+
+/* ── TOP BAR ── */
+.topbar {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(10,22,40,0.95);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  padding: 0.9rem 1.2rem;
+  display: flex; align-items: center; gap: 0.8rem;
+}
+.back-btn {
+  width: 36px; height: 36px;
+  background: var(--gray-dim); border: 1px solid var(--border);
+  border-radius: 10px; display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 1rem; text-decoration: none; color: white;
+}
+.topbar-title { font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 800; flex: 1; }
+.topbar-logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1rem; text-decoration: none; color: white; }
+.topbar-logo span { color: var(--emerald); }
+
+/* ── SEARCH BAR ── */
+.search-section {
+  background: linear-gradient(160deg, var(--navy-mid), var(--navy));
+  padding: 1.2rem;
+  position: relative;
+}
+.search-section::before {
+  content: '';
+  position: absolute;
+  width: 300px; height: 300px;
+  background: radial-gradient(circle, rgba(0,201,127,0.1) 0%, transparent 70%);
+  top: -100px; right: -50px; pointer-events: none;
+}
+.search-wrap { position: relative; }
+.main-search {
+  width: 100%;
+  background: rgba(255,255,255,0.07);
+  border: 1.5px solid rgba(255,255,255,0.12);
+  border-radius: 14px;
+  padding: 0.9rem 1rem 0.9rem 3rem;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.95rem; color: var(--white); outline: none;
+}
+.main-search::placeholder { color: rgba(255,255,255,0.3); }
+.main-search:focus { border-color: var(--emerald); background: rgba(0,201,127,0.06); }
+.search-icon { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); font-size: 1.1rem; }
+
+/* ── MAIN ── */
+.main { padding: 1rem; max-width: 900px; margin: 0 auto; }
+
+/* ── SECTION HEADER ── */
+.sec-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.8rem; }
+.sec-title { font-family: 'Syne', sans-serif; font-size: 0.95rem; font-weight: 700; }
+.sec-link { font-size: 0.78rem; color: var(--emerald); cursor: pointer; }
+
+/* ── AGE CATEGORY FILTER ── */
+.age-filter {
+  display: flex; gap: 0.6rem;
+  overflow-x: auto; scrollbar-width: none;
+  margin-bottom: 1.2rem;
+  padding-bottom: 0.2rem;
+}
+.age-filter::-webkit-scrollbar { display: none; }
+.age-chip {
+  display: flex; flex-direction: column; align-items: center; gap: 0.3rem;
+  background: var(--navy-card); border: 1.5px solid var(--border);
+  border-radius: 14px; padding: 0.7rem 1rem;
+  cursor: pointer; transition: all 0.2s; white-space: nowrap; flex-shrink: 0;
+}
+.age-chip:hover { border-color: rgba(0,201,127,0.3); transform: translateY(-2px); }
+.age-chip.active { border-color: var(--emerald); background: var(--emerald-light); }
+.age-chip .age-icon { font-size: 1.4rem; }
+.age-chip .age-label { font-size: 0.72rem; font-weight: 700; color: var(--gray); }
+.age-chip.active .age-label { color: var(--emerald); }
+
+/* ── SPECIALTY GRID ── */
+.specialty-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 0.7rem; margin-bottom: 1.2rem;
+}
+.specialty-card {
+  background: var(--navy-card); border: 1px solid var(--border);
+  border-radius: 14px; padding: 0.9rem 0.5rem;
+  text-align: center; cursor: pointer; transition: all 0.25s;
+  position: relative; overflow: hidden;
+}
+.specialty-card::before {
+  content: ''; position: absolute;
+  top: 0; left: 0; right: 0; height: 2px;
+  opacity: 0; transition: opacity 0.3s;
+}
+.specialty-card:hover { transform: translateY(-3px); }
+.specialty-card:hover::before { opacity: 1; }
+.specialty-card.active { border-color: rgba(0,201,127,0.3); background: var(--emerald-light); }
+.spec-icon { font-size: 1.5rem; display: block; margin-bottom: 0.35rem; }
+.spec-name { font-size: 0.68rem; font-weight: 700; color: var(--gray); line-height: 1.3; }
+.specialty-card.active .spec-name { color: var(--emerald); }
+
+/* ── DOCTOR/LAB CARD ── */
+.provider-card {
+  background: var(--navy-card); border: 1px solid var(--border);
+  border-radius: 16px; padding: 1rem; margin-bottom: 0.8rem;
+  transition: all 0.25s; cursor: pointer;
+}
+.provider-card:hover { border-color: rgba(0,201,127,0.2); transform: translateY(-2px); box-shadow: 0 12px 40px rgba(0,0,0,0.3); }
+.provider-top { display: flex; gap: 0.9rem; align-items: flex-start; margin-bottom: 0.8rem; }
+.provider-avatar {
+  width: 52px; height: 52px; border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.5rem; flex-shrink: 0;
+}
+.provider-info { flex: 1; }
+.provider-name { font-family: 'Syne', sans-serif; font-size: 0.95rem; font-weight: 700; margin-bottom: 0.15rem; }
+.provider-spec { font-size: 0.78rem; color: var(--emerald); font-weight: 600; margin-bottom: 0.2rem; }
+.provider-detail { font-size: 0.75rem; color: var(--gray); }
+.provider-rating { display: flex; align-items: center; gap: 0.3rem; font-size: 0.78rem; font-weight: 700; color: var(--accent); }
+.provider-badges { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-bottom: 0.8rem; }
+.pbadge {
+  font-size: 0.68rem; font-weight: 700; padding: 0.2rem 0.6rem;
+  border-radius: 50px;
+}
+.pbadge-green { background: rgba(0,201,127,0.1); color: var(--emerald); }
+.pbadge-blue { background: rgba(77,166,255,0.1); color: var(--blue); }
+.pbadge-yellow { background: rgba(255,209,102,0.1); color: var(--accent); }
+.pbadge-red { background: rgba(255,92,92,0.1); color: var(--red); }
+.provider-actions { display: flex; gap: 0.6rem; }
+.btn-book {
+  flex: 1; background: var(--emerald); color: var(--navy);
+  border: none; border-radius: 10px; padding: 0.6rem;
+  font-size: 0.82rem; font-weight: 700; cursor: pointer;
+  font-family: 'DM Sans', sans-serif; transition: all 0.2s;
+}
+.btn-book:hover { background: var(--emerald-dark); }
+.btn-call {
+  background: var(--gray-dim); border: 1px solid var(--border);
+  color: var(--white); border-radius: 10px; padding: 0.6rem 0.8rem;
+  font-size: 0.82rem; cursor: pointer; font-family: 'DM Sans', sans-serif;
+  transition: all 0.2s;
+}
+.btn-call:hover { border-color: rgba(0,201,127,0.3); }
+
+/* ── CHAT MODAL ── */
+.chat-modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.75); backdrop-filter: blur(8px);
+  z-index: 200; display: none; align-items: flex-end; justify-content: center;
+}
+.chat-modal-overlay.show { display: flex; }
+.chat-modal {
+  background: var(--navy-card); border: 1px solid var(--border);
+  border-radius: 20px 20px 0 0; width: 100%; max-width: 600px;
+  height: 85vh; display: flex; flex-direction: column;
+  animation: slideUp 0.3s ease;
+}
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+.chat-header {
+  padding: 1rem 1.2rem; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 0.8rem; flex-shrink: 0;
+}
+.chat-avatar {
+  width: 40px; height: 40px; border-radius: 10px;
+  background: var(--emerald-light); display: flex; align-items: center;
+  justify-content: center; font-size: 1.2rem; flex-shrink: 0;
+}
+.chat-name { font-weight: 700; font-size: 0.9rem; }
+.chat-status { font-size: 0.72rem; color: var(--emerald); }
+.chat-close {
+  margin-left: auto; background: var(--gray-dim); border: 1px solid var(--border);
+  color: white; border-radius: 8px; width: 30px; height: 30px;
+  display: flex; align-items: center; justify-content: center; cursor: pointer;
+}
+.chat-messages {
+  flex: 1; overflow-y: auto; padding: 1rem; display: flex; flex-direction: column; gap: 0.7rem;
+}
+.msg {
+  max-width: 80%; padding: 0.7rem 0.9rem; border-radius: 14px; font-size: 0.85rem; line-height: 1.5;
+}
+.msg-pharmacy { background: var(--navy-mid); border: 1px solid var(--border); align-self: flex-start; border-radius: 4px 14px 14px 14px; }
+.msg-patient { background: var(--emerald); color: var(--navy); align-self: flex-end; border-radius: 14px 14px 4px 14px; font-weight: 600; }
+.msg-time { font-size: 0.65rem; color: var(--gray); margin-top: 0.2rem; }
+.chat-input-wrap {
+  padding: 0.8rem 1rem; border-top: 1px solid var(--border);
+  display: flex; gap: 0.6rem; align-items: flex-end; flex-shrink: 0;
+}
+.chat-input {
+  flex: 1; background: var(--gray-dim); border: 1px solid var(--border);
+  border-radius: 12px; padding: 0.7rem 0.9rem;
+  font-family: 'DM Sans', sans-serif; font-size: 0.88rem; color: white;
+  outline: none; resize: none; max-height: 100px;
+}
+.chat-input::placeholder { color: rgba(255,255,255,0.3); }
+.chat-send {
+  width: 40px; height: 40px; background: var(--emerald); color: var(--navy);
+  border: none; border-radius: 10px; font-size: 1rem;
+  cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.chat-actions-bar {
+  padding: 0.5rem 1rem; display: flex; gap: 0.5rem;
+  border-bottom: 1px solid var(--border); overflow-x: auto; scrollbar-width: none;
+}
+.chat-quick-btn {
+  background: var(--gray-dim); border: 1px solid var(--border);
+  color: white; border-radius: 50px; padding: 0.3rem 0.8rem;
+  font-size: 0.75rem; cursor: pointer; white-space: nowrap;
+  font-family: 'DM Sans', sans-serif; transition: all 0.2s;
+}
+.chat-quick-btn:hover { border-color: rgba(0,201,127,0.3); color: var(--emerald); }
+
+/* ── DISEASE SEARCH ── */
+.disease-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.7rem; margin-bottom: 1.2rem; }
+.disease-card {
+  background: var(--navy-card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 0.8rem 0.6rem; text-align: center;
+  cursor: pointer; transition: all 0.25s;
+}
+.disease-card:hover { border-color: rgba(0,201,127,0.3); transform: translateY(-2px); }
+.disease-icon { font-size: 1.5rem; display: block; margin-bottom: 0.3rem; }
+.disease-name { font-size: 0.72rem; font-weight: 700; color: var(--gray); }
+
+/* ── BOTTOM NAV ── */
+.bottom-nav {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: rgba(10,22,40,0.95); backdrop-filter: blur(20px);
+  border-top: 1px solid var(--border);
+  padding: 0.7rem 0 0.5rem;
+  display: flex; justify-content: space-around; z-index: 100;
+}
+.nav-item { display: flex; flex-direction: column; align-items: center; gap: 0.2rem; cursor: pointer; padding: 0.3rem 1rem; border-radius: 10px; transition: all 0.2s; text-decoration: none; }
+.nav-item .nav-icon { font-size: 1.3rem; }
+.nav-item .nav-label { font-size: 0.65rem; font-weight: 600; color: rgba(255,255,255,0.4); }
+.nav-item.active .nav-label { color: var(--emerald); }
+.nav-item.active .nav-icon { filter: drop-shadow(0 0 6px rgba(0,201,127,0.6)); }
+
+.bottom-spacer { height: 80px; }
+
+/* ── TABS ── */
+.tabs { display: flex; background: var(--gray-dim); border-radius: 12px; padding: 4px; margin-bottom: 1.2rem; border: 1px solid var(--border); }
+.tab-btn { flex: 1; padding: 0.55rem; border-radius: 9px; font-size: 0.82rem; font-weight: 600; cursor: pointer; transition: all 0.25s; text-align: center; color: var(--gray); border: none; background: transparent; font-family: 'DM Sans', sans-serif; }
+.tab-btn.active { background: var(--emerald); color: var(--navy); }
+
+/* ── EMERGENCY STRIP ── */
+.emergency-strip {
+  background: linear-gradient(135deg, rgba(255,92,92,0.1), rgba(255,92,92,0.05));
+  border: 1px solid rgba(255,92,92,0.25); border-radius: 14px;
+  padding: 0.9rem 1rem; display: flex; align-items: center; gap: 0.8rem;
+  margin-bottom: 1.2rem; cursor: pointer; transition: all 0.25s;
+}
+.emergency-strip:hover { background: rgba(255,92,92,0.12); }
+
+@keyframes fadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+.provider-card { animation: fadeUp 0.4s ease both; }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <a href="medifast-patient-search.html" class="back-btn">←</a>
+  <div class="topbar-title">🏥 Healthcare Discovery</div>
+  <a href="medifast-patient-search.html" class="topbar-logo">Medi<span>Fast</span></a>
+</div>
+
+<!-- SEARCH -->
+<div class="search-section">
+  <div class="search-wrap">
+    <span class="search-icon">🔍</span>
+    <input type="text" class="main-search" id="mainSearch"
+      placeholder="Search disease, doctor, specialist, lab..."
+      oninput="handleSearch(this.value)"/>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- EMERGENCY -->
+  <div class="emergency-strip" onclick="showEmergency()">
+    <span style="font-size:1.5rem;">🚨</span>
+    <div>
+      <div style="font-family:'Syne',sans-serif;font-size:0.9rem;font-weight:800;color:var(--red);">Emergency? Find nearest hospital!</div>
+      <div style="font-size:0.75rem;color:rgba(255,255,255,0.5);">Tap for emergency services near you</div>
+    </div>
+    <span style="margin-left:auto;color:var(--red);">→</span>
+  </div>
+
+  <!-- AGE CATEGORY FILTER -->
+  <div class="sec-head">
+    <div class="sec-title">👥 Filter by Age Group</div>
+  </div>
+  <div class="age-filter" id="ageFilter">
+    <div class="age-chip active" onclick="filterAge(this, 'all')">
+      <span class="age-icon">👨‍👩‍👧‍👦</span>
+      <span class="age-label">All Ages</span>
+    </div>
+    <div class="age-chip" onclick="filterAge(this, 'infant')">
+      <span class="age-icon">👶</span>
+      <span class="age-label">Infant (0-2)</span>
+    </div>
+    <div class="age-chip" onclick="filterAge(this, 'child')">
+      <span class="age-icon">🧒</span>
+      <span class="age-label">Child (2-12)</span>
+    </div>
+    <div class="age-chip" onclick="filterAge(this, 'teen')">
+      <span class="age-icon">🧑</span>
+      <span class="age-label">Teen (12-18)</span>
+    </div>
+    <div class="age-chip" onclick="filterAge(this, 'adult')">
+      <span class="age-icon">🧑‍💼</span>
+      <span class="age-label">Adult (18-60)</span>
+    </div>
+    <div class="age-chip" onclick="filterAge(this, 'senior')">
+      <span class="age-icon">👴</span>
+      <span class="age-label">Senior (60+)</span>
+    </div>
+    <div class="age-chip" onclick="filterAge(this, 'women')">
+      <span class="age-icon">👩</span>
+      <span class="age-label">Women's Health</span>
+    </div>
+    <div class="age-chip" onclick="filterAge(this, 'maternity')">
+      <span class="age-icon">🤰</span>
+      <span class="age-label">Maternity</span>
+    </div>
+  </div>
+
+  <!-- MEDICAL SPECIALTIES -->
+  <div class="sec-head">
+    <div class="sec-title">🏥 Medical Specialties</div>
+    <span class="sec-link" onclick="showAllSpecialties()">View All</span>
+  </div>
+  <div class="specialty-grid" id="specialtyGrid">
+    <div class="specialty-card" onclick="filterSpecialty(this, 'cardiology')" style="--color:var(--red)">
+      <div class="specialty-card::before" style="background:var(--red);"></div>
+      <span class="spec-icon">❤️</span>
+      <div class="spec-name">Cardiology</div>
+    </div>
+    <div class="specialty-card" onclick="filterSpecialty(this, 'gynaecology')" style="--color:var(--pink)">
+      <span class="spec-icon">🌸</span>
+      <div class="spec-name">Gynaecology</div>
+    </div>
+    <div class="specialty-card" onclick="filterSpecialty(this, 'pediatrics')" style="--color:var(--blue)">
+      <span class="spec-icon">👶</span>
+      <div class="spec-name">Pediatrics</div>
+    </div>
+    <div class="specialty-card" onclick="filterSpecialty(this, 'dermatology')" style="--color:var(--orange)">
+      <span class="spec-icon">🧴</span>
+      <div class="spec-name">Dermatology</div>
+    </div>
+    <div class="specialty-card" onclick="filterSpecialty(this, 'orthopedics')">
+      <span class="spec-icon">🦴</span>
+      <div class="spec-name">Orthopedics</div>
+    </div>
+    <div class="specialty-card" onclick="filterSpecialty(this, 'neurology')">
+      <span class="spec-icon">🧠</span>
+      <div class="spec-name">Neurology</div>
+    </div>
+    <div class="specialty-card" onclick="filterSpecialty(this, 'endocrinology')">
+      <span class="spec-icon">💉</span>
+      <div class="spec-name">Diabetes & Endo</div>
+    </div>
+    <div class="specialty-card" onclick="filterSpecialty(this, 'ophthalmology')">
+      <span class="spec-icon">👁️</span>
+      <div class="spec-name">Eye Care</div>
+    </div>
+    <div class="specialty-card" onclick="filterSpecialty(this, 'ent')">
+      <span class="spec-icon">👂</span>
+      <div class="spec-name">ENT</div>
+    </div>
+    <div class="specialty-card" onclick="filterSpecialty(this, 'psychiatry')">
+      <span class="spec-icon">🧘</span>
+      <div class="spec-name">Psychiatry</div>
+    </div>
+    <div class="specialty-card" onclick="filterSpecialty(this, 'gastro')">
+      <span class="spec-icon">🫃</span>
+      <div class="spec-name">Gastrology</div>
+    </div>
+    <div class="specialty-card" onclick="filterSpecialty(this, 'pulmonology')">
+      <span class="spec-icon">🫁</span>
+      <div class="spec-name">Pulmonology</div>
+    </div>
+    <div class="specialty-card" onclick="filterSpecialty(this, 'nephrology')">
+      <span class="spec-icon">🫘</span>
+      <div class="spec-name">Nephrology</div>
+    </div>
+    <div class="specialty-card" onclick="filterSpecialty(this, 'oncology')">
+      <span class="spec-icon">🎗️</span>
+      <div class="spec-name">Oncology</div>
+    </div>
+    <div class="specialty-card" onclick="filterSpecialty(this, 'dentistry')">
+      <span class="spec-icon">🦷</span>
+      <div class="spec-name">Dentistry</div>
+    </div>
+    <div class="specialty-card" onclick="filterSpecialty(this, 'general')">
+      <span class="spec-icon">🩺</span>
+      <div class="spec-name">General Physician</div>
+    </div>
+  </div>
+
+  <!-- SEARCH BY DISEASE -->
+  <div class="sec-head">
+    <div class="sec-title">🔍 Find by Disease/Condition</div>
+  </div>
+  <div class="disease-grid">
+    <div class="disease-card" onclick="searchByDisease('diabetes')">
+      <span class="disease-icon">💉</span>
+      <div class="disease-name">Diabetes</div>
+    </div>
+    <div class="disease-card" onclick="searchByDisease('heart disease')">
+      <span class="disease-icon">❤️</span>
+      <div class="disease-name">Heart Disease</div>
+    </div>
+    <div class="disease-card" onclick="searchByDisease('hypertension')">
+      <span class="disease-icon">🩺</span>
+      <div class="disease-name">Blood Pressure</div>
+    </div>
+    <div class="disease-card" onclick="searchByDisease('skin problem')">
+      <span class="disease-icon">🧴</span>
+      <div class="disease-name">Skin Problems</div>
+    </div>
+    <div class="disease-card" onclick="searchByDisease('pregnancy')">
+      <span class="disease-icon">🤰</span>
+      <div class="disease-name">Pregnancy</div>
+    </div>
+    <div class="disease-card" onclick="searchByDisease('child health')">
+      <span class="disease-icon">👶</span>
+      <div class="disease-name">Child Health</div>
+    </div>
+    <div class="disease-card" onclick="searchByDisease('eye problem')">
+      <span class="disease-icon">👁️</span>
+      <div class="disease-name">Eye Problems</div>
+    </div>
+    <div class="disease-card" onclick="searchByDisease('thyroid')">
+      <span class="disease-icon">🦋</span>
+      <div class="disease-name">Thyroid</div>
+    </div>
+    <div class="disease-card" onclick="searchByDisease('cancer')">
+      <span class="disease-icon">🎗️</span>
+      <div class="disease-name">Cancer Care</div>
+    </div>
+    <div class="disease-card" onclick="searchByDisease('kidney problem')">
+      <span class="disease-icon">🫘</span>
+      <div class="disease-name">Kidney Issues</div>
+    </div>
+    <div class="disease-card" onclick="searchByDisease('asthma')">
+      <span class="disease-icon">🫁</span>
+      <div class="disease-name">Asthma/COPD</div>
+    </div>
+    <div class="disease-card" onclick="searchByDisease('mental health')">
+      <span class="disease-icon">🧘</span>
+      <div class="disease-name">Mental Health</div>
+    </div>
+  </div>
+
+  <!-- TABS — Doctors / Labs / Hospitals -->
+  <div class="tabs" id="providerTabs">
+    <button class="tab-btn active" onclick="switchTab('doctors', this)">👨‍⚕️ Doctors</button>
+    <button class="tab-btn" onclick="switchTab('labs', this)">🧪 Labs</button>
+    <button class="tab-btn" onclick="switchTab('hospitals', this)">🏥 Hospitals</button>
+    <button class="tab-btn" onclick="switchTab('pharmacy', this)">💊 Pharmacies</button>
+  </div>
+
+  <!-- PROVIDERS LIST -->
+  <div id="providersList"></div>
+
+  <!-- CONSULT PHARMACIST SECTION -->
+  <div style="background:var(--navy-card);border:1px solid var(--border);border-radius:16px;padding:1.1rem;margin-bottom:1.2rem;">
+    <div style="font-family:'Syne',sans-serif;font-size:0.9rem;font-weight:700;margin-bottom:0.5rem;">
+      💬 Consult a Pharmacist
+    </div>
+    <div style="font-size:0.82rem;color:var(--gray);margin-bottom:0.9rem;line-height:1.5;">
+      Have questions about your medicine? Ask our expert pharmacists directly via chat or call!
+    </div>
+    <div style="display:flex;gap:0.6rem;">
+      <button onclick="openPharmacistChat()" style="
+        flex:1;background:var(--emerald);color:var(--navy);
+        border:none;border-radius:10px;padding:0.7rem;
+        font-size:0.85rem;font-weight:700;cursor:pointer;
+        font-family:'DM Sans',sans-serif;
+      ">💬 Chat with Pharmacist</button>
+      <button onclick="callPharmacist()" style="
+        background:var(--gray-dim);border:1px solid var(--border);
+        color:white;border-radius:10px;padding:0.7rem 1rem;
+        font-size:0.85rem;cursor:pointer;font-family:'DM Sans',sans-serif;
+      ">📞 Call</button>
+    </div>
+  </div>
+
+  <div class="bottom-spacer"></div>
+</div>
+
+<!-- CHAT MODAL -->
+<div class="chat-modal-overlay" id="chatModal">
+  <div class="chat-modal">
+    <div class="chat-header">
+      <div class="chat-avatar" id="chatAvatar">💊</div>
+      <div>
+        <div class="chat-name" id="chatName">MediFast Pharmacist</div>
+        <div class="chat-status">● Online — Usually replies in 2 min</div>
+      </div>
+      <div class="chat-close" onclick="closeChat()">✕</div>
+    </div>
+
+    <!-- Quick reply buttons -->
+    <div class="chat-actions-bar">
+      <button class="chat-quick-btn" onclick="sendQuickMsg('What is the dosage for this medicine?')">💊 Dosage?</button>
+      <button class="chat-quick-btn" onclick="sendQuickMsg('Are there any side effects?')">⚠️ Side effects?</button>
+      <button class="chat-quick-btn" onclick="sendQuickMsg('Can I take this with food?')">🍽️ With food?</button>
+      <button class="chat-quick-btn" onclick="sendQuickMsg('Is this safe for pregnant women?')">🤰 Safe for pregnancy?</button>
+      <button class="chat-quick-btn" onclick="sendQuickMsg('Do you have a generic version?')">💰 Generic available?</button>
+      <button class="chat-quick-btn" onclick="sendQuickMsg('What are the alternatives?')">🔄 Alternatives?</button>
+    </div>
+
+    <div class="chat-messages" id="chatMessages">
+      <div class="msg msg-pharmacy">
+        👋 Hello! I'm your MediFast pharmacist. How can I help you today?
+        <div class="msg-time">Just now</div>
+      </div>
+      <div class="msg msg-pharmacy">
+        You can ask me about: medicine dosage, side effects, drug interactions, storage, alternatives, or any health queries!
+        <div class="msg-time">Just now</div>
+      </div>
+    </div>
+
+    <div class="chat-input-wrap">
+      <textarea class="chat-input" id="chatInput"
+        placeholder="Type your question..."
+        rows="1"
+        onkeypress="handleChatKeypress(event)"></textarea>
+      <button class="chat-send" onclick="sendChatMessage()">➤</button>
+    </div>
+  </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+  <a class="nav-item" href="medifast-patient-search.html">
+    <span class="nav-icon">🏠</span><span class="nav-label">Home</span>
+  </a>
+  <a class="nav-item" href="medifast-patient-search.html">
+    <span class="nav-icon">🔍</span><span class="nav-label">Search</span>
+  </a>
+  <a class="nav-item" href="medifast-order-tracking.html">
+    <span class="nav-icon">🛒</span><span class="nav-label">Orders</span>
+  </a>
+  <a class="nav-item active" href="#">
+    <span class="nav-icon">🏥</span><span class="nav-label">Health</span>
+  </a>
+  <a class="nav-item" href="#">
+    <span class="nav-icon">👤</span><span class="nav-label">Profile</span>
+  </a>
+</nav>
+
+<!-- Firebase + AI Chat -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import {
+  getFirestore, collection, getDocs, addDoc,
+  serverTimestamp, query, where
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDuTHbKG_Gpagz4ioEDemdfhc4LeP35B1Y",
+  authDomain: "medifast-bf0d0.firebaseapp.com",
+  projectId: "medifast-bf0d0",
+  storageBucket: "medifast-bf0d0.firebasestorage.app",
+  messagingSenderId: "666399516240",
+  appId: "1:666399516240:web:82fde9e70b79cdcc0e1355"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+let currentUser = null;
+let currentFilter = { age: 'all', specialty: 'all', tab: 'doctors' };
+
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    currentUser = user;
+    loadProviders();
+  } else {
+    window.location.href = 'medifast-auth.html';
+  }
+});
+
+// ── LOAD PROVIDERS FROM FIREBASE ──
+async function loadProviders() {
+  const container = document.getElementById('providersList');
+  container.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--gray);">Loading nearby providers...</div>';
+
+  try {
+    const snap = await getDocs(collection(db, 'providers'));
+    const providers = [];
+    snap.forEach(d => providers.push({id: d.id, ...d.data()}));
+
+    // If no providers in DB yet, show demo data
+    if (providers.length === 0) {
+      renderDemoProviders(currentFilter.tab);
+      return;
+    }
+
+    const filtered = providers.filter(p => {
+      if (currentFilter.tab !== 'all' && p.type !== currentFilter.tab) return false;
+      if (currentFilter.age !== 'all' && !p.ageGroups?.includes(currentFilter.age)) return false;
+      if (currentFilter.specialty !== 'all' && p.specialty !== currentFilter.specialty) return false;
+      return true;
+    });
+
+    renderProviders(filtered);
+  } catch(e) {
+    renderDemoProviders(currentFilter.tab);
+  }
+}
+
+window.loadProviders = loadProviders;
+
+// ── RENDER DEMO PROVIDERS ──
+function renderDemoProviders(type) {
+  const container = document.getElementById('providersList');
+
+  const demoData = {
+    doctors: [
+      { name: 'Dr. Priya Sharma', spec: 'Diabetologist & Endocrinologist', rating: 4.9, exp: '15 years', fee: '₹500', icon: '👩‍⚕️', dist: '0.8 km', time: 'Available Today', badges: ['Diabetes Specialist', 'MBBS, MD'], ageGroups: ['adult', 'senior'] },
+      { name: 'Dr. Rajesh Kumar', spec: 'Cardiologist', rating: 4.8, exp: '20 years', fee: '₹700', icon: '👨‍⚕️', dist: '1.2 km', time: 'Tomorrow', badges: ['Heart Specialist', 'DM Cardiology'], ageGroups: ['adult', 'senior'] },
+      { name: 'Dr. Sunita Patel', spec: 'Gynaecologist & Obstetrician', rating: 4.9, exp: '12 years', fee: '₹600', icon: '👩‍⚕️', dist: '0.5 km', time: 'Available Now', badges: ['Women\'s Health', 'Maternity'], ageGroups: ['women', 'maternity'] },
+      { name: 'Dr. Arjun Mehta', spec: 'Paediatrician', rating: 4.7, exp: '10 years', fee: '₹400', icon: '👨‍⚕️', dist: '0.9 km', time: 'Available Today', badges: ['Child Specialist', 'MBBS, DCH'], ageGroups: ['infant', 'child', 'teen'] },
+      { name: 'Dr. Kavitha Reddy', spec: 'Dermatologist', rating: 4.8, exp: '8 years', fee: '₹450', icon: '👩‍⚕️', dist: '1.5 km', time: 'Available Today', badges: ['Skin Specialist', 'MD Dermatology'], ageGroups: ['all'] },
+      { name: 'Dr. Suresh Nair', spec: 'Neurologist', rating: 4.6, exp: '18 years', fee: '₹800', icon: '👨‍⚕️', dist: '2.1 km', time: 'Tomorrow', badges: ['Brain & Spine', 'DM Neurology'], ageGroups: ['adult', 'senior'] },
+    ],
+    labs: [
+      { name: 'LifeCare Diagnostics', spec: 'Full Body Checkup & Blood Tests', rating: 4.8, dist: '0.6 km', time: 'Open Now', icon: '🧪', fee: 'From ₹299', badges: ['NABL Certified', 'Home Collection'], services: ['Blood Test', 'Urine', 'X-Ray', 'ECG'] },
+      { name: 'Thyrocare Centre', spec: 'Pathology & Radiology', rating: 4.7, dist: '1.1 km', time: 'Open Now', icon: '🔬', fee: 'From ₹199', badges: ['ISO Certified', 'Reports in 4hrs'], services: ['HbA1c', 'Thyroid', 'Lipid Profile'] },
+      { name: 'Apollo Diagnostics', spec: 'Advanced Diagnostics', rating: 4.9, dist: '1.8 km', time: 'Open Now', icon: '🏥', fee: 'From ₹499', badges: ['NABH Certified', 'MRI & CT Scan'], services: ['MRI', 'CT Scan', 'PET Scan'] },
+    ],
+    hospitals: [
+      { name: 'City General Hospital', spec: 'Multi-Speciality Hospital', rating: 4.6, dist: '1.5 km', time: '24/7 Emergency', icon: '🏥', fee: 'Cashless', badges: ['NABH Accredited', '200 Beds', 'Emergency'], services: ['ICU', 'Surgery', 'Maternity'] },
+      { name: 'MedPlus Clinic', spec: 'General & Specialist OPD', rating: 4.7, dist: '0.7 km', time: 'Open Now', icon: '🏨', fee: 'From ₹200', badges: ['All Insurance', 'Online Booking'], services: ['OPD', 'Minor Surgery', 'Pharmacy'] },
+    ],
+    pharmacy: [
+      { name: 'Sri Sai Medical Store', spec: 'Local Pharmacy', rating: 4.8, dist: '0.4 km', time: 'Open Now • 8AM-10PM', icon: '💊', fee: 'Free Delivery', badges: ['MediFast Partner', 'Delivery in 10min'], services: ['All Medicines', 'Rx Accepted'] },
+      { name: 'Green Cross Pharmacy', spec: 'Local Pharmacy', rating: 4.6, dist: '1.1 km', time: 'Open Now • 24hrs', icon: '🏪', fee: 'Free Delivery', badges: ['MediFast Partner', '24 Hour'], services: ['Generic Medicines', 'Homeopathy'] },
+    ]
+  };
+
+  const items = demoData[type] || demoData.doctors;
+
+  if (items.length === 0) {
+    container.innerHTML = `<div style="text-align:center;padding:2rem;color:var(--gray);">No providers found nearby!</div>`;
+    return;
+  }
+
+  container.innerHTML = items.map((item, i) => `
+    <div class="provider-card" style="animation-delay:${i * 0.08}s">
+      <div class="provider-top">
+        <div class="provider-avatar" style="background:rgba(0,201,127,0.08);">${item.icon}</div>
+        <div class="provider-info">
+          <div class="provider-name">${item.name}</div>
+          <div class="provider-spec">${item.spec}</div>
+          <div class="provider-detail">
+            📍 ${item.dist} away •
+            ${item.exp ? `${item.exp} exp •` : ''}
+            ${item.fee}
+          </div>
+        </div>
+        <div>
+          <div class="provider-rating">⭐ ${item.rating}</div>
+          <div style="font-size:0.68rem;color:var(--gray);margin-top:0.3rem;">${item.time}</div>
+        </div>
+      </div>
+      <div class="provider-badges">
+        ${(item.badges || []).map(b => `<span class="pbadge pbadge-green">${b}</span>`).join('')}
+        ${(item.services || []).map(s => `<span class="pbadge pbadge-blue">${s}</span>`).join('')}
+      </div>
+      <div class="provider-actions">
+        ${type === 'doctors' ? `
+          <button class="btn-book" onclick="bookAppointment('${item.name}', '${item.spec}')">📅 Book Appointment</button>
+          <button class="btn-call" onclick="consultChat('${item.name}')">💬 Consult</button>
+        ` : type === 'labs' ? `
+          <button class="btn-book" onclick="bookLabTest('${item.name}')">🧪 Book Test</button>
+          <button class="btn-call">📞 Call</button>
+        ` : type === 'pharmacy' ? `
+          <button class="btn-book" onclick="window.location.href='medifast-patient-search.html'">💊 Order Medicine</button>
+          <button class="btn-call" onclick="openPharmacistChat()">💬 Ask</button>
+        ` : `
+          <button class="btn-book" onclick="bookAppointment('${item.name}', '${item.spec}')">🏥 Visit</button>
+          <button class="btn-call">📞 Call</button>
+        `}
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderProviders(providers) {
+  if (providers.length === 0) {
+    renderDemoProviders(currentFilter.tab);
+    return;
+  }
+  const container = document.getElementById('providersList');
+  container.innerHTML = providers.map(p => `
+    <div class="provider-card">
+      <div class="provider-top">
+        <div class="provider-avatar">${p.icon || '🏥'}</div>
+        <div class="provider-info">
+          <div class="provider-name">${p.name}</div>
+          <div class="provider-spec">${p.specialty || p.type}</div>
+          <div class="provider-detail">📍 Nearby • ${p.fee || 'Consult for fee'}</div>
+        </div>
+        <div class="provider-rating">⭐ ${p.rating || 4.5}</div>
+      </div>
+      <div class="provider-actions">
+        <button class="btn-book" onclick="bookAppointment('${p.name}', '${p.specialty}')">📅 Book</button>
+        <button class="btn-call">📞 Call</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ── PHARMACIST CHAT WITH AI ──
+window.openPharmacistChat = function(pharmacyName = 'MediFast Pharmacist') {
+  document.getElementById('chatName').textContent = pharmacyName;
+  document.getElementById('chatModal').classList.add('show');
+};
+
+window.consultChat = function(doctorName) {
+  document.getElementById('chatName').textContent = doctorName;
+  document.getElementById('chatAvatar').textContent = '👨‍⚕️';
+  document.getElementById('chatModal').classList.add('show');
+};
+
+window.closeChat = function() {
+  document.getElementById('chatModal').classList.remove('show');
+};
+
+window.sendQuickMsg = function(msg) {
+  document.getElementById('chatInput').value = msg;
+  sendChatMessage();
+};
+
+window.handleChatKeypress = function(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendChatMessage();
+  }
+};
+
+window.sendChatMessage = async function() {
+  const input = document.getElementById('chatInput');
+  const msg = input.value.trim();
+  if (!msg) return;
+
+  // Show patient message
+  addMessage(msg, 'patient');
+  input.value = '';
+
+  // Show typing indicator
+  const typingId = 'typing-' + Date.now();
+  const chatMessages = document.getElementById('chatMessages');
+  chatMessages.innerHTML += `
+    <div id="${typingId}" class="msg msg-pharmacy" style="color:rgba(255,255,255,0.4);">
+      ⏳ Pharmacist is typing...
+    </div>
+  `;
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+
+  // Save to Firebase
+  if (currentUser) {
+    try {
+      await addDoc(collection(db, 'pharmacistChats'), {
+        userId: currentUser.uid,
+        message: msg,
+        timestamp: serverTimestamp(),
+        type: 'patient'
+      });
+    } catch(e) {}
+  }
+
+  // AI Response after 1.5 seconds
+  setTimeout(() => {
+    document.getElementById(typingId)?.remove();
+    const response = getPharmacistResponse(msg);
+    addMessage(response, 'pharmacy');
+  }, 1500);
+};
+
+function addMessage(text, type) {
+  const chatMessages = document.getElementById('chatMessages');
+  const now = new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
+  const div = document.createElement('div');
+  div.className = `msg msg-${type}`;
+  div.innerHTML = `${text}<div class="msg-time">${now}</div>`;
+  chatMessages.appendChild(div);
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+// Smart pharmacist responses
+function getPharmacistResponse(msg) {
+  const m = msg.toLowerCase();
+  if (m.includes('dosage') || m.includes('dose') || m.includes('how much'))
+    return '💊 Dosage depends on the specific medicine, age, and condition. For adults, most common medicines are taken 1-2 tablets 2-3 times daily. Please share the medicine name for exact dosage!';
+  if (m.includes('side effect') || m.includes('reaction'))
+    return '⚠️ Side effects vary by medicine. Common ones include nausea, dizziness, or stomach upset. These usually resolve on their own. If severe reactions occur, stop taking and visit a doctor immediately!';
+  if (m.includes('food') || m.includes('meal') || m.includes('eat'))
+    return '🍽️ Most medicines can be taken with food to reduce stomach irritation. Antibiotics like Amoxicillin work best on empty stomach. Please mention the medicine name for specific advice!';
+  if (m.includes('pregnant') || m.includes('pregnancy') || m.includes('breastfeed'))
+    return '🤰 Safety during pregnancy varies greatly by medicine. Many common medicines are NOT safe during pregnancy. Please consult your gynaecologist before taking any medicine during pregnancy!';
+  if (m.includes('generic') || m.includes('cheap') || m.includes('affordable'))
+    return '💰 Yes! Generic medicines have the same active ingredient as branded ones but cost 50-80% less. Ask your pharmacist for generic alternatives. They are equally effective and safe!';
+  if (m.includes('alternative') || m.includes('substitute') || m.includes('replace'))
+    return '🔄 There are often multiple medicines for the same condition. Generic alternatives are usually available. Please share the medicine name and I will suggest alternatives!';
+  if (m.includes('expire') || m.includes('expiry'))
+    return '📅 Never use expired medicines! Check the expiry date before taking any medicine. Expired medicines may not work effectively or could be harmful. Dispose of expired medicines safely!';
+  if (m.includes('store') || m.includes('storage') || m.includes('keep'))
+    return '📦 Most medicines should be stored in a cool, dry place away from sunlight. Some need refrigeration. Check the label for specific storage instructions!';
+  if (m.includes('interact') || m.includes('together') || m.includes('combine'))
+    return '⚗️ Drug interactions can be serious! Never combine medicines without consulting a doctor or pharmacist. Share all your current medicines for a complete interaction check!';
+  if (m.includes('diabetes') || m.includes('sugar') || m.includes('insulin'))
+    return '💉 For diabetes management, medicines like Metformin, Glipizide, or Insulin may be prescribed. Monitor blood sugar regularly. Diet and exercise are equally important! Consult your diabetologist for personalized advice.';
+  if (m.includes('blood pressure') || m.includes('hypertension') || m.includes('bp'))
+    return '🩺 Common BP medicines include Amlodipine, Losartan, Telmisartan. Take them daily at the same time. Never stop suddenly without doctor advice. Reduce salt intake and exercise regularly!';
+  if (m.includes('hello') || m.includes('hi') || m.includes('hey'))
+    return '👋 Hello! I\'m your MediFast pharmacist. I can help you with medicine dosages, side effects, drug interactions, generic alternatives, and health queries. What do you need help with today?';
+  return '🤔 Thank you for your question! For accurate medical advice, please share more details or the specific medicine name. You can also book a consultation with one of our nearby specialist doctors through MediFast!';
+}
+
+// Expose functions
+window.bookAppointment = function(name, spec) {
+  alert(`📅 Booking appointment with ${name} (${spec}).\n\nFull appointment booking system coming soon! We will notify you when it is ready.`);
+};
+
+window.bookLabTest = function(name) {
+  alert(`🧪 Booking test at ${name}.\n\nFull lab booking system coming soon! We will notify you when it is ready.`);
+};
+
+window.callPharmacist = function() {
+  alert('📞 Calling MediFast pharmacist...\n\nDirect calling feature coming soon!');
+};
+
+window.showEmergency = function() {
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(pos => {
+      window.open(`https://www.google.com/maps/search/hospital+emergency/@${pos.coords.latitude},${pos.coords.longitude},14z`, '_blank');
+    }, () => {
+      window.open('https://www.google.com/maps/search/hospital+emergency+near+me', '_blank');
+    });
+  } else {
+    window.open('https://www.google.com/maps/search/hospital+emergency+near+me', '_blank');
+  }
+};
+</script>
+
+<script>
+let activeTab = 'doctors';
+
+function switchTab(tab, el) {
+  activeTab = tab;
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  window.loadProviders && window.loadProviders();
+}
+
+function filterAge(el, age) {
+  document.querySelectorAll('.age-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  window.loadProviders && window.loadProviders();
+}
+
+function filterSpecialty(el, specialty) {
+  document.querySelectorAll('.specialty-card').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('mainSearch').value = specialty;
+  window.loadProviders && window.loadProviders();
+}
+
+function searchByDisease(disease) {
+  document.getElementById('mainSearch').value = disease;
+  handleSearch(disease);
+}
+
+function handleSearch(val) {
+  if (val.length > 1) {
+    window.loadProviders && window.loadProviders();
+  }
+}
+
+function showAllSpecialties() {
+  alert('All specialties view coming soon!');
+}
+</script>
+
+</body>
+</html>

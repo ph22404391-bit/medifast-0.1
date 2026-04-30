@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>MediFast — Order Tracking</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --emerald: #00C97F;
+  --emerald-dark: #00A566;
+  --emerald-light: rgba(0,201,127,0.08);
+  --navy: #0A1628;
+  --navy-mid: #0F1E35;
+  --navy-card: #131F33;
+  --white: #FFFFFF;
+  --gray: rgba(255,255,255,0.5);
+  --gray-dim: rgba(255,255,255,0.06);
+  --border: rgba(255,255,255,0.07);
+  --accent: #FFD166;
+  --red: #FF5C5C;
+  --blue: #4DA6FF;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--navy);
+  color: var(--white);
+  min-height: 100vh;
+}
+
+/* ── TOP BAR ── */
+.topbar {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(10,22,40,0.95);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  padding: 0.9rem 1.2rem;
+  display: flex; align-items: center; gap: 0.8rem;
+}
+
+.back-btn {
+  width: 36px; height: 36px;
+  background: var(--gray-dim);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 1rem;
+  text-decoration: none; color: white;
+  transition: all 0.2s;
+}
+.back-btn:hover { border-color: rgba(0,201,127,0.3); }
+
+.topbar-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 1rem; font-weight: 800; flex: 1;
+}
+
+.topbar-logo {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800; font-size: 1rem;
+  text-decoration: none; color: white;
+}
+.topbar-logo span { color: var(--emerald); }
+
+/* ── MAIN ── */
+.main { padding: 1.2rem; max-width: 600px; margin: 0 auto; }
+
+/* ── ORDER HERO ── */
+.order-hero {
+  background: linear-gradient(135deg, var(--navy-mid), var(--navy-card));
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 1.5rem;
+  margin-bottom: 1.2rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.order-hero::before {
+  content: '';
+  position: absolute;
+  width: 200px; height: 200px;
+  background: radial-gradient(circle, rgba(0,201,127,0.12) 0%, transparent 70%);
+  top: -50px; right: -50px;
+  pointer-events: none;
+}
+
+.order-status-badge {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  padding: 0.35rem 0.9rem;
+  border-radius: 50px;
+  font-size: 0.78rem; font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.badge-new { background: rgba(77,166,255,0.15); color: var(--blue); border: 1px solid rgba(77,166,255,0.3); }
+.badge-accepted { background: rgba(255,209,102,0.15); color: var(--accent); border: 1px solid rgba(255,209,102,0.3); }
+.badge-preparing { background: rgba(167,139,250,0.15); color: #A78BFA; border: 1px solid rgba(167,139,250,0.3); }
+.badge-out { background: rgba(251,146,60,0.15); color: #FB923C; border: 1px solid rgba(251,146,60,0.3); }
+.badge-delivered { background: rgba(0,201,127,0.15); color: var(--emerald); border: 1px solid rgba(0,201,127,0.3); }
+.badge-cancelled { background: rgba(255,92,92,0.15); color: var(--red); border: 1px solid rgba(255,92,92,0.3); }
+
+.order-id { font-size: 0.75rem; color: var(--gray); margin-bottom: 0.3rem; }
+.order-amount {
+  font-family: 'Syne', sans-serif;
+  font-size: 2rem; font-weight: 800; color: var(--emerald);
+  margin-bottom: 0.2rem;
+}
+.order-pharmacy { font-size: 0.85rem; color: rgba(255,255,255,0.7); }
+
+/* ── TRACKING STEPS ── */
+.tracking-card {
+  background: var(--navy-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1.2rem;
+  margin-bottom: 1.2rem;
+}
+
+.tracking-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 0.9rem; font-weight: 700;
+  margin-bottom: 1.2rem;
+  display: flex; align-items: center; gap: 0.5rem;
+}
+
+.tracking-steps { position: relative; }
+
+.tracking-step {
+  display: flex; gap: 1rem;
+  margin-bottom: 1.2rem; position: relative;
+}
+.tracking-step:last-child { margin-bottom: 0; }
+
+.step-indicator {
+  display: flex; flex-direction: column; align-items: center; gap: 0;
+  flex-shrink: 0;
+}
+
+.step-dot {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.9rem; font-weight: 700;
+  flex-shrink: 0; z-index: 1;
+  transition: all 0.3s;
+}
+
+.step-dot.done { background: var(--emerald); color: var(--navy); }
+.step-dot.active {
+  background: var(--accent); color: var(--navy);
+  box-shadow: 0 0 16px rgba(255,209,102,0.4);
+  animation: pulse 2s infinite;
+}
+.step-dot.pending {
+  background: var(--gray-dim);
+  border: 2px solid var(--border);
+  color: var(--gray);
+}
+
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255,209,102,0.4); }
+  50% { box-shadow: 0 0 0 8px rgba(255,209,102,0); }
+}
+
+.step-line {
+  width: 2px; flex: 1; min-height: 30px;
+  margin: 4px 0;
+  background: var(--border);
+  transition: background 0.3s;
+}
+.step-line.done { background: var(--emerald); }
+
+.step-content { flex: 1; padding-top: 0.3rem; }
+.step-name {
+  font-size: 0.88rem; font-weight: 600;
+  margin-bottom: 0.15rem;
+}
+.step-name.done { color: var(--emerald); }
+.step-name.active { color: var(--accent); }
+.step-name.pending { color: var(--gray); }
+.step-time { font-size: 0.72rem; color: var(--gray); }
+.step-desc { font-size: 0.78rem; color: var(--gray); margin-top: 0.2rem; line-height: 1.4; }
+
+/* ── ORDER DETAILS ── */
+.details-card {
+  background: var(--navy-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  margin-bottom: 1.2rem;
+  overflow: hidden;
+}
+
+.details-header {
+  padding: 0.9rem 1.1rem;
+  border-bottom: 1px solid var(--border);
+  font-family: 'Syne', sans-serif;
+  font-size: 0.88rem; font-weight: 700;
+  display: flex; align-items: center; gap: 0.5rem;
+}
+
+.medicine-item {
+  display: flex; align-items: center; gap: 0.8rem;
+  padding: 0.8rem 1.1rem;
+  border-bottom: 1px solid var(--border);
+}
+.medicine-item:last-child { border-bottom: none; }
+
+.med-icon {
+  width: 36px; height: 36px;
+  background: var(--emerald-light);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem; flex-shrink: 0;
+}
+
+.med-info { flex: 1; }
+.med-name { font-size: 0.85rem; font-weight: 600; }
+.med-detail { font-size: 0.72rem; color: var(--gray); }
+.med-price {
+  font-family: 'Syne', sans-serif;
+  font-size: 0.9rem; font-weight: 700; color: var(--emerald);
+}
+
+.bill-row {
+  display: flex; justify-content: space-between;
+  padding: 0.6rem 1.1rem;
+  font-size: 0.82rem;
+}
+.bill-row.total {
+  border-top: 1px solid var(--border);
+  font-weight: 700;
+  font-family: 'Syne', sans-serif;
+}
+.bill-row.total .bill-val { color: var(--emerald); font-size: 1rem; }
+.bill-label { color: var(--gray); }
+
+/* ── PHARMACY INFO ── */
+.pharmacy-card {
+  background: var(--navy-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1.1rem;
+  margin-bottom: 1.2rem;
+  display: flex; gap: 1rem; align-items: center;
+}
+
+.pharm-avatar {
+  width: 48px; height: 48px;
+  background: var(--emerald-light);
+  border: 1px solid rgba(0,201,127,0.15);
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.3rem; flex-shrink: 0;
+}
+
+.pharm-info { flex: 1; }
+.pharm-name { font-size: 0.9rem; font-weight: 700; margin-bottom: 0.2rem; }
+.pharm-detail { font-size: 0.75rem; color: var(--gray); }
+
+.call-btn {
+  background: var(--emerald);
+  color: var(--navy);
+  border: none;
+  border-radius: 10px;
+  padding: 0.6rem 1rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.call-btn:hover { background: var(--emerald-dark); }
+
+/* ── ORDERS LIST ── */
+.orders-list { margin-bottom: 1.2rem; }
+
+.order-list-card {
+  background: var(--navy-card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 1rem;
+  margin-bottom: 0.8rem;
+  cursor: pointer;
+  transition: all 0.25s;
+  display: flex; gap: 0.8rem; align-items: center;
+}
+.order-list-card:hover {
+  border-color: rgba(0,201,127,0.25);
+  transform: translateX(4px);
+}
+
+.order-list-icon {
+  width: 44px; height: 44px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.2rem; flex-shrink: 0;
+}
+
+.order-list-info { flex: 1; }
+.order-list-id { font-size: 0.75rem; color: var(--gray); margin-bottom: 0.2rem; }
+.order-list-name { font-size: 0.88rem; font-weight: 600; margin-bottom: 0.2rem; }
+.order-list-detail { font-size: 0.75rem; color: var(--gray); }
+.order-list-right { text-align: right; flex-shrink: 0; }
+.order-list-amount {
+  font-family: 'Syne', sans-serif;
+  font-size: 0.95rem; font-weight: 700; color: var(--emerald);
+  display: block; margin-bottom: 0.3rem;
+}
+
+/* ── PLACE ORDER MODAL ── */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.75);
+  backdrop-filter: blur(8px);
+  z-index: 200;
+  display: none; align-items: flex-end; justify-content: center;
+}
+.modal-overlay.show { display: flex; }
+
+.order-modal {
+  background: var(--navy-card);
+  border: 1px solid var(--border);
+  border-radius: 20px 20px 0 0;
+  padding: 1.5rem;
+  width: 100%; max-width: 600px;
+  max-height: 85vh; overflow-y: auto;
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.modal-handle {
+  width: 40px; height: 4px;
+  background: var(--border);
+  border-radius: 50px;
+  margin: 0 auto 1.2rem;
+}
+
+.modal-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.1rem; font-weight: 800;
+  margin-bottom: 1.2rem;
+}
+
+.form-group { margin-bottom: 0.9rem; }
+.form-label { font-size: 0.75rem; font-weight: 600; color: rgba(255,255,255,0.7); display: block; margin-bottom: 0.35rem; }
+.form-input {
+  width: 100%; background: rgba(255,255,255,0.05);
+  border: 1.5px solid var(--border); border-radius: 10px;
+  padding: 0.75rem 0.9rem; font-family: 'DM Sans', sans-serif;
+  font-size: 0.9rem; color: var(--white); outline: none; transition: all 0.2s;
+}
+.form-input::placeholder { color: rgba(255,255,255,0.25); }
+.form-input:focus { border-color: var(--emerald); background: rgba(0,201,127,0.05); }
+
+.qty-wrap { display: flex; align-items: center; gap: 0.8rem; }
+.qty-btn {
+  width: 36px; height: 36px;
+  background: var(--gray-dim);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: white; font-size: 1.1rem;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+}
+.qty-btn:hover { border-color: var(--emerald); color: var(--emerald); }
+.qty-display {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.2rem; font-weight: 800; min-width: 30px; text-align: center;
+}
+
+.payment-options { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+.payment-opt {
+  background: var(--gray-dim);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  padding: 0.7rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+  font-size: 0.82rem; font-weight: 600;
+}
+.payment-opt.selected { border-color: var(--emerald); background: var(--emerald-light); color: var(--emerald); }
+.payment-opt:hover { border-color: rgba(0,201,127,0.3); }
+
+.btn-place-order {
+  width: 100%;
+  background: var(--emerald);
+  color: var(--navy);
+  border: none;
+  border-radius: 12px;
+  padding: 1rem;
+  font-size: 1rem; font-weight: 700;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: all 0.25s;
+  margin-top: 1rem;
+  display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+  box-shadow: 0 8px 24px rgba(0,201,127,0.25);
+}
+.btn-place-order:hover { background: var(--emerald-dark); transform: translateY(-2px); }
+.btn-place-order:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+/* ── EMPTY STATE ── */
+.empty { text-align: center; padding: 3rem 1rem; color: var(--gray); }
+.empty-icon { font-size: 3rem; display: block; margin-bottom: 0.8rem; }
+.empty-title { font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 700; margin-bottom: 0.5rem; color: white; }
+.empty-desc { font-size: 0.85rem; line-height: 1.6; }
+
+/* ── ALERT ── */
+.alert {
+  padding: 0.8rem 1rem; border-radius: 10px;
+  font-size: 0.82rem; font-weight: 500;
+  margin-bottom: 1rem;
+  display: none; align-items: center; gap: 0.5rem;
+}
+.alert.show { display: flex; }
+.alert-success { background: rgba(0,201,127,0.1); border: 1px solid rgba(0,201,127,0.2); color: var(--emerald); }
+.alert-error { background: rgba(255,92,92,0.1); border: 1px solid rgba(255,92,92,0.2); color: var(--red); }
+
+/* ── SPINNER ── */
+.spinner {
+  width: 18px; height: 18px;
+  border: 2px solid rgba(10,22,40,0.3);
+  border-top-color: var(--navy);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  display: none;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── BOTTOM NAV ── */
+.bottom-nav {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: rgba(10,22,40,0.95);
+  backdrop-filter: blur(20px);
+  border-top: 1px solid var(--border);
+  padding: 0.7rem 0 0.5rem;
+  display: flex; justify-content: space-around; z-index: 100;
+}
+
+.nav-item {
+  display: flex; flex-direction: column; align-items: center; gap: 0.2rem;
+  cursor: pointer; padding: 0.3rem 1rem; border-radius: 10px;
+  transition: all 0.2s; text-decoration: none;
+}
+.nav-item .nav-icon { font-size: 1.3rem; }
+.nav-item .nav-label { font-size: 0.65rem; font-weight: 600; color: rgba(255,255,255,0.4); }
+.nav-item.active .nav-label { color: var(--emerald); }
+.nav-item.active .nav-icon { filter: drop-shadow(0 0 6px rgba(0,201,127,0.6)); }
+
+.bottom-spacer { height: 80px; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.order-list-card { animation: fadeUp 0.4s ease both; }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <a href="medifast-patient-search.html" class="back-btn">←</a>
+  <div class="topbar-title" id="pageTitle">My Orders</div>
+  <a href="medifast-patient-search.html" class="topbar-logo">Medi<span>Fast</span></a>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <div id="alertContainer"></div>
+
+  <!-- ORDERS LIST VIEW -->
+  <div id="ordersListView">
+    <div id="ordersList">
+      <div style="display:flex;align-items:center;justify-content:center;padding:3rem;color:var(--gray);gap:0.5rem;">
+        <div class="spinner" style="display:block;border-top-color:var(--emerald);border-color:rgba(0,201,127,0.2);"></div>
+        Loading your orders...
+      </div>
+    </div>
+  </div>
+
+  <!-- ORDER DETAIL VIEW -->
+  <div id="orderDetailView" style="display:none;">
+
+    <!-- Order Hero -->
+    <div class="order-hero">
+      <div class="order-id" id="detailOrderId">Order #MF000000</div>
+      <div class="order-status-badge badge-new" id="detailStatusBadge">● New</div>
+      <div class="order-amount" id="detailAmount">₹0</div>
+      <div class="order-pharmacy" id="detailPharmacy">Loading...</div>
+    </div>
+
+    <!-- Live Tracking -->
+    <div class="tracking-card">
+      <div class="tracking-title">📍 Live Order Tracking</div>
+      <div class="tracking-steps" id="trackingSteps">
+        <!-- Steps rendered by JS -->
+      </div>
+    </div>
+
+    <!-- Pharmacy Info -->
+    <div class="pharmacy-card" id="detailPharmacyCard">
+      <div class="pharm-avatar">🏪</div>
+      <div class="pharm-info">
+        <div class="pharm-name" id="detailPharmacyName">Pharmacy</div>
+        <div class="pharm-detail" id="detailPharmacyDetail">Loading...</div>
+      </div>
+      <button class="call-btn" onclick="callPharmacy()">📞 Call</button>
+    </div>
+
+    <!-- Order Items -->
+    <div class="details-card">
+      <div class="details-header">💊 Order Items</div>
+      <div id="detailItems"></div>
+      <div class="bill-row"><span class="bill-label">Subtotal</span><span id="detailSubtotal">₹0</span></div>
+      <div class="bill-row"><span class="bill-label">Delivery</span><span style="color:var(--emerald);">FREE</span></div>
+      <div class="bill-row total"><span>Total</span><span class="bill-val" id="detailTotal">₹0</span></div>
+    </div>
+
+    <!-- Cancel Button -->
+    <div id="cancelSection" style="margin-bottom:1rem;">
+      <button onclick="cancelOrder()" style="
+        width:100%; background:rgba(255,92,92,0.1);
+        border:1px solid rgba(255,92,92,0.2); color:var(--red);
+        border-radius:12px; padding:0.85rem; font-size:0.9rem;
+        font-weight:700; cursor:pointer; font-family:'DM Sans',sans-serif;
+        transition:all 0.2s;
+      ">🚫 Cancel Order</button>
+    </div>
+
+    <button onclick="showOrdersList()" style="
+      width:100%; background:var(--gray-dim);
+      border:1px solid var(--border); color:white;
+      border-radius:12px; padding:0.85rem; font-size:0.9rem;
+      font-weight:600; cursor:pointer; font-family:'DM Sans',sans-serif;
+      margin-bottom:1rem;
+    ">← Back to Orders</button>
+
+  </div>
+
+  <div class="bottom-spacer"></div>
+</div>
+
+<!-- PLACE ORDER MODAL -->
+<div class="modal-overlay" id="orderModal">
+  <div class="order-modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">🛒 Place Order</div>
+
+    <div id="modalAlert"></div>
+
+    <div id="modalMedInfo" style="background:var(--gray-dim);border-radius:12px;padding:1rem;margin-bottom:1rem;display:flex;gap:0.8rem;align-items:center;">
+      <div style="font-size:1.5rem;">💊</div>
+      <div>
+        <div style="font-size:0.9rem;font-weight:700;" id="modalMedName">Medicine</div>
+        <div style="font-size:0.75rem;color:var(--gray);" id="modalMedDetail">Details</div>
+        <div style="font-size:0.9rem;font-weight:700;color:var(--emerald);margin-top:0.2rem;" id="modalMedPrice">₹0</div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">📦 Quantity</label>
+      <div class="qty-wrap">
+        <button class="qty-btn" onclick="changeQty(-1)">−</button>
+        <div class="qty-display" id="qtyDisplay">1</div>
+        <button class="qty-btn" onclick="changeQty(1)">+</button>
+        <div style="font-size:0.82rem;color:var(--gray);margin-left:0.5rem;" id="qtyTotal">Total: ₹0</div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">📍 Delivery Address</label>
+      <input type="text" class="form-input" id="deliveryAddress" placeholder="Enter your full delivery address"/>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">📱 Phone Number</label>
+      <input type="tel" class="form-input" id="deliveryPhone" placeholder="Your contact number"/>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">💳 Payment Method</label>
+      <div class="payment-options">
+        <div class="payment-opt selected" onclick="selectPayment(this, 'cod')">💵 Cash on Delivery</div>
+        <div class="payment-opt" onclick="selectPayment(this, 'upi')">📱 UPI / GPay</div>
+        <div class="payment-opt" onclick="selectPayment(this, 'card')">💳 Card</div>
+        <div class="payment-opt" onclick="selectPayment(this, 'wallet')">👛 Wallet</div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">📝 Special Instructions (Optional)</label>
+      <input type="text" class="form-input" id="orderNotes" placeholder="Any special instructions..."/>
+    </div>
+
+    <div style="background:var(--gray-dim);border-radius:10px;padding:0.8rem;margin-bottom:0.5rem;">
+      <div style="display:flex;justify-content:space-between;font-size:0.82rem;margin-bottom:0.4rem;">
+        <span style="color:var(--gray);">Medicine Total</span>
+        <span id="summaryMedTotal">₹0</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:0.82rem;margin-bottom:0.4rem;">
+        <span style="color:var(--gray);">Delivery</span>
+        <span style="color:var(--emerald);">FREE ✅</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:0.95rem;font-weight:800;border-top:1px solid var(--border);padding-top:0.4rem;margin-top:0.4rem;">
+        <span>Grand Total</span>
+        <span style="color:var(--emerald);" id="summaryTotal">₹0</span>
+      </div>
+    </div>
+
+    <button class="btn-place-order" onclick="placeOrder()" id="placeOrderBtn">
+      <div class="spinner" id="placeOrderSpinner"></div>
+      <span id="placeOrderBtnText">🛵 Place Order Now</span>
+    </button>
+
+    <button onclick="closeOrderModal()" style="
+      width:100%; background:transparent; border:1px solid var(--border);
+      color:var(--gray); border-radius:12px; padding:0.7rem;
+      font-size:0.88rem; cursor:pointer; font-family:'DM Sans',sans-serif;
+      margin-top:0.6rem;
+    ">Cancel</button>
+  </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+  <a class="nav-item" href="medifast-patient-search.html">
+    <span class="nav-icon">🏠</span>
+    <span class="nav-label">Home</span>
+  </a>
+  <a class="nav-item" href="medifast-patient-search.html">
+    <span class="nav-icon">🔍</span>
+    <span class="nav-label">Search</span>
+  </a>
+  <a class="nav-item active" href="#">
+    <span class="nav-icon">🛒</span>
+    <span class="nav-label">Orders</span>
+  </a>
+  <a class="nav-item" href="#">
+    <span class="nav-icon">🧪</span>
+    <span class="nav-label">Labs</span>
+  </a>
+  <a class="nav-item" href="#">
+    <span class="nav-icon">👤</span>
+    <span class="nav-label">Profile</span>
+  </a>
+</nav>
+
+<!-- Firebase SDK -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import {
+  getFirestore, collection, doc, setDoc, getDocs,
+  getDoc, onSnapshot, updateDoc, addDoc,
+  serverTimestamp, query, where, orderBy
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDuTHbKG_Gpagz4ioEDemdfhc4LeP35B1Y",
+  authDomain: "medifast-bf0d0.firebaseapp.com",
+  projectId: "medifast-bf0d0",
+  storageBucket: "medifast-bf0d0.firebasestorage.app",
+  messagingSenderId: "666399516240",
+  appId: "1:666399516240:web:82fde9e70b79cdcc0e1355"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+let currentUser = null;
+let currentOrderData = null;
+let selectedPayment = 'cod';
+let orderQty = 1;
+let orderPrice = 0;
+let currentOrderId = null;
+let pharmacyPhone = '';
+
+// ── AUTH CHECK ──
+onAuthStateChanged(auth, async (user) => {
+  if (user) {
+    currentUser = user;
+    const snap = await getDoc(doc(db, 'users', user.uid));
+    if (snap.exists()) {
+      const data = snap.data();
+      document.getElementById('deliveryPhone').value = data.phone || '';
+    }
+    loadOrders();
+  } else {
+    window.location.href = 'medifast-auth.html';
+  }
+});
+
+// ── LOAD ALL ORDERS ──
+async function loadOrders() {
+  const container = document.getElementById('ordersList');
+  try {
+    const ordersRef = collection(db, 'orders');
+    const q = query(ordersRef, where('patientId', '==', currentUser.uid));
+    const snap = await getDocs(q);
+    const orders = [];
+    snap.forEach(d => orders.push({id: d.id, ...d.data()}));
+
+    if (orders.length === 0) {
+      container.innerHTML = `
+        <div class="empty">
+          <span class="empty-icon">🛒</span>
+          <div class="empty-title">No Orders Yet!</div>
+          <p class="empty-desc">Search for medicines and place your first order. Delivery in 10 minutes!</p>
+          <a href="medifast-patient-search.html" style="
+            display:inline-block;margin-top:1.2rem;
+            background:var(--emerald);color:var(--navy);
+            padding:0.7rem 1.5rem;border-radius:12px;
+            font-weight:700;text-decoration:none;font-size:0.9rem;
+          ">🔍 Search Medicines</a>
+        </div>
+      `;
+      return;
+    }
+
+    // Sort by latest first
+    orders.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+
+    container.innerHTML = orders.map((order, i) => `
+      <div class="order-list-card" style="animation-delay:${i * 0.08}s" onclick="viewOrderDetail('${order.id}')">
+        <div class="order-list-icon" style="background:${getStatusColor(order.status)['bg']};">
+          ${getStatusEmoji(order.status)}
+        </div>
+        <div class="order-list-info">
+          <div class="order-list-id">Order #MF${order.id.slice(-6).toUpperCase()}</div>
+          <div class="order-list-name">${order.pharmacyName || 'Pharmacy'}</div>
+          <div class="order-list-detail">${order.medicines?.map(m => m.name).join(', ') || 'Medicine order'} • ${formatTime(order.createdAt)}</div>
+        </div>
+        <div class="order-list-right">
+          <span class="order-list-amount">₹${order.total || 0}</span>
+          <span class="badge badge-${order.status || 'new'}" style="font-size:0.65rem;">${getStatusLabel(order.status)}</span>
+        </div>
+      </div>
+    `).join('');
+
+  } catch(e) {
+    container.innerHTML = `<div class="empty"><span class="empty-icon">⚠️</span><div class="empty-title">Error loading orders</div><p class="empty-desc">${e.message}</p></div>`;
+  }
+}
+
+// ── VIEW ORDER DETAIL ──
+window.viewOrderDetail = async function(orderId) {
+  currentOrderId = orderId;
+  document.getElementById('ordersListView').style.display = 'none';
+  document.getElementById('orderDetailView').style.display = 'block';
+  document.getElementById('pageTitle').textContent = 'Order Details';
+
+  try {
+    const snap = await getDoc(doc(db, 'orders', orderId));
+    if (!snap.exists()) return;
+    const order = {id: snap.id, ...snap.data()};
+    currentOrderData = order;
+
+    // Update hero
+    document.getElementById('detailOrderId').textContent = `Order #MF${orderId.slice(-6).toUpperCase()}`;
+    document.getElementById('detailAmount').textContent = `₹${order.total || 0}`;
+    document.getElementById('detailPharmacy').textContent = `🏪 ${order.pharmacyName || 'Pharmacy'}`;
+
+    const badge = document.getElementById('detailStatusBadge');
+    badge.textContent = `● ${getStatusLabel(order.status)}`;
+    badge.className = `order-status-badge badge-${order.status || 'new'}`;
+
+    // Tracking steps
+    renderTrackingSteps(order.status);
+
+    // Pharmacy info
+    document.getElementById('detailPharmacyName').textContent = order.pharmacyName || 'Pharmacy';
+    document.getElementById('detailPharmacyDetail').textContent = `📍 ${order.pharmacyAddress || 'Nearby'} • ⚡ ~10 min delivery`;
+    pharmacyPhone = order.pharmacyPhone || '';
+
+    // Items
+    const itemsContainer = document.getElementById('detailItems');
+    itemsContainer.innerHTML = (order.medicines || []).map(m => `
+      <div class="medicine-item">
+        <div class="med-icon">💊</div>
+        <div class="med-info">
+          <div class="med-name">${m.name}</div>
+          <div class="med-detail">Qty: ${m.qty || 1} × ₹${m.price || 0}</div>
+        </div>
+        <div class="med-price">₹${(m.qty || 1) * (m.price || 0)}</div>
+      </div>
+    `).join('');
+
+    document.getElementById('detailSubtotal').textContent = `₹${order.total || 0}`;
+    document.getElementById('detailTotal').textContent = `₹${order.total || 0}`;
+
+    // Hide cancel if delivered or cancelled
+    const cancelSection = document.getElementById('cancelSection');
+    if (order.status === 'delivered' || order.status === 'cancelled') {
+      cancelSection.style.display = 'none';
+    }
+
+    // Real time listener
+    onSnapshot(doc(db, 'orders', orderId), (snap) => {
+      if (snap.exists()) {
+        const updated = snap.data();
+        renderTrackingSteps(updated.status);
+        const badge = document.getElementById('detailStatusBadge');
+        badge.textContent = `● ${getStatusLabel(updated.status)}`;
+        badge.className = `order-status-badge badge-${updated.status || 'new'}`;
+      }
+    });
+
+  } catch(e) {
+    showAlert('error', '⚠️ Error loading order details!');
+  }
+};
+
+// ── RENDER TRACKING STEPS ──
+function renderTrackingSteps(status) {
+  const steps = [
+    { key: 'new', icon: '📱', name: 'Order Placed', desc: 'Your order has been placed successfully!' },
+    { key: 'accepted', icon: '✅', name: 'Order Accepted', desc: 'Pharmacist has accepted your order!' },
+    { key: 'preparing', icon: '💊', name: 'Preparing Medicine', desc: 'Pharmacist is preparing your medicines!' },
+    { key: 'out', icon: '🛵', name: 'Out for Delivery', desc: 'Your order is on the way!' },
+    { key: 'delivered', icon: '🎉', name: 'Delivered!', desc: 'Your medicine has been delivered!' },
+  ];
+
+  const statusOrder = ['new', 'accepted', 'preparing', 'out', 'delivered'];
+  const currentIdx = statusOrder.indexOf(status || 'new');
+
+  const container = document.getElementById('trackingSteps');
+  container.innerHTML = steps.map((step, i) => {
+    const state = i < currentIdx ? 'done' : i === currentIdx ? 'active' : 'pending';
+    const isLast = i === steps.length - 1;
+    return `
+      <div class="tracking-step">
+        <div class="step-indicator">
+          <div class="step-dot ${state}">${state === 'done' ? '✓' : step.icon}</div>
+          ${!isLast ? `<div class="step-line ${state === 'done' ? 'done' : ''}"></div>` : ''}
+        </div>
+        <div class="step-content">
+          <div class="step-name ${state}">${step.name}</div>
+          ${state === 'active' ? `<div class="step-desc">${step.desc}</div>` : ''}
+          ${state === 'done' ? `<div class="step-time">✓ Completed</div>` : ''}
+          ${state === 'pending' ? `<div class="step-time">Waiting...</div>` : ''}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ── PLACE ORDER (called from patient search page) ──
+window.openOrderModal = function(pharmacyId, pharmacyName, pharmacyAddress, medName, medPrice, medCategory) {
+  currentOrderData = { pharmacyId, pharmacyName, pharmacyAddress, medName, medPrice, medCategory };
+  orderQty = 1;
+  orderPrice = parseFloat(medPrice) || 0;
+
+  document.getElementById('modalMedName').textContent = medName;
+  document.getElementById('modalMedDetail').textContent = `${medCategory || 'Medicine'} • ${pharmacyName}`;
+  document.getElementById('modalMedPrice').textContent = `₹${medPrice} per unit`;
+  document.getElementById('qtyDisplay').textContent = '1';
+  document.getElementById('qtyTotal').textContent = `Total: ₹${medPrice}`;
+  document.getElementById('summaryMedTotal').textContent = `₹${medPrice}`;
+  document.getElementById('summaryTotal').textContent = `₹${medPrice}`;
+
+  document.getElementById('orderModal').classList.add('show');
+};
+
+window.changeQty = function(change) {
+  orderQty = Math.max(1, Math.min(20, orderQty + change));
+  const total = orderQty * orderPrice;
+  document.getElementById('qtyDisplay').textContent = orderQty;
+  document.getElementById('qtyTotal').textContent = `Total: ₹${total}`;
+  document.getElementById('summaryMedTotal').textContent = `₹${total}`;
+  document.getElementById('summaryTotal').textContent = `₹${total}`;
+};
+
+window.selectPayment = function(el, method) {
+  document.querySelectorAll('.payment-opt').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedPayment = method;
+};
+
+window.placeOrder = async function() {
+  const address = document.getElementById('deliveryAddress').value.trim();
+  const phone = document.getElementById('deliveryPhone').value.trim();
+  const notes = document.getElementById('orderNotes').value.trim();
+
+  if (!address) return showModalAlert('error', '⚠️ Please enter delivery address!');
+  if (!phone) return showModalAlert('error', '⚠️ Please enter phone number!');
+  if (!currentUser) return showModalAlert('error', '⚠️ Please login first!');
+
+  document.getElementById('placeOrderBtn').disabled = true;
+  document.getElementById('placeOrderSpinner').style.display = 'block';
+  document.getElementById('placeOrderBtnText').textContent = 'Placing Order...';
+
+  try {
+    const total = orderQty * orderPrice;
+    const orderRef = doc(collection(db, 'orders'));
+    const orderId = orderRef.id;
+
+    // Create order in main orders collection
+    await setDoc(orderRef, {
+      orderId,
+      patientId: currentUser.uid,
+      patientName: currentUser.displayName || 'Patient',
+      patientPhone: phone,
+      pharmacyId: currentOrderData.pharmacyId,
+      pharmacyName: currentOrderData.pharmacyName,
+      pharmacyAddress: currentOrderData.pharmacyAddress,
+      medicines: [{
+        name: currentOrderData.medName,
+        category: currentOrderData.medCategory,
+        price: orderPrice,
+        qty: orderQty,
+        total: total
+      }],
+      total,
+      deliveryAddress: address,
+      paymentMethod: selectedPayment,
+      paymentStatus: selectedPayment === 'cod' ? 'pending' : 'pending',
+      notes,
+      status: 'new',
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp()
+    });
+
+    // Also save to pharmacy's orders subcollection
+    await setDoc(doc(db, `pharmacies/${currentOrderData.pharmacyId}/orders`, orderId), {
+      orderId,
+      patientId: currentUser.uid,
+      patientName: currentUser.displayName || 'Patient',
+      patientPhone: phone,
+      medicines: [{
+        name: currentOrderData.medName,
+        price: orderPrice,
+        qty: orderQty
+      }],
+      total,
+      deliveryAddress: address,
+      paymentMethod: selectedPayment,
+      notes,
+      status: 'new',
+      createdAt: serverTimestamp()
+    });
+
+    closeOrderModal();
+    showAlert('success', `✅ Order placed! #MF${orderId.slice(-6).toUpperCase()} — Delivery in ~10 minutes!`);
+    loadOrders();
+
+  } catch(e) {
+    showModalAlert('error', '⚠️ Error placing order: ' + e.message);
+  } finally {
+    document.getElementById('placeOrderBtn').disabled = false;
+    document.getElementById('placeOrderSpinner').style.display = 'none';
+    document.getElementById('placeOrderBtnText').textContent = '🛵 Place Order Now';
+  }
+};
+
+// ── CANCEL ORDER ──
+window.cancelOrder = async function() {
+  if (!currentOrderId) return;
+  if (!confirm('Are you sure you want to cancel this order?')) return;
+  try {
+    await updateDoc(doc(db, 'orders', currentOrderId), {
+      status: 'cancelled', updatedAt: serverTimestamp()
+    });
+    showAlert('success', '✅ Order cancelled!');
+    showOrdersList();
+  } catch(e) {
+    showAlert('error', '⚠️ Error cancelling order!');
+  }
+};
+
+// ── HELPERS ──
+window.callPharmacy = function() {
+  if (pharmacyPhone) window.location.href = `tel:${pharmacyPhone}`;
+  else alert('📞 Pharmacy contact not available yet!');
+};
+
+window.showOrdersList = function() {
+  document.getElementById('ordersListView').style.display = 'block';
+  document.getElementById('orderDetailView').style.display = 'none';
+  document.getElementById('pageTitle').textContent = 'My Orders';
+  loadOrders();
+};
+
+window.closeOrderModal = function() {
+  document.getElementById('orderModal').classList.remove('show');
+};
+
+function getStatusEmoji(status) {
+  const map = { new: '📱', accepted: '✅', preparing: '💊', out: '🛵', delivered: '🎉', cancelled: '❌' };
+  return map[status] || '📱';
+}
+
+function getStatusLabel(status) {
+  const map = { new: 'New', accepted: 'Accepted', preparing: 'Preparing', out: 'Out for Delivery', delivered: 'Delivered', cancelled: 'Cancelled' };
+  return map[status] || 'New';
+}
+
+function getStatusColor(status) {
+  const map = {
+    new: { bg: 'rgba(77,166,255,0.1)' },
+    accepted: { bg: 'rgba(255,209,102,0.1)' },
+    preparing: { bg: 'rgba(167,139,250,0.1)' },
+    out: { bg: 'rgba(251,146,60,0.1)' },
+    delivered: { bg: 'rgba(0,201,127,0.1)' },
+    cancelled: { bg: 'rgba(255,92,92,0.1)' }
+  };
+  return map[status] || map.new;
+}
+
+function formatTime(timestamp) {
+  if (!timestamp) return 'Just now';
+  const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp.seconds * 1000);
+  return date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', hour12: true });
+}
+
+function showAlert(type, msg) {
+  const container = document.getElementById('alertContainer');
+  const div = document.createElement('div');
+  div.className = `alert alert-${type} show`;
+  div.textContent = msg;
+  container.innerHTML = '';
+  container.appendChild(div);
+  setTimeout(() => div.remove(), 5000);
+}
+
+function showModalAlert(type, msg) {
+  const el = document.getElementById('modalAlert');
+  el.className = `alert alert-${type} show`;
+  el.textContent = msg;
+  setTimeout(() => el.classList.remove('show'), 4000);
+}
+
+// Close modal on outside click
+document.getElementById('orderModal').addEventListener('click', function(e) {
+  if (e.target === this) closeOrderModal();
+});
+</script>
+
+</body>
+</html>
