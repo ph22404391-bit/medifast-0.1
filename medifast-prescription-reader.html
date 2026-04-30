@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>MediFast — AI Prescription Reader</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --emerald: #00C97F;
+  --emerald-dark: #00A566;
+  --emerald-light: rgba(0,201,127,0.08);
+  --navy: #0A1628;
+  --navy-mid: #0F1E35;
+  --navy-card: #131F33;
+  --white: #FFFFFF;
+  --gray: rgba(255,255,255,0.5);
+  --gray-dim: rgba(255,255,255,0.06);
+  --border: rgba(255,255,255,0.07);
+  --accent: #FFD166;
+  --red: #FF5C5C;
+  --blue: #4DA6FF;
+  --purple: #A78BFA;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--navy);
+  color: var(--white);
+  min-height: 100vh;
+}
+
+/* ── TOPBAR ── */
+.topbar {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(10,22,40,0.95);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  padding: 0.9rem 1.2rem;
+  display: flex; align-items: center; gap: 0.8rem;
+}
+.back-btn {
+  width: 36px; height: 36px;
+  background: var(--gray-dim); border: 1px solid var(--border);
+  border-radius: 10px; display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 1rem; text-decoration: none; color: white;
+}
+.topbar-title { font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 800; flex: 1; }
+.ai-badge {
+  background: linear-gradient(135deg, rgba(167,139,250,0.2), rgba(77,166,255,0.2));
+  border: 1px solid rgba(167,139,250,0.3);
+  color: var(--purple);
+  font-size: 0.72rem; font-weight: 700;
+  padding: 0.25rem 0.7rem; border-radius: 50px;
+}
+
+/* ── MAIN ── */
+.main { padding: 1.2rem; max-width: 600px; margin: 0 auto; }
+
+/* ── HERO ── */
+.hero {
+  background: linear-gradient(135deg, var(--navy-card), var(--navy-mid));
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 1.5rem;
+  margin-bottom: 1.2rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  width: 250px; height: 250px;
+  background: radial-gradient(circle, rgba(167,139,250,0.12) 0%, transparent 70%);
+  top: -80px; right: -80px;
+  pointer-events: none;
+}
+.hero-icon { font-size: 3rem; display: block; margin-bottom: 0.8rem; }
+.hero-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.3rem; font-weight: 800;
+  margin-bottom: 0.5rem;
+}
+.hero-title span { color: var(--purple); }
+.hero-desc { font-size: 0.85rem; color: var(--gray); line-height: 1.6; }
+
+/* ── UPLOAD ZONE ── */
+.upload-zone {
+  border: 2px dashed rgba(167,139,250,0.3);
+  border-radius: 16px;
+  padding: 2rem 1rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s;
+  background: rgba(167,139,250,0.04);
+  margin-bottom: 1.2rem;
+  position: relative;
+}
+.upload-zone:hover {
+  border-color: var(--purple);
+  background: rgba(167,139,250,0.08);
+  transform: translateY(-2px);
+}
+.upload-zone.drag-over {
+  border-color: var(--purple);
+  background: rgba(167,139,250,0.12);
+  transform: scale(1.02);
+}
+.upload-icon { font-size: 2.5rem; display: block; margin-bottom: 0.8rem; }
+.upload-title { font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 700; margin-bottom: 0.3rem; }
+.upload-desc { font-size: 0.82rem; color: var(--gray); margin-bottom: 1rem; }
+.upload-formats {
+  display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap;
+}
+.format-tag {
+  background: var(--gray-dim); border: 1px solid var(--border);
+  border-radius: 50px; padding: 0.2rem 0.7rem;
+  font-size: 0.72rem; font-weight: 600; color: var(--gray);
+}
+#fileInput { display: none; }
+
+/* ── PREVIEW ── */
+.preview-card {
+  background: var(--navy-card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  margin-bottom: 1.2rem;
+  display: none;
+}
+.preview-header {
+  padding: 0.8rem 1rem;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.preview-title { font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; }
+.preview-img {
+  width: 100%; max-height: 280px;
+  object-fit: contain;
+  background: #050D1A;
+  display: block;
+}
+.preview-file-info {
+  padding: 0.8rem 1rem;
+  background: rgba(0,201,127,0.05);
+  border-top: 1px solid var(--border);
+  display: flex; align-items: center; gap: 0.6rem;
+  font-size: 0.82rem;
+}
+
+/* ── AI PROCESSING ── */
+.ai-processing {
+  background: var(--navy-card);
+  border: 1px solid rgba(167,139,250,0.2);
+  border-radius: 14px;
+  padding: 1.5rem;
+  text-align: center;
+  margin-bottom: 1.2rem;
+  display: none;
+}
+.ai-spinner-wrap { margin-bottom: 1rem; position: relative; display: inline-block; }
+.ai-spinner {
+  width: 60px; height: 60px;
+  border: 3px solid rgba(167,139,250,0.15);
+  border-top-color: var(--purple);
+  border-right-color: var(--blue);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.ai-icon-center {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 1.5rem;
+}
+.ai-status { font-family: 'Syne', sans-serif; font-size: 0.95rem; font-weight: 700; margin-bottom: 0.3rem; }
+.ai-substatus { font-size: 0.78rem; color: var(--gray); }
+.ai-steps { display: flex; flex-direction: column; gap: 0.4rem; margin-top: 1rem; }
+.ai-step {
+  display: flex; align-items: center; gap: 0.5rem;
+  font-size: 0.78rem; color: var(--gray);
+  padding: 0.4rem 0.6rem; border-radius: 8px;
+  transition: all 0.3s;
+}
+.ai-step.active { color: var(--purple); background: rgba(167,139,250,0.08); }
+.ai-step.done { color: var(--emerald); }
+.ai-step-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+
+/* ── RESULTS ── */
+.results-card {
+  background: var(--navy-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  margin-bottom: 1.2rem;
+  display: none;
+}
+.results-header {
+  padding: 1rem 1.1rem;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.results-title { font-family: 'Syne', sans-serif; font-size: 0.95rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; }
+
+/* ── MEDICINE ITEM ── */
+.med-result-item {
+  padding: 0.9rem 1.1rem;
+  border-bottom: 1px solid var(--border);
+  transition: all 0.2s;
+}
+.med-result-item:last-child { border-bottom: none; }
+.med-result-item:hover { background: var(--gray-dim); }
+.med-top { display: flex; align-items: flex-start; gap: 0.7rem; margin-bottom: 0.4rem; }
+.med-icon-wrap {
+  width: 36px; height: 36px;
+  border-radius: 8px; background: var(--emerald-light);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem; flex-shrink: 0;
+}
+.med-name { font-weight: 700; font-size: 0.9rem; margin-bottom: 0.1rem; }
+.med-decoded { font-size: 0.75rem; color: var(--emerald); font-weight: 600; }
+.med-original { font-size: 0.72rem; color: var(--gray); }
+.med-details { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.4rem; }
+.med-tag {
+  font-size: 0.68rem; font-weight: 700; padding: 0.15rem 0.5rem; border-radius: 50px;
+}
+.tag-dose { background: rgba(77,166,255,0.1); color: var(--blue); }
+.tag-freq { background: rgba(255,209,102,0.1); color: var(--accent); }
+.tag-dur { background: rgba(0,201,127,0.1); color: var(--emerald); }
+.tag-food { background: rgba(251,146,60,0.1); color: #FB923C; }
+.tag-rx { background: rgba(255,92,92,0.1); color: var(--red); }
+
+/* ── DOCTOR NOTE ── */
+.doctor-note {
+  padding: 0.9rem 1.1rem;
+  background: rgba(255,209,102,0.05);
+  border-top: 1px solid rgba(255,209,102,0.1);
+}
+.note-title { font-size: 0.78rem; font-weight: 700; color: var(--accent); margin-bottom: 0.3rem; }
+.note-text { font-size: 0.8rem; color: rgba(255,255,255,0.7); line-height: 1.5; }
+
+/* ── ACTION BUTTONS ── */
+.action-buttons {
+  display: flex; flex-direction: column; gap: 0.7rem;
+  margin-bottom: 1.2rem;
+}
+.btn-find-pharmacy {
+  background: var(--emerald); color: var(--navy);
+  border: none; border-radius: 12px; padding: 1rem;
+  font-size: 0.95rem; font-weight: 700; cursor: pointer;
+  font-family: 'DM Sans', sans-serif; transition: all 0.25s;
+  display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+  box-shadow: 0 8px 24px rgba(0,201,127,0.25);
+}
+.btn-find-pharmacy:hover { background: var(--emerald-dark); transform: translateY(-2px); }
+.btn-scan-again {
+  background: var(--gray-dim); border: 1px solid var(--border);
+  color: var(--white); border-radius: 12px; padding: 0.8rem;
+  font-size: 0.88rem; font-weight: 600; cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+}
+
+/* ── PHARMACY RESULTS ── */
+.pharmacy-results {
+  display: none;
+  margin-bottom: 1.2rem;
+}
+.pharmacy-card {
+  background: var(--navy-card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 1rem;
+  margin-bottom: 0.8rem;
+  transition: all 0.25s;
+}
+.pharmacy-card.best { border-color: rgba(0,201,127,0.3); }
+.pharm-top { display: flex; gap: 0.8rem; align-items: center; margin-bottom: 0.7rem; }
+.pharm-avatar { width: 40px; height: 40px; background: var(--emerald-light); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; }
+.pharm-name { font-weight: 700; font-size: 0.9rem; margin-bottom: 0.2rem; }
+.pharm-detail { font-size: 0.75rem; color: var(--gray); }
+.med-availability { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.7rem; }
+.avail-chip {
+  font-size: 0.7rem; font-weight: 700; padding: 0.2rem 0.6rem;
+  border-radius: 50px; display: flex; align-items: center; gap: 0.3rem;
+}
+.avail-yes { background: rgba(0,201,127,0.1); color: var(--emerald); border: 1px solid rgba(0,201,127,0.2); }
+.avail-no { background: rgba(255,92,92,0.1); color: var(--red); border: 1px solid rgba(255,92,92,0.2); }
+.pharm-actions { display: flex; gap: 0.5rem; }
+.btn-order { flex: 1; background: var(--emerald); color: var(--navy); border: none; border-radius: 9px; padding: 0.6rem; font-size: 0.82rem; font-weight: 700; cursor: pointer; font-family: 'DM Sans', sans-serif; }
+.btn-call { background: var(--gray-dim); border: 1px solid var(--border); color: white; border-radius: 9px; padding: 0.6rem 0.8rem; font-size: 0.82rem; cursor: pointer; }
+
+/* ── HOW IT WORKS ── */
+.how-it-works {
+  background: var(--navy-card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 1.1rem;
+  margin-bottom: 1.2rem;
+}
+.how-title { font-family: 'Syne', sans-serif; font-size: 0.9rem; font-weight: 700; margin-bottom: 0.9rem; }
+.how-step { display: flex; gap: 0.8rem; align-items: flex-start; margin-bottom: 0.7rem; }
+.how-step:last-child { margin-bottom: 0; }
+.how-num { width: 28px; height: 28px; background: var(--emerald-light); border: 1px solid rgba(0,201,127,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.78rem; font-weight: 800; color: var(--emerald); flex-shrink: 0; }
+.how-text { font-size: 0.82rem; color: rgba(255,255,255,0.75); line-height: 1.5; padding-top: 0.25rem; }
+
+/* ── ALERT ── */
+.alert { padding: 0.8rem 1rem; border-radius: 10px; font-size: 0.82rem; margin-bottom: 1rem; display: none; align-items: center; gap: 0.5rem; }
+.alert.show { display: flex; }
+.alert-error { background: rgba(255,92,92,0.1); border: 1px solid rgba(255,92,92,0.2); color: var(--red); }
+.alert-success { background: rgba(0,201,127,0.1); border: 1px solid rgba(0,201,127,0.2); color: var(--emerald); }
+.alert-info { background: rgba(77,166,255,0.1); border: 1px solid rgba(77,166,255,0.2); color: var(--blue); }
+
+/* ── BOTTOM NAV ── */
+.bottom-nav {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: rgba(10,22,40,0.95); backdrop-filter: blur(20px);
+  border-top: 1px solid var(--border);
+  padding: 0.7rem 0 0.5rem;
+  display: flex; justify-content: space-around; z-index: 100;
+}
+.nav-item { display: flex; flex-direction: column; align-items: center; gap: 0.2rem; text-decoration: none; padding: 0.3rem 1rem; }
+.nav-item .nav-icon { font-size: 1.3rem; }
+.nav-item .nav-label { font-size: 0.65rem; font-weight: 600; color: rgba(255,255,255,0.4); }
+.nav-item.active .nav-label { color: var(--emerald); }
+
+.bottom-spacer { height: 80px; }
+
+@keyframes fadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <a href="medifast-patient-search.html" class="back-btn">←</a>
+  <div class="topbar-title">🤖 AI Prescription Reader</div>
+  <span class="ai-badge">✨ AI Powered</span>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <div id="alertBox" class="alert"></div>
+
+  <!-- HERO -->
+  <div class="hero">
+    <span class="hero-icon">📋</span>
+    <div class="hero-title">AI Reads Your <span>Prescription</span></div>
+    <p class="hero-desc">Upload any prescription — handwritten or printed. Our AI decodes medical shortforms and finds nearby pharmacies with all your medicines!</p>
+  </div>
+
+  <!-- UPLOAD ZONE -->
+  <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+    <input type="file" id="fileInput" accept="image/*,.pdf" onchange="handleFileSelect(this)"/>
+    <span class="upload-icon">📸</span>
+    <div class="upload-title">Upload Prescription</div>
+    <p class="upload-desc">Take a photo or upload from gallery — any handwriting, any language!</p>
+    <div class="upload-formats">
+      <span class="format-tag">📷 Photo</span>
+      <span class="format-tag">🖼️ JPG/PNG</span>
+      <span class="format-tag">📄 PDF</span>
+      <span class="format-tag">✍️ Handwritten</span>
+      <span class="format-tag">🖨️ Printed</span>
+    </div>
+  </div>
+
+  <!-- IMAGE PREVIEW -->
+  <div class="preview-card" id="previewCard">
+    <div class="preview-header">
+      <div class="preview-title">📋 Prescription Preview</div>
+      <button onclick="resetAll()" style="background:rgba(255,92,92,0.1);border:1px solid rgba(255,92,92,0.2);color:var(--red);border-radius:8px;padding:0.3rem 0.7rem;font-size:0.75rem;cursor:pointer;">✕ Remove</button>
+    </div>
+    <img id="previewImg" class="preview-img" alt="Prescription preview"/>
+    <div class="preview-file-info">
+      <span>📄</span>
+      <span id="fileInfoText">prescription.jpg</span>
+      <button onclick="analyzePresc ription()" style="margin-left:auto;background:var(--purple);color:white;border:none;border-radius:8px;padding:0.4rem 0.9rem;font-size:0.8rem;font-weight:700;cursor:pointer;">🤖 Read with AI →</button>
+    </div>
+  </div>
+
+  <!-- AI PROCESSING -->
+  <div class="ai-processing" id="aiProcessing">
+    <div class="ai-spinner-wrap">
+      <div class="ai-spinner"></div>
+      <div class="ai-icon-center">🤖</div>
+    </div>
+    <div class="ai-status" id="aiStatus">Reading Prescription...</div>
+    <div class="ai-substatus" id="aiSubStatus">AI is analyzing your prescription</div>
+    <div class="ai-steps">
+      <div class="ai-step active" id="step1"><div class="ai-step-dot"></div>📸 Reading prescription image...</div>
+      <div class="ai-step" id="step2"><div class="ai-step-dot"></div>🔍 Detecting medicine names...</div>
+      <div class="ai-step" id="step3"><div class="ai-step-dot"></div>🔤 Decoding medical shortforms...</div>
+      <div class="ai-step" id="step4"><div class="ai-step-dot"></div>💊 Identifying dosage & frequency...</div>
+      <div class="ai-step" id="step5"><div class="ai-step-dot"></div>✅ Preparing results...</div>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div class="results-card" id="resultsCard">
+    <div class="results-header">
+      <div class="results-title">💊 Medicines Found</div>
+      <span id="medCount" style="font-size:0.78rem;color:var(--gray);"></span>
+    </div>
+    <div id="medicinesList"></div>
+    <div class="doctor-note" id="doctorNote" style="display:none;">
+      <div class="note-title">⚕️ Doctor's Instructions</div>
+      <div class="note-text" id="doctorNoteText"></div>
+    </div>
+  </div>
+
+  <!-- ACTION BUTTONS -->
+  <div class="action-buttons" id="actionButtons" style="display:none;">
+    <button class="btn-find-pharmacy" onclick="findPharmacies()">
+      🏪 Find Pharmacies with All Medicines
+    </button>
+    <button class="btn-scan-again" onclick="resetAll()">
+      📸 Scan Another Prescription
+    </button>
+  </div>
+
+  <!-- PHARMACY RESULTS -->
+  <div class="pharmacy-results" id="pharmacyResults"></div>
+
+  <!-- HOW IT WORKS -->
+  <div class="how-it-works" id="howItWorks">
+    <div class="how-title">✨ How AI Prescription Reader Works</div>
+    <div class="how-step">
+      <div class="how-num">1</div>
+      <div class="how-text">📸 <strong>Upload any prescription</strong> — handwritten notes, printed prescriptions, even blurry photos!</div>
+    </div>
+    <div class="how-step">
+      <div class="how-num">2</div>
+      <div class="how-text">🤖 <strong>AI reads & decodes</strong> — understands medical shortforms like Tab, BD, TDS, OD, Amox, PCM and more!</div>
+    </div>
+    <div class="how-step">
+      <div class="how-num">3</div>
+      <div class="how-text">💊 <strong>Shows all medicines</strong> in simple language with dosage, frequency and instructions!</div>
+    </div>
+    <div class="how-step">
+      <div class="how-num">4</div>
+      <div class="how-text">🏪 <strong>Finds best pharmacy</strong> near you with ALL your prescribed medicines available!</div>
+    </div>
+    <div class="how-step">
+      <div class="how-num">5</div>
+      <div class="how-text">🛵 <strong>Order & deliver</strong> — all medicines delivered to your door in ~10 minutes!</div>
+    </div>
+  </div>
+
+  <div class="bottom-spacer"></div>
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+  <a class="nav-item" href="medifast-patient-search.html">
+    <span class="nav-icon">🏠</span><span class="nav-label">Home</span>
+  </a>
+  <a class="nav-item" href="medifast-maps.html">
+    <span class="nav-icon">🗺️</span><span class="nav-label">Map</span>
+  </a>
+  <a class="nav-item" href="medifast-order-tracking.html">
+    <span class="nav-icon">🛒</span><span class="nav-label">Orders</span>
+  </a>
+  <a class="nav-item" href="medifast-healthcare.html">
+    <span class="nav-icon">🏥</span><span class="nav-label">Health</span>
+  </a>
+  <a class="nav-item active" href="#">
+    <span class="nav-icon">📋</span><span class="nav-label">Rx Reader</span>
+  </a>
+</nav>
+
+<script>
+let selectedFile = null;
+let decodedMedicines = [];
+
+// ── FILE SELECT ──
+function handleFileSelect(input) {
+  const file = input.files[0];
+  if (!file) return;
+  selectedFile = file;
+
+  const previewCard = document.getElementById('previewCard');
+  const previewImg = document.getElementById('previewImg');
+  const fileInfoText = document.getElementById('fileInfoText');
+
+  // Show preview
+  if (file.type.startsWith('image/')) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      previewImg.src = e.target.result;
+      previewCard.style.display = 'block';
+    };
+    reader.readAsDataURL(file);
+  } else {
+    previewImg.src = '';
+    previewImg.style.display = 'none';
+    previewCard.style.display = 'block';
+  }
+
+  fileInfoText.textContent = `${file.name} • ${(file.size/1024).toFixed(1)} KB`;
+  document.getElementById('uploadZone').style.display = 'none';
+  document.getElementById('howItWorks').style.display = 'none';
+
+  // Auto analyze after 500ms
+  setTimeout(() => analyzePrescription(), 500);
+}
+
+// ── ANALYZE PRESCRIPTION WITH AI ──
+async function analyzePrescription() {
+  if (!selectedFile) return;
+
+  // Show processing
+  document.getElementById('previewCard').style.display = 'none';
+  document.getElementById('aiProcessing').style.display = 'block';
+  document.getElementById('resultsCard').style.display = 'none';
+  document.getElementById('actionButtons').style.display = 'none';
+  document.getElementById('pharmacyResults').style.display = 'none';
+
+  // Animate steps
+  animateSteps();
+
+  try {
+    // Convert image to base64
+    const base64 = await fileToBase64(selectedFile);
+
+    // Call Claude AI API
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{
+          role: 'user',
+          content: [
+            {
+              type: 'image',
+              source: {
+                type: 'base64',
+                media_type: selectedFile.type || 'image/jpeg',
+                data: base64
+              }
+            },
+            {
+              type: 'text',
+              text: `You are a medical prescription decoder for India. Analyze this prescription image carefully.
+
+Extract ALL medicines and decode ALL medical shortforms. Return ONLY a valid JSON object, no other text, no markdown.
+
+Medical shortforms to decode:
+- Tab/Cap/Syp/Inj/Drop/Cream/Oint = Tablet/Capsule/Syrup/Injection/Eye Drop/Cream/Ointment
+- OD=Once daily, BD/BID=Twice daily, TDS/TID=Three times daily, QID=Four times daily, SOS=When needed, HS=At bedtime
+- AC=Before food, PC=After food, CC=With food
+- PCM=Paracetamol, Amox=Amoxicillin, Azithro=Azithromycin, Cetiriz=Cetirizine, Pantop=Pantoprazole, Met=Metformin, Atorva=Atorvastatin, Aspirin/ASA=Aspirin, Cefixime/Cefpodox=Cefixime, Ibu=Ibuprofen, Dolo=Paracetamol 650mg
+- BD x 5d = twice daily for 5 days
+- mg=milligram, ml=milliliter, mcg=microgram
+
+Return this exact JSON format:
+{
+  "medicines": [
+    {
+      "original": "exact text from prescription",
+      "name": "full medicine name",
+      "type": "Tablet/Capsule/Syrup/etc",
+      "dose": "500mg/5ml/etc",
+      "frequency": "Once daily/Twice daily/etc",
+      "duration": "5 days/1 week/etc",
+      "timing": "After food/Before food/With food/At bedtime",
+      "instructions": "any special instructions",
+      "rxRequired": true/false
+    }
+  ],
+  "doctorNotes": "any general instructions from doctor",
+  "doctorName": "doctor name if visible",
+  "patientName": "patient name if visible",
+  "confidence": "high/medium/low"
+}
+
+If you cannot read the prescription clearly, still try your best and set confidence to low.
+If no prescription is found in image, return {"medicines":[],"error":"No prescription found"}`
+            }
+          ]
+        }]
+      })
+    });
+
+    const data = await response.json();
+
+    if (data.error) throw new Error(data.error.message || 'AI Error');
+
+    const text = data.content[0].text;
+
+    // Parse JSON response
+    let result;
+    try {
+      const clean = text.replace(/```json|```/g, '').trim();
+      result = JSON.parse(clean);
+    } catch(e) {
+      // Try to extract JSON from text
+      const jsonMatch = text.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        result = JSON.parse(jsonMatch[0]);
+      } else {
+        throw new Error('Could not parse AI response');
+      }
+    }
+
+    // Hide processing
+    document.getElementById('aiProcessing').style.display = 'none';
+
+    if (!result.medicines || result.medicines.length === 0) {
+      showAlert('error', '⚠️ Could not read prescription clearly. Please try with a clearer photo!');
+      resetAll();
+      return;
+    }
+
+    decodedMedicines = result.medicines;
+    showResults(result);
+
+  } catch(e) {
+    document.getElementById('aiProcessing').style.display = 'none';
+    console.error('AI Error:', e);
+
+    // Fallback — show manual entry
+    showManualEntry();
+  }
+}
+
+// ── SHOW RESULTS ──
+function showResults(result) {
+  const medicines = result.medicines;
+  decodedMedicines = medicines;
+
+  document.getElementById('resultsCard').style.display = 'block';
+  document.getElementById('actionButtons').style.display = 'flex';
+  document.getElementById('medCount').textContent = `${medicines.length} medicine${medicines.length > 1 ? 's' : ''} found`;
+
+  // Render medicines
+  const container = document.getElementById('medicinesList');
+  container.innerHTML = medicines.map((med, i) => `
+    <div class="med-result-item" style="animation:fadeUp 0.4s ease ${i * 0.1}s both;">
+      <div class="med-top">
+        <div class="med-icon-wrap">${getMedIcon(med.type)}</div>
+        <div style="flex:1;">
+          <div class="med-name">${med.name}</div>
+          <div class="med-decoded">${med.type} ${med.dose || ''}</div>
+          ${med.original ? `<div class="med-original">Original: "${med.original}"</div>` : ''}
+        </div>
+        ${med.rxRequired ? '<span style="font-size:0.65rem;background:rgba(255,92,92,0.1);color:var(--red);border:1px solid rgba(255,92,92,0.2);padding:0.15rem 0.4rem;border-radius:50px;font-weight:700;">Rx</span>' : ''}
+      </div>
+      <div class="med-details">
+        ${med.frequency ? `<span class="med-tag tag-freq">🕐 ${med.frequency}</span>` : ''}
+        ${med.duration ? `<span class="med-tag tag-dur">📅 ${med.duration}</span>` : ''}
+        ${med.timing ? `<span class="med-tag tag-food">🍽️ ${med.timing}</span>` : ''}
+        ${med.dose ? `<span class="med-tag tag-dose">💊 ${med.dose}</span>` : ''}
+      </div>
+      ${med.instructions ? `<div style="font-size:0.75rem;color:rgba(255,255,255,0.5);margin-top:0.4rem;padding-top:0.4rem;border-top:1px solid var(--border);">📝 ${med.instructions}</div>` : ''}
+    </div>
+  `).join('');
+
+  // Doctor notes
+  if (result.doctorNotes) {
+    document.getElementById('doctorNote').style.display = 'block';
+    document.getElementById('doctorNoteText').textContent = result.doctorNotes;
+  }
+
+  // Show confidence warning if low
+  if (result.confidence === 'low') {
+    showAlert('info', '⚠️ Low confidence reading. Please verify medicines with your pharmacist!');
+  } else {
+    showAlert('success', `✅ Successfully decoded ${medicines.length} medicines from prescription!`);
+  }
+
+  document.getElementById('howItWorks').style.display = 'none';
+}
+
+// ── FIND PHARMACIES ──
+window.findPharmacies = function() {
+  const pharmacyResults = document.getElementById('pharmacyResults');
+  pharmacyResults.style.display = 'block';
+  pharmacyResults.scrollIntoView({ behavior: 'smooth' });
+
+  const medNames = decodedMedicines.map(m => m.name);
+
+  pharmacyResults.innerHTML = `
+    <div style="font-family:'Syne',sans-serif;font-size:0.95rem;font-weight:700;margin-bottom:0.8rem;">
+      🏪 Nearby Pharmacies
+    </div>
+
+    <!-- Best Match -->
+    <div class="pharmacy-card best">
+      <div style="font-size:0.68rem;font-weight:700;color:var(--emerald);margin-bottom:0.6rem;">⚡ BEST MATCH — Has All ${medNames.length} Medicines!</div>
+      <div class="pharm-top">
+        <div class="pharm-avatar">🏪</div>
+        <div>
+          <div class="pharm-name">Sri Sai Medical Store</div>
+          <div class="pharm-detail">📍 0.4 km away • ⚡ ~8 min delivery • ⭐ 4.8</div>
+        </div>
+      </div>
+      <div class="med-availability">
+        ${medNames.map(m => `
+          <span class="avail-chip avail-yes">✓ ${m.split(' ').slice(0,2).join(' ')}</span>
+        `).join('')}
+      </div>
+      <div class="pharm-actions">
+        <button class="btn-order" onclick="orderAllMedicines('Sri Sai Medical Store')">🛵 Order All Medicines</button>
+        <button class="btn-call">📞 Call</button>
+      </div>
+    </div>
+
+    <!-- View on Map -->
+    <button onclick="window.location.href='medifast-maps.html'" style="
+      width:100%;background:rgba(77,166,255,0.1);
+      border:1px solid rgba(77,166,255,0.2);color:var(--blue);
+      border-radius:12px;padding:0.8rem;font-size:0.85rem;
+      font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;
+    ">🗺️ View All Pharmacies on Map</button>
+  `;
+};
+
+window.orderAllMedicines = function(pharmacyName) {
+  sessionStorage.setItem('prescriptionOrder', JSON.stringify({
+    medicines: decodedMedicines,
+    pharmacyName: pharmacyName
+  }));
+  window.location.href = 'medifast-order-tracking.html';
+};
+
+// ── MANUAL ENTRY FALLBACK ──
+function showManualEntry() {
+  document.getElementById('uploadZone').style.display = 'block';
+  showAlert('error', '⚠️ Could not read prescription automatically. Please try a clearer photo or enter medicines manually below!');
+}
+
+// ── ANIMATE STEPS ──
+function animateSteps() {
+  const steps = ['step1', 'step2', 'step3', 'step4', 'step5'];
+  const messages = [
+    ['Reading prescription image...', 'Analyzing visual content'],
+    ['Detecting medicine names...', 'Looking for drug names'],
+    ['Decoding medical shortforms...', 'BD, TDS, OD, PCM and more'],
+    ['Identifying dosage & frequency...', 'mg, ml, timing details'],
+    ['Preparing results...', 'Almost done!']
+  ];
+
+  let currentStep = 0;
+  const interval = setInterval(() => {
+    if (currentStep > 0) {
+      document.getElementById(steps[currentStep - 1]).className = 'ai-step done';
+      document.getElementById(steps[currentStep - 1]).querySelector('.ai-step-dot').style.background = 'var(--emerald)';
+    }
+    if (currentStep < steps.length) {
+      document.getElementById(steps[currentStep]).className = 'ai-step active';
+      document.getElementById('aiStatus').textContent = messages[currentStep][0];
+      document.getElementById('aiSubStatus').textContent = messages[currentStep][1];
+      currentStep++;
+    } else {
+      clearInterval(interval);
+    }
+  }, 800);
+}
+
+// ── HELPERS ──
+function getMedIcon(type) {
+  const icons = { 'Tablet': '💊', 'Capsule': '💉', 'Syrup': '🍶', 'Injection': '💉', 'Cream': '🧴', 'Eye Drop': '👁️', 'Drop': '💧', 'Ointment': '🧴' };
+  return icons[type] || '💊';
+}
+
+async function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result.split(',')[1]);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+function showAlert(type, msg) {
+  const el = document.getElementById('alertBox');
+  el.className = `alert alert-${type} show`;
+  el.textContent = msg;
+  setTimeout(() => el.classList.remove('show'), 5000);
+}
+
+function resetAll() {
+  selectedFile = null;
+  decodedMedicines = [];
+  document.getElementById('fileInput').value = '';
+  document.getElementById('uploadZone').style.display = 'block';
+  document.getElementById('previewCard').style.display = 'none';
+  document.getElementById('aiProcessing').style.display = 'none';
+  document.getElementById('resultsCard').style.display = 'none';
+  document.getElementById('actionButtons').style.display = 'none';
+  document.getElementById('pharmacyResults').style.display = 'none';
+  document.getElementById('howItWorks').style.display = 'block';
+  document.getElementById('previewImg').style.display = 'block';
+  document.getElementById('doctorNote').style.display = 'none';
+}
+
+// ── DRAG AND DROP ──
+const uploadZone = document.getElementById('uploadZone');
+uploadZone.addEventListener('dragover', (e) => { e.preventDefault(); uploadZone.classList.add('drag-over'); });
+uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag-over'));
+uploadZone.addEventListener('drop', (e) => {
+  e.preventDefault();
+  uploadZone.classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if (file) {
+    selectedFile = file;
+    const dt = new DataTransfer();
+    dt.items.add(file);
+    document.getElementById('fileInput').files = dt.files;
+    handleFileSelect(document.getElementById('fileInput'));
+  }
+});
+</script>
+
+</body>
+</html>
