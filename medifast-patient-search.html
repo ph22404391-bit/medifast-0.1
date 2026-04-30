@@ -1,0 +1,1689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>MediFast — Find Your Medicine</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --emerald: #00C97F;
+  --emerald-dark: #00A566;
+  --emerald-light: rgba(0,201,127,0.08);
+  --navy: #0A1628;
+  --navy-mid: #0F1E35;
+  --navy-card: #131F33;
+  --white: #FFFFFF;
+  --gray: rgba(255,255,255,0.5);
+  --gray-dim: rgba(255,255,255,0.08);
+  --accent: #FFD166;
+  --red: #FF5C5C;
+  --blue: #4DA6FF;
+  --border: rgba(255,255,255,0.07);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--navy);
+  color: var(--white);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── TOP NAV ── */
+.topbar {
+  position: sticky;
+  top: 0; z-index: 100;
+  background: rgba(10,22,40,0.92);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  padding: 0.9rem 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.topbar-logo {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 1.2rem;
+  color: var(--white);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.topbar-logo span { color: var(--emerald); }
+
+.topbar-location {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: var(--gray-dim);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.4rem 0.8rem;
+  font-size: 0.78rem;
+  color: var(--gray);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+.topbar-location:hover { border-color: rgba(0,201,127,0.3); color: var(--white); }
+.topbar-location .pin { color: var(--emerald); font-size: 0.9rem; }
+
+.topbar-avatar {
+  margin-left: auto;
+  width: 36px; height: 36px;
+  background: linear-gradient(135deg, var(--emerald), #00A0FF);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+/* ── SEARCH HERO ── */
+.search-hero {
+  background: linear-gradient(160deg, #0F1E35 0%, #0A1628 60%);
+  padding: 2rem 1.5rem 1.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.search-hero::before {
+  content: '';
+  position: absolute;
+  width: 300px; height: 300px;
+  background: radial-gradient(circle, rgba(0,201,127,0.12) 0%, transparent 70%);
+  top: -80px; right: -50px;
+  pointer-events: none;
+}
+
+.search-greeting {
+  font-size: 0.82rem;
+  color: var(--gray);
+  margin-bottom: 0.2rem;
+}
+
+.search-heading {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin-bottom: 1.2rem;
+  letter-spacing: -0.5px;
+}
+.search-heading span { color: var(--emerald); }
+
+/* Search Box */
+.search-box-wrap {
+  position: relative;
+  margin-bottom: 1rem;
+}
+
+.search-box {
+  width: 100%;
+  background: rgba(255,255,255,0.06);
+  border: 1.5px solid rgba(255,255,255,0.12);
+  border-radius: 14px;
+  padding: 1rem 1rem 1rem 3rem;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 1rem;
+  color: var(--white);
+  outline: none;
+  transition: all 0.25s;
+}
+
+.search-box::placeholder { color: rgba(255,255,255,0.35); }
+
+.search-box:focus {
+  border-color: var(--emerald);
+  background: rgba(0,201,127,0.06);
+  box-shadow: 0 0 0 4px rgba(0,201,127,0.1);
+}
+
+.search-icon {
+  position: absolute;
+  left: 1rem; top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.1rem;
+  pointer-events: none;
+}
+
+.search-mic {
+  position: absolute;
+  right: 1rem; top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.1rem;
+  cursor: pointer;
+  opacity: 0.5;
+  transition: opacity 0.2s;
+}
+.search-mic:hover { opacity: 1; }
+
+/* Upload Rx */
+.rx-upload-btn {
+  width: 100%;
+  background: rgba(255,209,102,0.08);
+  border: 1.5px dashed rgba(255,209,102,0.3);
+  border-radius: 12px;
+  padding: 0.75rem 1rem;
+  color: var(--accent);
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all 0.25s;
+}
+.rx-upload-btn:hover {
+  background: rgba(255,209,102,0.12);
+  border-color: rgba(255,209,102,0.5);
+}
+
+/* ── SUGGESTIONS / AUTOCOMPLETE ── */
+.suggestions {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  left: 0; right: 0;
+  background: var(--navy-card);
+  border: 1px solid rgba(0,201,127,0.2);
+  border-radius: 14px;
+  overflow: hidden;
+  z-index: 200;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  display: none;
+}
+
+.search-box:focus ~ .suggestions,
+.suggestions:hover { display: block; }
+
+.suggestion-item {
+  padding: 0.75rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  cursor: pointer;
+  transition: background 0.15s;
+  border-bottom: 1px solid var(--border);
+}
+.suggestion-item:last-child { border-bottom: none; }
+.suggestion-item:hover { background: var(--emerald-light); }
+
+.sug-icon { font-size: 1.1rem; }
+.sug-name { font-size: 0.9rem; font-weight: 600; }
+.sug-type { font-size: 0.75rem; color: var(--gray); }
+.sug-arrow { margin-left: auto; color: var(--gray); font-size: 0.8rem; }
+
+/* ── FILTER CHIPS ── */
+.filter-strip {
+  padding: 1rem 1.5rem;
+  display: flex;
+  gap: 0.6rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+  border-bottom: 1px solid var(--border);
+}
+.filter-strip::-webkit-scrollbar { display: none; }
+
+.chip {
+  background: var(--gray-dim);
+  border: 1px solid var(--border);
+  border-radius: 50px;
+  padding: 0.4rem 1rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.chip:hover { border-color: rgba(0,201,127,0.3); color: var(--emerald); }
+.chip.active {
+  background: rgba(0,201,127,0.12);
+  border-color: var(--emerald);
+  color: var(--emerald);
+}
+
+/* ── MAIN LAYOUT ── */
+.main {
+  padding: 1.2rem 1.5rem;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+/* ── SECTION HEADER ── */
+.sec-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+.sec-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+}
+.sec-link {
+  font-size: 0.78rem;
+  color: var(--emerald);
+  cursor: pointer;
+  text-decoration: none;
+}
+
+/* ── QUICK CATEGORIES ── */
+.categories {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.8rem;
+  margin-bottom: 2rem;
+}
+
+.cat-card {
+  background: var(--navy-card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 1rem 0.5rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.25s;
+}
+.cat-card:hover {
+  border-color: rgba(0,201,127,0.3);
+  transform: translateY(-3px);
+  background: rgba(0,201,127,0.05);
+}
+.cat-emoji { font-size: 1.6rem; display: block; margin-bottom: 0.4rem; }
+.cat-name { font-size: 0.7rem; font-weight: 600; color: rgba(255,255,255,0.7); }
+
+/* ── NEARBY PHARMACIES ── */
+.pharmacy-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.pharmacy-card {
+  background: var(--navy-card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 1.2rem;
+  cursor: pointer;
+  transition: all 0.3s;
+  position: relative;
+  overflow: hidden;
+}
+
+.pharmacy-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--emerald), #00A0FF);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.pharmacy-card:hover {
+  border-color: rgba(0,201,127,0.25);
+  transform: translateY(-3px);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+}
+.pharmacy-card:hover::before { opacity: 1; }
+
+.pharmacy-card.featured {
+  border-color: rgba(0,201,127,0.2);
+  background: linear-gradient(135deg, rgba(0,201,127,0.05), var(--navy-card));
+}
+
+.pharm-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.pharm-avatar {
+  width: 48px; height: 48px;
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.4rem;
+  flex-shrink: 0;
+  background: rgba(0,201,127,0.1);
+  border: 1px solid rgba(0,201,127,0.15);
+}
+
+.pharm-info { flex: 1; min-width: 0; }
+
+.pharm-name {
+  font-family: 'Syne', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 0.2rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pharm-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+}
+
+.pharm-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.2rem 0.6rem;
+  border-radius: 50px;
+}
+
+.badge-open {
+  background: rgba(0,201,127,0.12);
+  color: var(--emerald);
+}
+
+.badge-dist {
+  background: rgba(77,166,255,0.1);
+  color: var(--blue);
+}
+
+.badge-time {
+  background: rgba(255,209,102,0.1);
+  color: var(--accent);
+}
+
+.pharm-rating {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--accent);
+  margin-left: auto;
+}
+
+/* Medicine availability chips */
+.med-availability {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.med-chip {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.35rem 0.7rem;
+  font-size: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.med-chip.available {
+  border-color: rgba(0,201,127,0.2);
+  background: rgba(0,201,127,0.05);
+}
+
+.med-chip .med-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.available .med-dot { background: var(--emerald); }
+.unavailable .med-dot { background: var(--red); }
+
+.med-chip .med-price {
+  font-weight: 700;
+  color: var(--emerald);
+  margin-left: 0.3rem;
+}
+
+.pharm-actions {
+  display: flex;
+  gap: 0.6rem;
+}
+
+.btn-order {
+  flex: 1;
+  background: var(--emerald);
+  color: var(--navy);
+  border: none;
+  border-radius: 10px;
+  padding: 0.65rem 1rem;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+}
+.btn-order:hover { background: var(--emerald-dark); transform: translateY(-1px); }
+
+.btn-call {
+  background: var(--gray-dim);
+  border: 1px solid var(--border);
+  color: var(--white);
+  border-radius: 10px;
+  padding: 0.65rem 0.9rem;
+  font-size: 0.88rem;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: all 0.2s;
+}
+.btn-call:hover { border-color: rgba(0,201,127,0.3); background: rgba(0,201,127,0.05); }
+
+/* ── SEARCH RESULTS ── */
+.results-section { margin-bottom: 2rem; }
+
+.result-card {
+  background: var(--navy-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1.1rem;
+  margin-bottom: 0.8rem;
+  cursor: pointer;
+  transition: all 0.25s;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.result-card:hover {
+  border-color: rgba(0,201,127,0.25);
+  transform: translateX(4px);
+}
+
+.result-icon {
+  width: 44px; height: 44px;
+  background: var(--emerald-light);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+.result-info { flex: 1; min-width: 0; }
+.result-name {
+  font-family: 'Syne', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin-bottom: 0.2rem;
+}
+.result-detail {
+  font-size: 0.75rem;
+  color: var(--gray);
+}
+
+.result-price {
+  text-align: right;
+  flex-shrink: 0;
+}
+.price-val {
+  font-family: 'Syne', sans-serif;
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--emerald);
+  display: block;
+}
+.price-mrp {
+  font-size: 0.7rem;
+  color: var(--gray);
+  text-decoration: line-through;
+}
+.price-off {
+  font-size: 0.7rem;
+  color: var(--accent);
+  font-weight: 700;
+}
+
+/* ── EMERGENCY BUTTON ── */
+.emergency-strip {
+  background: linear-gradient(135deg, rgba(255,92,92,0.1), rgba(255,92,92,0.05));
+  border: 1px solid rgba(255,92,92,0.25);
+  border-radius: 16px;
+  padding: 1rem 1.2rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  cursor: pointer;
+  transition: all 0.25s;
+}
+.emergency-strip:hover {
+  background: linear-gradient(135deg, rgba(255,92,92,0.15), rgba(255,92,92,0.08));
+  transform: scale(1.01);
+}
+.emergency-icon { font-size: 1.8rem; }
+.emergency-text .em-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--red);
+}
+.emergency-text .em-sub {
+  font-size: 0.75rem;
+  color: rgba(255,255,255,0.5);
+}
+.emergency-arrow { margin-left: auto; color: var(--red); font-size: 1.2rem; }
+
+/* ── BOTTOM NAV ── */
+.bottom-nav {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  background: rgba(10,22,40,0.95);
+  backdrop-filter: blur(20px);
+  border-top: 1px solid var(--border);
+  padding: 0.7rem 0 0.5rem;
+  display: flex;
+  justify-content: space-around;
+  z-index: 100;
+}
+
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  cursor: pointer;
+  padding: 0.3rem 1rem;
+  border-radius: 10px;
+  transition: all 0.2s;
+  text-decoration: none;
+}
+
+.nav-item .nav-icon { font-size: 1.3rem; }
+.nav-item .nav-label {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: rgba(255,255,255,0.4);
+}
+.nav-item.active .nav-label { color: var(--emerald); }
+.nav-item.active .nav-icon { filter: drop-shadow(0 0 6px rgba(0,201,127,0.6)); }
+
+/* Spacer for bottom nav */
+.bottom-spacer { height: 80px; }
+
+/* ── FEATURED TAG ── */
+.featured-tag {
+  position: absolute;
+  top: 1rem; right: 1rem;
+  background: linear-gradient(135deg, var(--emerald), #00A0FF);
+  color: var(--navy);
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 0.2rem 0.6rem;
+  border-radius: 50px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+/* ── DISCOUNT BANNER ── */
+.discount-banner {
+  background: linear-gradient(135deg, rgba(255,209,102,0.1), rgba(255,209,102,0.05));
+  border: 1px solid rgba(255,209,102,0.2);
+  border-radius: 14px;
+  padding: 1rem 1.2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin-bottom: 1.5rem;
+  cursor: pointer;
+}
+.discount-banner .disc-text .disc-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+.discount-banner .disc-text .disc-sub {
+  font-size: 0.75rem;
+  color: rgba(255,255,255,0.5);
+}
+
+/* Animations */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.pharmacy-card { animation: fadeUp 0.5s ease both; }
+.pharmacy-card:nth-child(1) { animation-delay: 0.1s; }
+.pharmacy-card:nth-child(2) { animation-delay: 0.2s; }
+.pharmacy-card:nth-child(3) { animation-delay: 0.3s; }
+
+.result-card { animation: fadeUp 0.4s ease both; }
+.result-card:nth-child(1) { animation-delay: 0.05s; }
+.result-card:nth-child(2) { animation-delay: 0.1s; }
+.result-card:nth-child(3) { animation-delay: 0.15s; }
+
+/* Search active state */
+.results-section { display: none; }
+.categories-section { display: block; }
+
+body.searching .results-section { display: block; }
+body.searching .categories-section { display: none; }
+body.searching .nearby-section { display: none; }
+body.searching .discount-banner { display: none; }
+
+@media (max-width: 480px) {
+  .categories { grid-template-columns: repeat(4, 1fr); gap: 0.6rem; }
+  .cat-emoji { font-size: 1.3rem; }
+}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <a href="medifast-landing.html" class="topbar-logo">Medi<span>Fast</span></a>
+  <div class="topbar-location">
+    <span class="pin">📍</span>
+    Koramangala, Bengaluru
+    <span>▾</span>
+  </div>
+  <div class="topbar-avatar" id="avatarBtn" onclick="toggleProfileMenu()">R</div>
+</div>
+
+<!-- PROFILE DROPDOWN MENU -->
+<div id="profileMenu" style="
+  display:none;
+  position:fixed;
+  top:65px;
+  right:1rem;
+  background:#131F33;
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:16px;
+  padding:0.8rem;
+  width:220px;
+  z-index:200;
+  box-shadow:0 20px 60px rgba(0,0,0,0.5);
+  animation: fadeIn 0.2s ease;
+">
+  <div style="padding:0.8rem;background:rgba(0,201,127,0.06);border-radius:10px;margin-bottom:0.8rem;border:1px solid rgba(0,201,127,0.1);">
+    <div style="font-size:0.7rem;color:rgba(255,255,255,0.5);margin-bottom:0.2rem;">Logged in as</div>
+    <div style="font-size:0.85rem;font-weight:700;" id="profileName">Patient</div>
+    <div style="font-size:0.72rem;color:#00C97F;" id="profileEmail">-</div>
+  </div>
+  <a href="medifast-patient-search.html" style="display:flex;align-items:center;gap:0.7rem;padding:0.6rem 0.7rem;border-radius:8px;color:white;text-decoration:none;font-size:0.85rem;transition:all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.06)'" onmouseout="this.style.background='transparent'">
+    🏠 <span>Home</span>
+  </a>
+  <a href="#" onclick="showOrderHistory()" style="display:flex;align-items:center;gap:0.7rem;padding:0.6rem 0.7rem;border-radius:8px;color:white;text-decoration:none;font-size:0.85rem;transition:all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.06)'" onmouseout="this.style.background='transparent'">
+    📦 <span>My Orders</span>
+  </a>
+  <a href="#" onclick="showProfile()" style="display:flex;align-items:center;gap:0.7rem;padding:0.6rem 0.7rem;border-radius:8px;color:white;text-decoration:none;font-size:0.85rem;transition:all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.06)'" onmouseout="this.style.background='transparent'">
+    👤 <span>My Profile</span>
+  </a>
+  <div style="height:1px;background:rgba(255,255,255,0.07);margin:0.5rem 0;"></div>
+  <a href="javascript:void(0)" onclick="handleLogout()" style="display:flex;align-items:center;gap:0.7rem;padding:0.6rem 0.7rem;border-radius:8px;color:#FF5C5C;text-decoration:none;font-size:0.85rem;transition:all 0.2s;" onmouseover="this.style.background='rgba(255,92,92,0.08)'" onmouseout="this.style.background='transparent'">
+    🚪 <span>Logout</span>
+  </a>
+</div>
+
+<!-- SEARCH HERO -->
+<div class="search-hero">
+  <p class="search-greeting">Good evening, Rahul 👋</p>
+  <h1 class="search-heading">Find Medicine<br/><span>Near You Fast</span></h1>
+
+  <div class="search-box-wrap">
+    <span class="search-icon">🔍</span>
+    <input
+      type="text"
+      class="search-box"
+      id="searchInput"
+      placeholder="Search medicine, tablet, syrup..."
+      autocomplete="off"
+    />
+    <span class="search-mic">🎤</span>
+
+    <!-- Suggestions Dropdown -->
+    <div class="suggestions" id="suggestions">
+      <div class="suggestion-item" onclick="selectMed('Paracetamol 500mg')">
+        <span class="sug-icon">💊</span>
+        <div>
+          <div class="sug-name">Paracetamol 500mg</div>
+          <div class="sug-type">Fever & Pain Relief · Tablet</div>
+        </div>
+        <span class="sug-arrow">↗</span>
+      </div>
+      <div class="suggestion-item" onclick="selectMed('Paracetamol 650mg')">
+        <span class="sug-icon">💊</span>
+        <div>
+          <div class="sug-name">Paracetamol 650mg</div>
+          <div class="sug-type">Fever & Pain Relief · Tablet</div>
+        </div>
+        <span class="sug-arrow">↗</span>
+      </div>
+      <div class="suggestion-item" onclick="selectMed('Pan-D Capsule')">
+        <span class="sug-icon">💊</span>
+        <div>
+          <div class="sug-name">Pan-D Capsule</div>
+          <div class="sug-type">Acidity & Gas · Capsule</div>
+        </div>
+        <span class="sug-arrow">↗</span>
+      </div>
+    </div>
+  </div>
+
+  <button class="rx-upload-btn" onclick="alert('Upload Prescription feature coming soon!')">
+    📄 Upload Prescription (Rx)
+  </button>
+</div>
+
+<!-- FILTER CHIPS -->
+<div class="filter-strip">
+  <div class="chip active" onclick="setFilter(this)">🏪 All Nearby</div>
+  <div class="chip" onclick="setFilter(this)">⚡ Open Now</div>
+  <div class="chip" onclick="setFilter(this)">💰 Best Price</div>
+  <div class="chip" onclick="setFilter(this)">⭐ Top Rated</div>
+  <div class="chip" onclick="setFilter(this)">🛵 Fast Delivery</div>
+  <div class="chip" onclick="setFilter(this)">📦 In Stock</div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="main">
+
+  <!-- SEARCH RESULTS (shown when typing) -->
+  <div class="results-section" id="resultsSection">
+    <div class="sec-header">
+      <div class="sec-title" id="resultsTitle">Results for "Paracetamol"</div>
+      <a class="sec-link">Filter ▾</a>
+    </div>
+    <div id="resultsList">
+      <div class="result-card">
+        <div class="result-icon">💊</div>
+        <div class="result-info">
+          <div class="result-name">Paracetamol 500mg</div>
+          <div class="result-detail">Strip of 10 · Cipla · Fever & Pain</div>
+        </div>
+        <div class="result-price">
+          <span class="price-val">₹18</span>
+          <span class="price-mrp">₹22</span>
+          <span class="price-off">18% off</span>
+        </div>
+      </div>
+      <div class="result-card">
+        <div class="result-icon">💊</div>
+        <div class="result-info">
+          <div class="result-name">Paracetamol 650mg</div>
+          <div class="result-detail">Strip of 15 · Sun Pharma · Fever</div>
+        </div>
+        <div class="result-price">
+          <span class="price-val">₹32</span>
+          <span class="price-mrp">₹38</span>
+          <span class="price-off">15% off</span>
+        </div>
+      </div>
+      <div class="result-card">
+        <div class="result-icon">🧴</div>
+        <div class="result-info">
+          <div class="result-name">Calpol Suspension</div>
+          <div class="result-detail">60ml · GSK · For Children</div>
+        </div>
+        <div class="result-price">
+          <span class="price-val">₹56</span>
+          <span class="price-mrp">₹65</span>
+          <span class="price-off">13% off</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DEFAULT CONTENT -->
+
+  <!-- Emergency Strip -->
+  <div class="emergency-strip">
+    <span class="emergency-icon">🚨</span>
+    <div class="emergency-text">
+      <div class="em-title">Emergency Medicine Need?</div>
+      <div class="em-sub">Notify all nearby pharmacies instantly</div>
+    </div>
+    <span class="emergency-arrow">→</span>
+  </div>
+
+  <!-- Quick Categories -->
+  <div class="categories-section">
+    <div class="sec-header">
+      <div class="sec-title">Quick Categories</div>
+      <a class="sec-link">View All</a>
+    </div>
+    <div class="categories">
+      <div class="cat-card"><span class="cat-emoji">🤒</span><div class="cat-name">Fever</div></div>
+      <div class="cat-card"><span class="cat-emoji">💉</span><div class="cat-name">Diabetes</div></div>
+      <div class="cat-card"><span class="cat-emoji">❤️</span><div class="cat-name">Heart</div></div>
+      <div class="cat-card"><span class="cat-emoji">🧴</span><div class="cat-name">Skin</div></div>
+      <div class="cat-card"><span class="cat-emoji">🫁</span><div class="cat-name">Cough</div></div>
+      <div class="cat-card"><span class="cat-emoji">🦴</span><div class="cat-name">Pain</div></div>
+      <div class="cat-card"><span class="cat-emoji">🧠</span><div class="cat-name">Neuro</div></div>
+      <div class="cat-card"><span class="cat-emoji">👶</span><div class="cat-name">Baby</div></div>
+    </div>
+  </div>
+
+  <!-- Discount Banner -->
+  <div class="discount-banner">
+    <span style="font-size:1.6rem;">🎉</span>
+    <div class="disc-text">
+      <div class="disc-title">Up to 25% off at local pharmacies!</div>
+      <div class="disc-sub">Limited time · Today only · 3 shops near you</div>
+    </div>
+    <span style="color:var(--accent); margin-left:auto;">→</span>
+  </div>
+
+  <!-- Nearby Pharmacies -->
+  <div class="nearby-section">
+    <div class="sec-header">
+      <div class="sec-title">🏪 Nearby Pharmacies</div>
+      <a class="sec-link">View Map</a>
+    </div>
+    <div class="pharmacy-list">
+
+      <!-- Pharmacy 1 -->
+      <div class="pharmacy-card featured">
+        <span class="featured-tag">⚡ Fastest</span>
+        <div class="pharm-top">
+          <div class="pharm-avatar">🏥</div>
+          <div class="pharm-info">
+            <div class="pharm-name">Sri Sai Medical Store</div>
+            <div class="pharm-meta">
+              <span class="pharm-badge badge-open">● Open</span>
+              <span class="pharm-badge badge-dist">📍 0.4 km</span>
+              <span class="pharm-badge badge-time">⚡ ~8 min</span>
+            </div>
+          </div>
+          <div class="pharm-rating">⭐ 4.8</div>
+        </div>
+        <div class="med-availability">
+          <div class="med-chip available">
+            <span class="med-dot"></span> Paracetamol 500mg
+            <span class="med-price">₹18</span>
+          </div>
+          <div class="med-chip available">
+            <span class="med-dot"></span> Calpol
+            <span class="med-price">₹56</span>
+          </div>
+        </div>
+        <div class="pharm-actions">
+          <button class="btn-order" onclick="alert('Order placed! Delivery in ~8 minutes 🚀')">🛵 Order Now</button>
+          <button class="btn-call" onclick="alert('Calling Sri Sai Medical Store...')">📞</button>
+        </div>
+      </div>
+
+      <!-- Pharmacy 2 -->
+      <div class="pharmacy-card">
+        <div class="pharm-top">
+          <div class="pharm-avatar">💊</div>
+          <div class="pharm-info">
+            <div class="pharm-name">Sharma Brothers Pharmacy</div>
+            <div class="pharm-meta">
+              <span class="pharm-badge badge-open">● Open</span>
+              <span class="pharm-badge badge-dist">📍 0.9 km</span>
+              <span class="pharm-badge badge-time">⚡ ~12 min</span>
+            </div>
+          </div>
+          <div class="pharm-rating">⭐ 4.6</div>
+        </div>
+        <div class="med-availability">
+          <div class="med-chip available">
+            <span class="med-dot"></span> Paracetamol 500mg
+            <span class="med-price">₹16</span>
+          </div>
+          <div class="med-chip available">
+            <span class="med-dot"></span> Pan-D
+            <span class="med-price">₹42</span>
+          </div>
+        </div>
+        <div class="pharm-actions">
+          <button class="btn-order" onclick="alert('Order placed! Delivery in ~12 minutes 🚀')">🛵 Order Now</button>
+          <button class="btn-call" onclick="alert('Calling Sharma Brothers...')">📞</button>
+        </div>
+      </div>
+
+      <!-- Pharmacy 3 -->
+      <div class="pharmacy-card">
+        <div class="pharm-top">
+          <div class="pharm-avatar">🌿</div>
+          <div class="pharm-info">
+            <div class="pharm-name">Green Cross Medical</div>
+            <div class="pharm-meta">
+              <span class="pharm-badge badge-open">● Open</span>
+              <span class="pharm-badge badge-dist">📍 1.7 km</span>
+              <span class="pharm-badge badge-time">⚡ ~15 min</span>
+            </div>
+          </div>
+          <div class="pharm-rating">⭐ 4.5</div>
+        </div>
+        <div class="med-availability">
+          <div class="med-chip available">
+            <span class="med-dot"></span> Paracetamol 650mg
+            <span class="med-price">₹29</span>
+          </div>
+          <div class="med-chip available">
+            <span class="med-dot"></span> Calpol
+            <span class="med-price">₹52</span>
+          </div>
+        </div>
+        <div class="pharm-actions">
+          <button class="btn-order" onclick="alert('Order placed! Delivery in ~15 minutes 🚀')">🛵 Order Now</button>
+          <button class="btn-call" onclick="alert('Calling Green Cross Medical...')">📞</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="bottom-spacer"></div>
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+  <a class="nav-item active" href="#">
+    <span class="nav-icon">🏠</span>
+    <span class="nav-label">Home</span>
+  </a>
+  <a class="nav-item" href="#">
+    <span class="nav-icon">🔍</span>
+    <span class="nav-label">Search</span>
+  </a>
+  <a class="nav-item" href="#">
+    <span class="nav-icon">🛒</span>
+    <span class="nav-label">Orders</span>
+  </a>
+  <a class="nav-item" href="#">
+    <span class="nav-icon">🧪</span>
+    <span class="nav-label">Labs</span>
+  </a>
+  <a class="nav-item" href="#">
+    <span class="nav-icon">👤</span>
+    <span class="nav-label">Profile</span>
+  </a>
+</nav>
+
+<!-- Firebase SDK -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import {
+  getFirestore, doc, getDoc, getDocs,
+  collection, query, where, addDoc, serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDuTHbKG_Gpagz4ioEDemdfhc4LeP35B1Y",
+  authDomain: "medifast-bf0d0.firebaseapp.com",
+  projectId: "medifast-bf0d0",
+  storageBucket: "medifast-bf0d0.firebasestorage.app",
+  messagingSenderId: "666399516240",
+  appId: "1:666399516240:web:82fde9e70b79cdcc0e1355"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+let currentUser = null;
+let allMedicines = []; // All medicines from all pharmacies
+let allPharmacies = []; // All pharmacy details
+let prescriptionMedicines = []; // Medicines from uploaded prescription
+
+// ── AUTH CHECK ──
+onAuthStateChanged(auth, async (user) => {
+  if (user) {
+    currentUser = user;
+    const snap = await getDoc(doc(db, 'users', user.uid));
+    const userData = snap.exists() ? snap.data() : {};
+    const name = userData.name || user.displayName || 'Patient';
+    const initial = name.charAt(0).toUpperCase();
+
+    document.getElementById('avatarBtn').textContent = initial;
+    document.getElementById('profileName').textContent = name;
+    document.getElementById('profileEmail').textContent = user.email;
+
+    const greeting = document.querySelector('.search-greeting');
+    if (greeting) {
+      const hour = new Date().getHours();
+      const greet = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+      greeting.textContent = `${greet}, ${name.split(' ')[0]} 👋`;
+    }
+
+    // Load all medicines from all pharmacies
+    loadAllMedicines();
+  } else {
+    window.location.href = 'medifast-auth.html';
+  }
+});
+
+// ── LOAD ALL MEDICINES FROM ALL PHARMACIES ──
+async function loadAllMedicines() {
+  try {
+    const pharmaciesSnap = await getDocs(collection(db, 'pharmacies'));
+    allPharmacies = [];
+    allMedicines = [];
+
+    for (const pharmDoc of pharmaciesSnap.docs) {
+      const pharmacy = { id: pharmDoc.id, ...pharmDoc.data() };
+
+      // Only approved pharmacies
+      if (pharmacy.status !== 'approved') continue;
+
+      allPharmacies.push(pharmacy);
+
+      // Load medicines for this pharmacy
+      const medsSnap = await getDocs(
+        collection(db, `pharmacies/${pharmDoc.id}/medicines`)
+      );
+
+      medsSnap.forEach(medDoc => {
+        const med = { id: medDoc.id, ...medDoc.data() };
+        if (med.isAvailable !== false && parseInt(med.stock) > 0) {
+          allMedicines.push({
+            ...med,
+            pharmacyId: pharmDoc.id,
+            pharmacyName: pharmacy.shopName || pharmacy.name || 'Pharmacy',
+            pharmacyAddress: pharmacy.address || '',
+            pharmacyPhone: pharmacy.phone || '',
+            pharmacyRating: pharmacy.rating || 4.5,
+            pharmacyDistance: pharmacy.distance || '0.5 km',
+            pharmacyTime: pharmacy.deliveryTime || '~10 min',
+            // Search keywords
+            searchText: [
+              med.name || '',
+              med.manufacturer || '',
+              med.category || '',
+              med.desc || '',
+              med.salt || '',
+              med.use || '',
+              med.type || ''
+            ].join(' ').toLowerCase()
+          });
+        }
+      });
+    }
+
+    console.log(`✅ Loaded ${allMedicines.length} medicines from ${allPharmacies.length} pharmacies`);
+  } catch(e) {
+    console.error('Error loading medicines:', e);
+  }
+}
+
+// ── SMART MEDICINE SEARCH ──
+window.performSearch = function(query) {
+  if (!query || query.length < 2) {
+    document.body.classList.remove('searching');
+    document.getElementById('suggestions').style.display = 'none';
+    return;
+  }
+
+  const q = query.toLowerCase().trim();
+  document.body.classList.add('searching');
+  document.getElementById('resultsTitle').textContent = `Results for "${query}"`;
+
+  // Search across all fields
+  const results = allMedicines.filter(med => {
+    return med.searchText.includes(q) ||
+      med.name?.toLowerCase().includes(q) ||
+      med.manufacturer?.toLowerCase().includes(q) ||
+      med.category?.toLowerCase().includes(q) ||
+      med.salt?.toLowerCase().includes(q) ||
+      med.use?.toLowerCase().includes(q) ||
+      med.desc?.toLowerCase().includes(q);
+  });
+
+  // Show suggestions
+  showSuggestions(results, q);
+
+  // Show results
+  showSearchResults(results, query);
+};
+
+// ── SHOW SUGGESTIONS DROPDOWN ──
+function showSuggestions(results, q) {
+  const container = document.getElementById('suggestions');
+
+  if (results.length === 0) {
+    container.innerHTML = `
+      <div class="suggestion-item">
+        <span class="sug-icon">🔍</span>
+        <div>
+          <div class="sug-name">No medicines found for "${q}"</div>
+          <div class="sug-type">Try different name, salt or company</div>
+        </div>
+      </div>
+    `;
+    container.style.display = 'block';
+    return;
+  }
+
+  // Get unique medicine names
+  const unique = [];
+  const seen = new Set();
+  results.forEach(med => {
+    if (!seen.has(med.name)) {
+      seen.add(med.name);
+      unique.push(med);
+    }
+  });
+
+  container.innerHTML = unique.slice(0, 5).map(med => `
+    <div class="suggestion-item" onclick="selectMedicineSearch('${med.name}')">
+      <span class="sug-icon">💊</span>
+      <div>
+        <div class="sug-name">${med.name}</div>
+        <div class="sug-type">${med.category || 'Medicine'} • ${med.manufacturer || ''} • ${results.filter(m => m.name === med.name).length} pharmacy nearby</div>
+      </div>
+      <span class="sug-arrow">↗</span>
+    </div>
+  `).join('');
+
+  container.style.display = 'block';
+}
+
+// ── SHOW SEARCH RESULTS ──
+function showSearchResults(results, query) {
+  const container = document.getElementById('resultsList');
+
+  if (results.length === 0) {
+    container.innerHTML = `
+      <div style="text-align:center;padding:2rem;color:rgba(255,255,255,0.5);">
+        <div style="font-size:2rem;margin-bottom:0.5rem;">🔍</div>
+        <div style="font-weight:600;margin-bottom:0.3rem;">No medicines found!</div>
+        <div style="font-size:0.82rem;">Try searching by: brand name, salt name, company or use</div>
+        <div style="font-size:0.78rem;margin-top:0.5rem;color:var(--accent);">
+          Example: "paracetamol" OR "cipla" OR "fever" OR "dolo"
+        </div>
+      </div>
+    `;
+    return;
+  }
+
+  // Group by medicine name
+  const grouped = {};
+  results.forEach(med => {
+    if (!grouped[med.name]) grouped[med.name] = [];
+    grouped[med.name].push(med);
+  });
+
+  container.innerHTML = Object.entries(grouped).map(([medName, pharmacies]) => {
+    const cheapest = pharmacies.reduce((min, p) => p.price < min.price ? p : min, pharmacies[0]);
+    const discount = cheapest.mrp ? Math.round(((cheapest.mrp - cheapest.price) / cheapest.mrp) * 100) : 0;
+
+    return `
+      <div class="result-card" onclick="showPharmaciesForMed('${medName}')">
+        <div class="result-icon">💊</div>
+        <div class="result-info">
+          <div class="result-name">${medName}</div>
+          <div class="result-detail">
+            ${pharmacies[0].category || 'Medicine'} •
+            ${pharmacies[0].manufacturer || ''} •
+            <span style="color:#00C97F;">${pharmacies.length} nearby ${pharmacies.length === 1 ? 'pharmacy' : 'pharmacies'}</span>
+          </div>
+        </div>
+        <div class="result-price">
+          <span class="price-val">₹${cheapest.price || 0}</span>
+          ${cheapest.mrp ? `<span class="price-mrp">₹${cheapest.mrp}</span>` : ''}
+          ${discount > 0 ? `<span class="price-off">${discount}% off</span>` : ''}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ── SHOW PHARMACIES FOR A MEDICINE ──
+window.showPharmaciesForMed = function(medName) {
+  const pharmacies = allMedicines.filter(m => m.name === medName);
+
+  // Update pharmacy list section
+  const pharmacyList = document.querySelector('.pharmacy-list');
+  if (pharmacyList) {
+    pharmacyList.innerHTML = pharmacies.map(p => `
+      <div class="pharmacy-card ${p.pharmacyRating >= 4.7 ? 'featured' : ''}">
+        ${p.pharmacyRating >= 4.7 ? '<span class="featured-tag">⚡ Best Match</span>' : ''}
+        <div class="pharm-top">
+          <div class="pharm-avatar">🏪</div>
+          <div class="pharm-info">
+            <div class="pharm-name">${p.pharmacyName}</div>
+            <div class="pharm-meta">
+              <span class="pharm-badge badge-open">● Open</span>
+              <span class="pharm-badge badge-dist">📍 ${p.pharmacyDistance}</span>
+              <span class="pharm-badge badge-time">⚡ ${p.pharmacyTime}</span>
+            </div>
+          </div>
+          <div class="pharm-rating">⭐ ${p.pharmacyRating}</div>
+        </div>
+        <div class="med-availability">
+          <div class="med-chip available">
+            <span class="med-dot"></span> ${p.name}
+            <span class="med-price">₹${p.price}</span>
+          </div>
+          ${p.mrp ? `<div style="font-size:0.72px;color:rgba(255,255,255,0.4);text-decoration:line-through;">MRP ₹${p.mrp}</div>` : ''}
+        </div>
+        <div class="pharm-actions">
+          <button class="btn-order" onclick="openOrderModal('${p.pharmacyId}', '${p.pharmacyName}', '${p.pharmacyAddress}', '${p.name}', '${p.price}', '${p.category || ''}')">🛵 Order Now</button>
+          <button class="btn-call" onclick="window.location.href='tel:${p.pharmacyPhone}'">📞</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // Scroll to pharmacy list
+  document.querySelector('.nearby-section')?.scrollIntoView({ behavior: 'smooth' });
+};
+
+// ── ORDER MODAL ──
+window.openOrderModal = function(pharmacyId, pharmacyName, pharmacyAddress, medName, medPrice, medCategory) {
+  window.location.href = `medifast-order-tracking.html`;
+  // Store order details in sessionStorage for order tracking page
+  sessionStorage.setItem('pendingOrder', JSON.stringify({
+    pharmacyId, pharmacyName, pharmacyAddress,
+    medName, medPrice, medCategory
+  }));
+};
+
+// ── PRESCRIPTION UPLOAD ──
+window.handlePrescriptionUpload = function() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*,.pdf';
+  input.onchange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    showPrescriptionModal(file);
+  };
+  input.click();
+};
+
+// ── SHOW PRESCRIPTION MODAL ──
+function showPrescriptionModal(file) {
+  // Create modal
+  const modal = document.createElement('div');
+  modal.style.cssText = `
+    position:fixed;inset:0;background:rgba(0,0,0,0.8);
+    backdrop-filter:blur(8px);z-index:300;
+    display:flex;align-items:flex-end;justify-content:center;
+    animation:fadeIn 0.3s ease;
+  `;
+
+  modal.innerHTML = `
+    <div style="
+      background:#131F33;border:1px solid rgba(255,255,255,0.07);
+      border-radius:20px 20px 0 0;padding:1.5rem;
+      width:100%;max-width:600px;max-height:85vh;overflow-y:auto;
+    ">
+      <div style="width:40px;height:4px;background:rgba(255,255,255,0.1);border-radius:50px;margin:0 auto 1.2rem;"></div>
+      <div style="font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:800;margin-bottom:1rem;">📄 Prescription Uploaded!</div>
+
+      <div style="background:rgba(0,201,127,0.08);border:1px solid rgba(0,201,127,0.2);border-radius:12px;padding:1rem;margin-bottom:1rem;">
+        <div style="font-size:0.82rem;color:#00C97F;font-weight:600;margin-bottom:0.3rem;">✅ File: ${file.name}</div>
+        <div style="font-size:0.78rem;color:rgba(255,255,255,0.5);">Size: ${(file.size/1024).toFixed(1)} KB</div>
+      </div>
+
+      <div style="margin-bottom:1rem;">
+        <div style="font-size:0.85rem;font-weight:600;margin-bottom:0.5rem;">💊 Add Medicines from Prescription</div>
+        <div style="font-size:0.78rem;color:rgba(255,255,255,0.5);margin-bottom:0.8rem;">Type the medicines written in your prescription:</div>
+        <div id="rxMedsList" style="margin-bottom:0.6rem;"></div>
+        <div style="display:flex;gap:0.5rem;">
+          <input type="text" id="rxMedInput" placeholder="Type medicine name..." style="
+            flex:1;background:rgba(255,255,255,0.05);
+            border:1.5px solid rgba(255,255,255,0.08);border-radius:10px;
+            padding:0.65rem 0.8rem;color:white;font-size:0.85rem;
+            font-family:'DM Sans',sans-serif;outline:none;
+          "/>
+          <button onclick="addRxMedicine()" style="
+            background:#00C97F;color:#0A1628;border:none;
+            border-radius:10px;padding:0.65rem 1rem;
+            font-weight:700;cursor:pointer;font-size:0.85rem;
+          ">+ Add</button>
+        </div>
+      </div>
+
+      <button onclick="findPharmaciesForPrescription()" style="
+        width:100%;background:#00C97F;color:#0A1628;
+        border:none;border-radius:12px;padding:0.9rem;
+        font-size:0.95rem;font-weight:700;cursor:pointer;
+        font-family:'DM Sans',sans-serif;margin-bottom:0.6rem;
+      ">🔍 Find Pharmacies with All Medicines</button>
+
+      <button onclick="this.closest('[style*=fixed]').remove()" style="
+        width:100%;background:transparent;
+        border:1px solid rgba(255,255,255,0.08);color:rgba(255,255,255,0.5);
+        border-radius:12px;padding:0.7rem;
+        font-size:0.85rem;cursor:pointer;font-family:'DM Sans',sans-serif;
+      ">Close</button>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+  prescriptionMedicines = [];
+  renderRxMedsList();
+
+  // Handle enter key
+  modal.querySelector('#rxMedInput').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') addRxMedicine();
+  });
+}
+
+window.addRxMedicine = function() {
+  const input = document.getElementById('rxMedInput');
+  const name = input.value.trim();
+  if (!name) return;
+  if (!prescriptionMedicines.includes(name)) {
+    prescriptionMedicines.push(name);
+    renderRxMedsList();
+  }
+  input.value = '';
+};
+
+function renderRxMedsList() {
+  const container = document.getElementById('rxMedsList');
+  if (!container) return;
+  container.innerHTML = prescriptionMedicines.map((med, i) => `
+    <div style="display:inline-flex;align-items:center;gap:0.3rem;
+      background:rgba(0,201,127,0.1);border:1px solid rgba(0,201,127,0.2);
+      border-radius:50px;padding:0.25rem 0.7rem;margin:0.2rem;font-size:0.78rem;color:#00C97F;">
+      💊 ${med}
+      <span onclick="removePrescriptionMed(${i})" style="cursor:pointer;margin-left:0.3rem;color:rgba(255,92,92,0.8);">✕</span>
+    </div>
+  `).join('');
+}
+
+window.removePrescriptionMed = function(index) {
+  prescriptionMedicines.splice(index, 1);
+  renderRxMedsList();
+};
+
+// ── FIND PHARMACIES FOR PRESCRIPTION ──
+window.findPharmaciesForPrescription = function() {
+  if (prescriptionMedicines.length === 0) {
+    alert('Please add at least one medicine from your prescription!');
+    return;
+  }
+
+  // Close modal
+  document.querySelector('[style*="position:fixed"][style*="z-index:300"]')?.remove();
+
+  // Search for each medicine
+  const results = {};
+  prescriptionMedicines.forEach(medName => {
+    const q = medName.toLowerCase();
+    const found = allMedicines.filter(m =>
+      m.name?.toLowerCase().includes(q) ||
+      m.searchText?.includes(q)
+    );
+    results[medName] = found;
+  });
+
+  // Find pharmacies that have ALL medicines
+  const pharmaciesWithAll = [];
+  const pharmaciesWithSome = [];
+
+  allPharmacies.forEach(pharmacy => {
+    const medsAvailable = prescriptionMedicines.filter(medName => {
+      const q = medName.toLowerCase();
+      return allMedicines.some(m =>
+        m.pharmacyId === pharmacy.id &&
+        (m.name?.toLowerCase().includes(q) || m.searchText?.includes(q))
+      );
+    });
+
+    if (medsAvailable.length === prescriptionMedicines.length) {
+      pharmaciesWithAll.push({ ...pharmacy, medsAvailable, matchCount: medsAvailable.length });
+    } else if (medsAvailable.length > 0) {
+      pharmaciesWithSome.push({ ...pharmacy, medsAvailable, matchCount: medsAvailable.length });
+    }
+  });
+
+  // Show results
+  showPrescriptionResults(pharmaciesWithAll, pharmaciesWithSome);
+};
+
+// ── SHOW PRESCRIPTION RESULTS ──
+function showPrescriptionResults(withAll, withSome) {
+  document.body.classList.add('searching');
+  document.getElementById('resultsTitle').textContent = `Prescription Results`;
+
+  const container = document.getElementById('resultsList');
+
+  let html = '';
+
+  // Best match — has all medicines
+  if (withAll.length > 0) {
+    html += `
+      <div style="background:rgba(0,201,127,0.08);border:1px solid rgba(0,201,127,0.2);
+        border-radius:12px;padding:0.8rem;margin-bottom:0.8rem;">
+        <div style="font-size:0.82rem;font-weight:700;color:#00C97F;margin-bottom:0.3rem;">
+          ✅ ${withAll.length} Pharmacy with ALL ${prescriptionMedicines.length} Medicines!
+        </div>
+        <div style="font-size:0.75rem;color:rgba(255,255,255,0.5);">Best choice — get all medicines from one place!</div>
+      </div>
+    `;
+
+    withAll.forEach(pharmacy => {
+      html += renderPrescriptionPharmacyCard(pharmacy, 'all');
+    });
+  }
+
+  // Partial match
+  if (withSome.length > 0) {
+    html += `
+      <div style="background:rgba(255,209,102,0.08);border:1px solid rgba(255,209,102,0.2);
+        border-radius:12px;padding:0.8rem;margin:0.8rem 0;">
+        <div style="font-size:0.82rem;font-weight:700;color:#FFD166;margin-bottom:0.3rem;">
+          ⚠️ ${withSome.length} Pharmacy with SOME Medicines
+        </div>
+        <div style="font-size:0.75rem;color:rgba(255,255,255,0.5);">Partial match — may need to visit another pharmacy for remaining medicines</div>
+      </div>
+    `;
+
+    withSome.forEach(pharmacy => {
+      html += renderPrescriptionPharmacyCard(pharmacy, 'some');
+    });
+  }
+
+  // No match
+  if (withAll.length === 0 && withSome.length === 0) {
+    html = `
+      <div style="text-align:center;padding:2rem;color:rgba(255,255,255,0.5);">
+        <div style="font-size:2rem;margin-bottom:0.5rem;">😔</div>
+        <div style="font-weight:600;margin-bottom:0.3rem;">No nearby pharmacies found!</div>
+        <div style="font-size:0.82rem;">The medicines in your prescription are not available nearby right now.</div>
+        <div style="font-size:0.78rem;margin-top:0.5rem;color:#FF5C5C;">
+          Try Emergency Mode to notify all pharmacies! 🚨
+        </div>
+      </div>
+    `;
+  }
+
+  container.innerHTML = html;
+}
+
+function renderPrescriptionPharmacyCard(pharmacy, matchType) {
+  const isAll = matchType === 'all';
+  return `
+    <div style="
+      background:#131F33;border:1px solid ${isAll ? 'rgba(0,201,127,0.2)' : 'rgba(255,209,102,0.15)'};
+      border-radius:14px;padding:1rem;margin-bottom:0.8rem;
+    ">
+      <div style="display:flex;align-items:center;gap:0.8rem;margin-bottom:0.8rem;">
+        <div style="width:44px;height:44px;background:rgba(0,201,127,0.1);border-radius:10px;
+          display:flex;align-items:center;justify-content:center;font-size:1.2rem;">🏪</div>
+        <div style="flex:1;">
+          <div style="font-weight:700;font-size:0.9rem;">${pharmacy.shopName || pharmacy.name || 'Pharmacy'}</div>
+          <div style="font-size:0.75rem;color:rgba(255,255,255,0.5);">${pharmacy.address || 'Nearby'}</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:0.75rem;font-weight:700;
+            color:${isAll ? '#00C97F' : '#FFD166'};">
+            ${pharmacy.matchCount}/${prescriptionMedicines.length} meds
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:0.4rem;margin-bottom:0.8rem;">
+        ${prescriptionMedicines.map(med => {
+          const available = pharmacy.medsAvailable.includes(med);
+          return `<span style="
+            font-size:0.72rem;font-weight:600;
+            padding:0.2rem 0.6rem;border-radius:50px;
+            background:${available ? 'rgba(0,201,127,0.1)' : 'rgba(255,92,92,0.1)'};
+            color:${available ? '#00C97F' : '#FF5C5C'};
+            border:1px solid ${available ? 'rgba(0,201,127,0.2)' : 'rgba(255,92,92,0.2)'};
+          ">${available ? '✓' : '✗'} ${med}</span>`;
+        }).join('')}
+      </div>
+      <div style="display:flex;gap:0.6rem;">
+        <button onclick="window.location.href='medifast-order-tracking.html'" style="
+          flex:1;background:#00C97F;color:#0A1628;border:none;
+          border-radius:10px;padding:0.6rem;font-size:0.85rem;
+          font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;
+        ">🛵 Order from Here</button>
+        <button onclick="window.location.href='tel:${pharmacy.phone || ''}'" style="
+          background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);
+          color:white;border-radius:10px;padding:0.6rem 0.8rem;
+          cursor:pointer;font-size:0.85rem;
+        ">📞</button>
+      </div>
+    </div>
+  `;
+}
+
+// Logout
+window.handleLogout = async function() {
+  if (!confirm('Are you sure you want to logout?')) return;
+  try {
+    await signOut(auth);
+    window.location.href = 'medifast-auth.html';
+  } catch(e) {
+    alert('Error logging out! Please try again.');
+  }
+};
+
+// Make auth available globally for logout
+window._auth = auth;
+window._signOut = signOut;
+</script>
+
+<script>
+// ── GLOBAL LOGOUT FALLBACK ──
+// This ensures logout works even if module hasn't loaded yet
+function handleLogout() {
+  if (window._auth && window._signOut) {
+    if (!confirm('Are you sure you want to logout?')) return;
+    window._signOut(window._auth)
+      .then(() => { window.location.href = 'medifast-auth.html'; })
+      .catch(() => {
+        // Force logout even if Firebase fails
+        window.location.href = 'medifast-auth.html';
+      });
+  } else {
+    // Direct redirect as fallback
+    if (confirm('Are you sure you want to logout?')) {
+      window.location.href = 'medifast-auth.html';
+    }
+  }
+}
+const searchInput = document.getElementById('searchInput');
+const suggestions = document.getElementById('suggestions');
+const resultsSection = document.getElementById('resultsSection');
+const resultsTitle = document.getElementById('resultsTitle');
+
+// ── REAL TIME SEARCH ──
+let searchTimeout;
+searchInput.addEventListener('input', function() {
+  const val = this.value.trim();
+  clearTimeout(searchTimeout);
+  if (val.length > 1) {
+    searchTimeout = setTimeout(() => {
+      window.performSearch(val);
+    }, 300); // Debounce 300ms
+  } else {
+    suggestions.style.display = 'none';
+    document.body.classList.remove('searching');
+  }
+});
+
+searchInput.addEventListener('blur', function() {
+  setTimeout(() => { suggestions.style.display = 'none'; }, 200);
+});
+
+// ── SEARCH FILTERS ──
+const searchFilters = {
+  type: 'all' // all, brand, salt, company, use
+};
+
+window.setSearchFilter = function(filterType, el) {
+  searchFilters.type = filterType;
+  document.querySelectorAll('.search-filter-btn').forEach(b => b.classList.remove('active'));
+  el?.classList.add('active');
+  if (searchInput.value.trim().length > 1) {
+    window.performSearch(searchInput.value.trim());
+  }
+};
+
+window.selectMedicineSearch = function(name) {
+  searchInput.value = name;
+  suggestions.style.display = 'none';
+  window.performSearch(name);
+  window.showPharmaciesForMed(name);
+};
+
+function selectMed(name) {
+  searchInput.value = name;
+  suggestions.style.display = 'none';
+  document.body.classList.add('searching');
+  resultsTitle.textContent = `Results for "${name}"`;
+  window.performSearch(name);
+}
+
+function setFilter(el) {
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function toggleProfileMenu() {
+  const menu = document.getElementById('profileMenu');
+  if (!menu) return;
+  const isVisible = menu.style.display === 'block';
+  menu.style.display = isVisible ? 'none' : 'block';
+}
+
+document.addEventListener('click', function(e) {
+  const menu = document.getElementById('profileMenu');
+  const avatar = document.getElementById('avatarBtn');
+  if (menu && avatar && !menu.contains(e.target) && !avatar.contains(e.target)) {
+    menu.style.display = 'none';
+  }
+});
+
+function showOrderHistory() {
+  toggleProfileMenu();
+  window.location.href = 'medifast-order-tracking.html';
+}
+
+function showProfile() {
+  toggleProfileMenu();
+  alert('👤 Profile settings coming soon!');
+}
+
+// ── UPDATE PRESCRIPTION BUTTON ──
+document.querySelector('.rx-upload-btn')?.addEventListener('click', function(e) {
+  e.preventDefault();
+  window.handlePrescriptionUpload();
+});
+</script>
+</body>
+</html>
