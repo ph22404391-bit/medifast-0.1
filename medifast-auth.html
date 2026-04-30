@@ -368,7 +368,23 @@ body::after {
         <div class="divider-line"></div>
       </div>
       <button class="btn-secondary" onclick="handleGoogleLogin()">🔵 Continue with Google</button>
-      <p class="terms-text"><a href="#">Forgot Password?</a></p>
+      <p class="terms-text"><a href="#" onclick="handleForgotPassword()">Forgot Password?</a></p>
+    </div>
+
+    <!-- FORGOT PASSWORD SCREEN -->
+    <div class="form" id="forgotForm">
+      <div class="form-title">Reset Password 🔑</div>
+      <div class="form-sub">Enter your email to receive a reset link</div>
+      <div class="alert" id="forgotAlert"></div>
+      <div class="form-group">
+        <label class="form-label">📧 Email Address</label>
+        <input type="email" class="form-input" id="forgotEmail" placeholder="your@email.com"/>
+      </div>
+      <button class="btn-main" id="forgotBtn" onclick="sendResetEmail()">
+        <div class="spinner" id="forgotSpinner"></div>
+        <span id="forgotBtnText">📧 Send Reset Link</span>
+      </button>
+      <button class="btn-secondary" style="margin-top:0.6rem;" onclick="switchTab('login')">← Back to Login</button>
     </div>
 
     <!-- SIGNUP -->
@@ -443,7 +459,8 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
   updateProfile,
-  onAuthStateChanged
+  onAuthStateChanged,
+  sendPasswordResetEmail
 } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
 import {
   getFirestore,
@@ -627,17 +644,56 @@ function showAlert(id, type, msg) {
   el.textContent = msg;
   setTimeout(() => el.classList.remove('show'), 5000);
 }
+
+// ✅ FORGOT PASSWORD
+window.sendResetEmail = async function() {
+  const email = document.getElementById('forgotEmail').value.trim();
+  if (!email) return showAlert('forgotAlert', 'error', '⚠️ Please enter your email!');
+
+  document.getElementById('forgotBtn').disabled = true;
+  document.getElementById('forgotSpinner').style.display = 'block';
+  document.getElementById('forgotBtnText').textContent = 'Sending...';
+
+  try {
+    await sendPasswordResetEmail(auth, email);
+    showAlert('forgotAlert', 'success', '✅ Reset link sent! Check your email inbox!');
+    document.getElementById('forgotEmail').value = '';
+  } catch(e) {
+    const msgs = {
+      'auth/user-not-found': '⚠️ No account found with this email!',
+      'auth/invalid-email': '⚠️ Invalid email address!'
+    };
+    showAlert('forgotAlert', 'error', msgs[e.code] || '⚠️ ' + e.message);
+  } finally {
+    document.getElementById('forgotBtn').disabled = false;
+    document.getElementById('forgotSpinner').style.display = 'none';
+    document.getElementById('forgotBtnText').textContent = '📧 Send Reset Link';
+  }
+};
 </script>
 
 <script>
 window.selectedRole = 'patient';
 
 function switchTab(tab) {
+  // Hide all forms
+  ['loginForm','signupForm','forgotForm'].forEach(f => {
+    const el = document.getElementById(f);
+    if (el) el.classList.remove('active');
+  });
+  // Update tabs
   document.getElementById('loginTab').classList.toggle('active', tab === 'login');
   document.getElementById('signupTab').classList.toggle('active', tab === 'signup');
-  document.getElementById('loginForm').classList.toggle('active', tab === 'login');
-  document.getElementById('signupForm').classList.toggle('active', tab === 'signup');
+  // Show correct form
+  if (tab === 'login') document.getElementById('loginForm').classList.add('active');
+  else if (tab === 'signup') document.getElementById('signupForm').classList.add('active');
+  else if (tab === 'forgot') document.getElementById('forgotForm').classList.add('active');
 }
+
+// Forgot password trigger
+window.handleForgotPassword = function() {
+  switchTab('forgot');
+};
 
 function selectRole(role) {
   window.selectedRole = role;

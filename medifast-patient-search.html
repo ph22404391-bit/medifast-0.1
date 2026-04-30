@@ -698,7 +698,42 @@ body.searching .discount-banner { display: none; }
     Koramangala, Bengaluru
     <span>▾</span>
   </div>
-  <div class="topbar-avatar">R</div>
+  <div class="topbar-avatar" id="avatarBtn" onclick="toggleProfileMenu()">R</div>
+</div>
+
+<!-- PROFILE DROPDOWN MENU -->
+<div id="profileMenu" style="
+  display:none;
+  position:fixed;
+  top:65px;
+  right:1rem;
+  background:#131F33;
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:16px;
+  padding:0.8rem;
+  width:220px;
+  z-index:200;
+  box-shadow:0 20px 60px rgba(0,0,0,0.5);
+  animation: fadeIn 0.2s ease;
+">
+  <div style="padding:0.8rem;background:rgba(0,201,127,0.06);border-radius:10px;margin-bottom:0.8rem;border:1px solid rgba(0,201,127,0.1);">
+    <div style="font-size:0.7rem;color:rgba(255,255,255,0.5);margin-bottom:0.2rem;">Logged in as</div>
+    <div style="font-size:0.85rem;font-weight:700;" id="profileName">Patient</div>
+    <div style="font-size:0.72rem;color:#00C97F;" id="profileEmail">-</div>
+  </div>
+  <a href="medifast-patient-search.html" style="display:flex;align-items:center;gap:0.7rem;padding:0.6rem 0.7rem;border-radius:8px;color:white;text-decoration:none;font-size:0.85rem;transition:all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.06)'" onmouseout="this.style.background='transparent'">
+    🏠 <span>Home</span>
+  </a>
+  <a href="#" onclick="showOrderHistory()" style="display:flex;align-items:center;gap:0.7rem;padding:0.6rem 0.7rem;border-radius:8px;color:white;text-decoration:none;font-size:0.85rem;transition:all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.06)'" onmouseout="this.style.background='transparent'">
+    📦 <span>My Orders</span>
+  </a>
+  <a href="#" onclick="showProfile()" style="display:flex;align-items:center;gap:0.7rem;padding:0.6rem 0.7rem;border-radius:8px;color:white;text-decoration:none;font-size:0.85rem;transition:all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.06)'" onmouseout="this.style.background='transparent'">
+    👤 <span>My Profile</span>
+  </a>
+  <div style="height:1px;background:rgba(255,255,255,0.07);margin:0.5rem 0;"></div>
+  <a href="#" onclick="handleLogout()" style="display:flex;align-items:center;gap:0.7rem;padding:0.6rem 0.7rem;border-radius:8px;color:#FF5C5C;text-decoration:none;font-size:0.85rem;transition:all 0.2s;" onmouseover="this.style.background='rgba(255,92,92,0.08)'" onmouseout="this.style.background='transparent'">
+    🚪 <span>Logout</span>
+  </a>
 </div>
 
 <!-- SEARCH HERO -->
@@ -979,6 +1014,60 @@ body.searching .discount-banner { display: none; }
   </a>
 </nav>
 
+<!-- Firebase SDK -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDuTHbKG_Gpagz4ioEDemdfhc4LeP35B1Y",
+  authDomain: "medifast-bf0d0.firebaseapp.com",
+  projectId: "medifast-bf0d0",
+  storageBucket: "medifast-bf0d0.firebasestorage.app",
+  messagingSenderId: "666399516240",
+  appId: "1:666399516240:web:82fde9e70b79cdcc0e1355"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+// Check auth state
+onAuthStateChanged(auth, async (user) => {
+  if (user) {
+    // Update UI with user info
+    const snap = await getDoc(doc(db, 'users', user.uid));
+    const userData = snap.exists() ? snap.data() : {};
+    const name = userData.name || user.displayName || 'Patient';
+    const email = user.email;
+    const initial = name.charAt(0).toUpperCase();
+
+    document.getElementById('avatarBtn').textContent = initial;
+    document.getElementById('profileName').textContent = name;
+    document.getElementById('profileEmail').textContent = email;
+
+    // Update greeting
+    const greeting = document.querySelector('.search-greeting');
+    if (greeting) greeting.textContent = `Good day, ${name.split(' ')[0]} 👋`;
+  } else {
+    // Not logged in — redirect to login
+    window.location.href = 'medifast-auth.html';
+  }
+});
+
+// Logout function
+window.handleLogout = async function() {
+  if (!confirm('Are you sure you want to logout?')) return;
+  try {
+    await signOut(auth);
+    window.location.href = 'medifast-auth.html';
+  } catch(e) {
+    alert('Error logging out. Please try again!');
+  }
+};
+</script>
+
 <script>
 const searchInput = document.getElementById('searchInput');
 const suggestions = document.getElementById('suggestions');
@@ -1012,6 +1101,33 @@ function setFilter(el) {
   document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
   el.classList.add('active');
 }
+
+// Profile menu toggle
+function toggleProfileMenu() {
+  const menu = document.getElementById('profileMenu');
+  menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+}
+
+// Close menu when clicking outside
+document.addEventListener('click', function(e) {
+  const menu = document.getElementById('profileMenu');
+  const avatar = document.getElementById('avatarBtn');
+  if (!menu.contains(e.target) && !avatar.contains(e.target)) {
+    menu.style.display = 'none';
+  }
+});
+
+function showOrderHistory() {
+  toggleProfileMenu();
+  alert('📦 Order History coming soon!');
+}
+
+function showProfile() {
+  toggleProfileMenu();
+  alert('👤 Profile settings coming soon!');
+}
+
+@keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
 </script>
 </body>
 </html>
