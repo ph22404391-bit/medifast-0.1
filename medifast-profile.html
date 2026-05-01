@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>MediFast — My Profile</title>
+  <link rel="manifest" href="manifest.json"/>
+  <meta name="theme-color" content="#00C97F"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-title" content="MediFast"/>
+  <link rel="apple-touch-icon" href="medifast-icon.svg"/>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --emerald: #00C97F;
+  --emerald-dark: #00A566;
+  --emerald-light: rgba(0,201,127,0.08);
+  --navy: #0A1628;
+  --navy-mid: #0F1E35;
+  --navy-card: #131F33;
+  --white: #FFFFFF;
+  --gray: rgba(255,255,255,0.5);
+  --gray-dim: rgba(255,255,255,0.06);
+  --border: rgba(255,255,255,0.07);
+  --accent: #FFD166;
+  --red: #FF5C5C;
+  --blue: #4DA6FF;
+  --purple: #A78BFA;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'DM Sans', sans-serif; background: var(--navy); color: var(--white); min-height: 100vh; }
+
+/* ── TOPBAR ── */
+.topbar { position: sticky; top: 0; z-index: 100; background: rgba(10,22,40,0.95); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); padding: 0.9rem 1.2rem; display: flex; align-items: center; gap: 0.8rem; }
+.back-btn { width: 36px; height: 36px; background: var(--gray-dim); border: 1px solid var(--border); border-radius: 10px; display: flex; align-items: center; justify-content: center; text-decoration: none; color: white; font-size: 1rem; flex-shrink: 0; }
+.topbar-title { font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 800; flex: 1; }
+
+/* ── PROFILE HERO ── */
+.profile-hero {
+  background: linear-gradient(160deg, var(--navy-mid), var(--navy));
+  padding: 2rem 1.2rem 1.5rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  border-bottom: 1px solid var(--border);
+}
+.profile-hero::before {
+  content: '';
+  position: absolute;
+  width: 300px; height: 300px;
+  background: radial-gradient(circle, rgba(0,201,127,0.1) 0%, transparent 70%);
+  top: -100px; left: 50%; transform: translateX(-50%);
+}
+.avatar-wrap { position: relative; display: inline-block; margin-bottom: 1rem; }
+.avatar-big {
+  width: 80px; height: 80px;
+  background: linear-gradient(135deg, var(--emerald), var(--emerald-dark));
+  border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  font-family: 'Syne', sans-serif; font-size: 2rem; font-weight: 800;
+  color: var(--navy); border: 3px solid rgba(0,201,127,0.3);
+  box-shadow: 0 0 30px rgba(0,201,127,0.3);
+}
+.avatar-edit {
+  position: absolute; bottom: 0; right: 0;
+  width: 26px; height: 26px;
+  background: var(--navy-card); border: 1.5px solid var(--border);
+  border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  font-size: 0.75rem; cursor: pointer;
+}
+.profile-name { font-family: 'Syne', sans-serif; font-size: 1.3rem; font-weight: 800; margin-bottom: 0.2rem; }
+.profile-email { font-size: 0.82rem; color: var(--gray); margin-bottom: 0.8rem; }
+.profile-badges { display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap; }
+.pbadge { font-size: 0.7rem; font-weight: 700; padding: 0.25rem 0.7rem; border-radius: 50px; }
+.pbadge-green { background: rgba(0,201,127,0.12); color: var(--emerald); border: 1px solid rgba(0,201,127,0.2); }
+.pbadge-blue { background: rgba(77,166,255,0.1); color: var(--blue); border: 1px solid rgba(77,166,255,0.2); }
+
+/* ── STATS ROW ── */
+.stats-row {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 0.6rem; padding: 1rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--navy-mid);
+}
+.stat-box { text-align: center; }
+.stat-num { font-family: 'Syne', sans-serif; font-size: 1.4rem; font-weight: 800; color: var(--emerald); display: block; }
+.stat-lbl { font-size: 0.7rem; color: var(--gray); }
+
+/* ── TABS ── */
+.profile-tabs {
+  display: flex; background: var(--navy-mid);
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto; scrollbar-width: none;
+}
+.profile-tabs::-webkit-scrollbar { display: none; }
+.ptab {
+  flex-shrink: 0; padding: 0.8rem 1rem;
+  font-size: 0.8rem; font-weight: 700; color: var(--gray);
+  cursor: pointer; border-bottom: 2px solid transparent;
+  white-space: nowrap; transition: all 0.2s;
+}
+.ptab.active { color: var(--emerald); border-bottom-color: var(--emerald); }
+
+/* ── MAIN ── */
+.main { padding: 1rem; max-width: 600px; margin: 0 auto; }
+.section { display: none; }
+.section.active { display: block; }
+
+/* ── CARDS ── */
+.card { background: var(--navy-card); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; margin-bottom: 1rem; }
+.card-header { padding: 0.9rem 1rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+.card-title { font-family: 'Syne', sans-serif; font-size: 0.88rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; }
+
+/* ── ORDER HISTORY ── */
+.order-item {
+  display: flex; gap: 0.8rem; align-items: center;
+  padding: 0.85rem 1rem; border-bottom: 1px solid var(--border);
+  cursor: pointer; transition: all 0.2s;
+}
+.order-item:last-child { border-bottom: none; }
+.order-item:hover { background: var(--gray-dim); }
+.order-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; }
+.order-info { flex: 1; }
+.order-pharmacy { font-size: 0.85rem; font-weight: 700; margin-bottom: 0.15rem; }
+.order-detail { font-size: 0.72rem; color: var(--gray); }
+.order-right { text-align: right; flex-shrink: 0; }
+.order-amount { font-family: 'Syne', sans-serif; font-size: 0.88rem; font-weight: 800; color: var(--emerald); display: block; margin-bottom: 0.2rem; }
+.order-badge { font-size: 0.65rem; font-weight: 700; padding: 0.15rem 0.5rem; border-radius: 50px; }
+.ob-green { background: rgba(0,201,127,0.1); color: var(--emerald); }
+.ob-yellow { background: rgba(255,209,102,0.1); color: var(--accent); }
+.ob-blue { background: rgba(77,166,255,0.1); color: var(--blue); }
+.ob-red { background: rgba(255,92,92,0.1); color: var(--red); }
+
+/* ── PRESCRIPTION HISTORY ── */
+.rx-item {
+  display: flex; gap: 0.8rem; align-items: center;
+  padding: 0.85rem 1rem; border-bottom: 1px solid var(--border);
+  cursor: pointer; transition: all 0.2s;
+}
+.rx-item:last-child { border-bottom: none; }
+.rx-item:hover { background: var(--gray-dim); }
+.rx-icon { width: 40px; height: 40px; background: rgba(167,139,250,0.1); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; }
+.rx-name { font-size: 0.85rem; font-weight: 700; margin-bottom: 0.15rem; }
+.rx-detail { font-size: 0.72rem; color: var(--gray); }
+.rx-meds { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-top: 0.4rem; }
+.rx-med-chip { font-size: 0.67rem; background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.15); color: var(--purple); border-radius: 50px; padding: 0.1rem 0.5rem; font-weight: 600; }
+
+/* ── PROFILE FORM ── */
+.form-group { margin-bottom: 0.9rem; }
+.form-label { font-size: 0.73rem; font-weight: 600; color: rgba(255,255,255,0.6); display: block; margin-bottom: 0.35rem; }
+.form-input { width: 100%; background: rgba(255,255,255,0.05); border: 1.5px solid var(--border); border-radius: 10px; padding: 0.75rem 0.9rem; font-family: 'DM Sans', sans-serif; font-size: 0.88rem; color: white; outline: none; transition: all 0.2s; }
+.form-input::placeholder { color: rgba(255,255,255,0.25); }
+.form-input:focus { border-color: var(--emerald); }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem; }
+.btn-save { width: 100%; background: var(--emerald); color: var(--navy); border: none; border-radius: 12px; padding: 0.9rem; font-size: 0.93rem; font-weight: 700; cursor: pointer; font-family: 'DM Sans', sans-serif; margin-top: 0.5rem; }
+
+/* ── SETTINGS LIST ── */
+.settings-item {
+  display: flex; align-items: center; gap: 0.8rem;
+  padding: 0.9rem 1rem; border-bottom: 1px solid var(--border);
+  cursor: pointer; transition: all 0.2s;
+}
+.settings-item:last-child { border-bottom: none; }
+.settings-item:hover { background: var(--gray-dim); }
+.settings-icon { width: 36px; height: 36px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
+.settings-label { flex: 1; font-size: 0.85rem; font-weight: 600; }
+.settings-sub { font-size: 0.72rem; color: var(--gray); }
+.settings-arrow { color: var(--gray); font-size: 0.8rem; }
+
+/* ── TOGGLE ── */
+.toggle { width: 38px; height: 20px; background: rgba(255,255,255,0.1); border-radius: 50px; cursor: pointer; position: relative; transition: background 0.2s; flex-shrink: 0; }
+.toggle.on { background: var(--emerald); }
+.toggle::after { content: ''; position: absolute; width: 14px; height: 14px; background: white; border-radius: 50%; top: 3px; left: 3px; transition: transform 0.2s; }
+.toggle.on::after { transform: translateX(18px); }
+
+/* ── HEALTH CARD ── */
+.health-card { background: linear-gradient(135deg, #0F2744, #1B3D62); border: 1px solid rgba(77,166,255,0.2); border-radius: 16px; padding: 1.2rem; margin-bottom: 1rem; }
+.health-item { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem; }
+.health-item:last-child { margin-bottom: 0; }
+.health-label { font-size: 0.75rem; color: rgba(255,255,255,0.5); }
+.health-val { font-size: 0.82rem; font-weight: 700; color: var(--blue); }
+
+/* ── LOGOUT BTN ── */
+.btn-logout { width: 100%; background: rgba(255,92,92,0.08); border: 1px solid rgba(255,92,92,0.2); color: var(--red); border-radius: 12px; padding: 0.9rem; font-size: 0.93rem; font-weight: 700; cursor: pointer; font-family: 'DM Sans', sans-serif; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: all 0.2s; }
+.btn-logout:hover { background: rgba(255,92,92,0.15); }
+
+/* ── EMPTY ── */
+.empty { text-align: center; padding: 2.5rem 1rem; color: var(--gray); }
+.empty-icon { font-size: 2.5rem; display: block; margin-bottom: 0.5rem; }
+
+/* ── BOTTOM NAV ── */
+.bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(10,22,40,0.95); backdrop-filter: blur(20px); border-top: 1px solid var(--border); padding: 0.7rem 0 0.5rem; display: flex; justify-content: space-around; z-index: 100; }
+.nav-item { display: flex; flex-direction: column; align-items: center; gap: 0.2rem; text-decoration: none; padding: 0.3rem 0.8rem; }
+.nav-item .nav-icon { font-size: 1.3rem; }
+.nav-item .nav-label { font-size: 0.62rem; font-weight: 600; color: rgba(255,255,255,0.4); }
+.nav-item.active .nav-label { color: var(--emerald); }
+
+.bottom-spacer { height: 80px; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="medifast-patient-search.html" class="back-btn">←</a>
+  <div class="topbar-title">👤 My Profile</div>
+</div>
+
+<!-- PROFILE HERO -->
+<div class="profile-hero">
+  <div class="avatar-wrap">
+    <div class="avatar-big" id="avatarBig">P</div>
+    <div class="avatar-edit">✏️</div>
+  </div>
+  <div class="profile-name" id="profileName">Loading...</div>
+  <div class="profile-email" id="profileEmail">loading@email.com</div>
+  <div class="profile-badges">
+    <span class="pbadge pbadge-green">✅ Verified Patient</span>
+    <span class="pbadge pbadge-blue">💊 MediFast Member</span>
+  </div>
+</div>
+
+<!-- STATS ROW -->
+<div class="stats-row">
+  <div class="stat-box">
+    <span class="stat-num" id="totalOrders">0</span>
+    <span class="stat-lbl">Orders</span>
+  </div>
+  <div class="stat-box">
+    <span class="stat-num" id="totalRx">0</span>
+    <span class="stat-lbl">Prescriptions</span>
+  </div>
+  <div class="stat-box">
+    <span class="stat-num" id="totalSaved">₹0</span>
+    <span class="stat-lbl">Saved</span>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="profile-tabs">
+  <div class="ptab active" onclick="switchTab('orders', this)">📦 Orders</div>
+  <div class="ptab" onclick="switchTab('prescriptions', this)">📄 Prescriptions</div>
+  <div class="ptab" onclick="switchTab('health', this)">🏥 Health Info</div>
+  <div class="ptab" onclick="switchTab('details', this)">👤 My Details</div>
+  <div class="ptab" onclick="switchTab('settings', this)">⚙️ Settings</div>
+</div>
+
+<div class="main">
+
+  <!-- ORDER HISTORY -->
+  <div class="section active" id="ordersSection">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">📦 Order History</div>
+        <a href="medifast-order-tracking.html" style="font-size:0.75rem;color:var(--emerald);text-decoration:none;">View All →</a>
+      </div>
+      <div id="orderHistoryList">
+        <div style="text-align:center;padding:2rem;color:var(--gray);">
+          <div style="font-size:1.5rem;margin-bottom:0.5rem;">⏳</div>
+          Loading orders...
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PRESCRIPTION HISTORY -->
+  <div class="section" id="prescriptionsSection">
+    <div style="display:flex;gap:0.6rem;margin-bottom:1rem;">
+      <button onclick="window.location.href='medifast-prescription-reader.html'" style="flex:1;background:var(--emerald);color:var(--navy);border:none;border-radius:12px;padding:0.8rem;font-size:0.85rem;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;">📄 Upload New Prescription</button>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">📄 Prescription History</div>
+      </div>
+      <div id="rxHistoryList">
+        <div class="rx-item">
+          <div class="rx-icon">📋</div>
+          <div style="flex:1;">
+            <div class="rx-name">Prescription — Dr. Priya Sharma</div>
+            <div class="rx-detail">Uploaded: 28 April 2026</div>
+            <div class="rx-meds">
+              <span class="rx-med-chip">Metformin 500mg</span>
+              <span class="rx-med-chip">Glipizide 5mg</span>
+              <span class="rx-med-chip">Vitamin D3</span>
+            </div>
+          </div>
+        </div>
+        <div class="rx-item">
+          <div class="rx-icon">📋</div>
+          <div style="flex:1;">
+            <div class="rx-name">Prescription — Dr. Rajesh Kumar</div>
+            <div class="rx-detail">Uploaded: 15 March 2026</div>
+            <div class="rx-meds">
+              <span class="rx-med-chip">Aspirin 75mg</span>
+              <span class="rx-med-chip">Atorvastatin 10mg</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HEALTH INFO -->
+  <div class="section" id="healthSection">
+    <div class="health-card">
+      <div style="font-family:'Syne',sans-serif;font-size:0.9rem;font-weight:800;margin-bottom:0.8rem;">🏥 My Health Profile</div>
+      <div class="health-item"><span class="health-label">Blood Group</span><span class="health-val" id="bloodGroup">Not set</span></div>
+      <div class="health-item"><span class="health-label">Age</span><span class="health-val" id="ageVal">Not set</span></div>
+      <div class="health-item"><span class="health-label">Weight</span><span class="health-val" id="weightVal">Not set</span></div>
+      <div class="health-item"><span class="health-label">Height</span><span class="health-val" id="heightVal">Not set</span></div>
+      <div class="health-item"><span class="health-label">Allergies</span><span class="health-val" id="allergiesVal">None</span></div>
+      <div class="health-item"><span class="health-label">Chronic Conditions</span><span class="health-val" id="conditionsVal">None</span></div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><div class="card-title">✏️ Update Health Info</div></div>
+      <div style="padding:1rem;">
+        <div class="form-row" style="margin-bottom:0.8rem;">
+          <div class="form-group">
+            <label class="form-label">🩸 Blood Group</label>
+            <select class="form-input" id="bloodInput">
+              <option>Select</option>
+              <option>A+</option><option>A-</option>
+              <option>B+</option><option>B-</option>
+              <option>O+</option><option>O-</option>
+              <option>AB+</option><option>AB-</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">👤 Age</label>
+            <input type="number" class="form-input" id="ageInput" placeholder="Your age"/>
+          </div>
+        </div>
+        <div class="form-row" style="margin-bottom:0.8rem;">
+          <div class="form-group">
+            <label class="form-label">⚖️ Weight (kg)</label>
+            <input type="number" class="form-input" id="weightInput" placeholder="kg"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">📏 Height (cm)</label>
+            <input type="number" class="form-input" id="heightInput" placeholder="cm"/>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">⚠️ Allergies</label>
+          <input type="text" class="form-input" id="allergiesInput" placeholder="e.g. Penicillin, Aspirin"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">🏥 Chronic Conditions</label>
+          <input type="text" class="form-input" id="conditionsInput" placeholder="e.g. Diabetes, Hypertension"/>
+        </div>
+        <button class="btn-save" onclick="saveHealthInfo()">💾 Save Health Info</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MY DETAILS -->
+  <div class="section" id="detailsSection">
+    <div class="card">
+      <div class="card-header"><div class="card-title">👤 Personal Details</div></div>
+      <div style="padding:1rem;">
+        <div class="form-group">
+          <label class="form-label">👤 Full Name</label>
+          <input type="text" class="form-input" id="nameInput" placeholder="Your full name"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">📱 Phone Number</label>
+          <input type="tel" class="form-input" id="phoneInput" placeholder="+91 XXXXX XXXXX"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">📧 Email</label>
+          <input type="email" class="form-input" id="emailInput" placeholder="your@email.com"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">🏠 Default Delivery Address</label>
+          <input type="text" class="form-input" id="addressInput" placeholder="Your home address"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">📅 Date of Birth</label>
+          <input type="date" class="form-input" id="dobInput"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">👤 Gender</label>
+          <select class="form-input" id="genderInput">
+            <option>Select Gender</option>
+            <option>Male</option>
+            <option>Female</option>
+            <option>Other</option>
+            <option>Prefer not to say</option>
+          </select>
+        </div>
+        <button class="btn-save" onclick="saveProfile()">💾 Save Details</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SETTINGS -->
+  <div class="section" id="settingsSection">
+    <div class="card" style="margin-bottom:1rem;">
+      <div class="card-header"><div class="card-title">🔔 Notifications</div></div>
+      <div class="settings-item">
+        <div class="settings-icon" style="background:rgba(0,201,127,0.1);">📦</div>
+        <div style="flex:1;"><div class="settings-label">Order Updates</div><div class="settings-sub">Get notified when order status changes</div></div>
+        <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+      </div>
+      <div class="settings-item">
+        <div class="settings-icon" style="background:rgba(77,166,255,0.1);">💊</div>
+        <div style="flex:1;"><div class="settings-label">Medicine Reminders</div><div class="settings-sub">Reminder to take your medicines</div></div>
+        <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+      </div>
+      <div class="settings-item">
+        <div class="settings-icon" style="background:rgba(255,209,102,0.1);">🎉</div>
+        <div style="flex:1;"><div class="settings-label">Offers & Discounts</div><div class="settings-sub">Get notified about deals</div></div>
+        <div class="toggle" onclick="this.classList.toggle('on')"></div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:1rem;">
+      <div class="card-header"><div class="card-title">🔐 Account</div></div>
+      <div class="settings-item" onclick="changePassword()">
+        <div class="settings-icon" style="background:rgba(167,139,250,0.1);">🔑</div>
+        <div style="flex:1;"><div class="settings-label">Change Password</div><div class="settings-sub">Update your login password</div></div>
+        <div class="settings-arrow">→</div>
+      </div>
+      <div class="settings-item" onclick="window.location.href='medifast-prescription-reader.html'">
+        <div class="settings-icon" style="background:rgba(0,201,127,0.1);">📄</div>
+        <div style="flex:1;"><div class="settings-label">Upload Prescription</div><div class="settings-sub">AI powered prescription reader</div></div>
+        <div class="settings-arrow">→</div>
+      </div>
+      <div class="settings-item" onclick="window.location.href='medifast-healthcare.html'">
+        <div class="settings-icon" style="background:rgba(77,166,255,0.1);">🛡️</div>
+        <div style="flex:1;"><div class="settings-label">Insurance</div><div class="settings-sub">View or buy health insurance</div></div>
+        <div class="settings-arrow">→</div>
+      </div>
+      <div class="settings-item" onclick="deleteAccount()">
+        <div class="settings-icon" style="background:rgba(255,92,92,0.1);">🗑️</div>
+        <div style="flex:1;"><div class="settings-label" style="color:var(--red);">Delete Account</div><div class="settings-sub">Permanently delete your account</div></div>
+        <div class="settings-arrow">→</div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:1rem;">
+      <div class="card-header"><div class="card-title">ℹ️ About</div></div>
+      <div class="settings-item">
+        <div class="settings-icon" style="background:var(--gray-dim);">💊</div>
+        <div style="flex:1;"><div class="settings-label">MediFast</div><div class="settings-sub">Version 1.0 • Medicine in 10 Minutes</div></div>
+      </div>
+      <div class="settings-item" onclick="window.location.href='medifast-security.html'">
+        <div class="settings-icon" style="background:rgba(0,201,127,0.1);">🔐</div>
+        <div style="flex:1;"><div class="settings-label">Privacy & Security</div><div class="settings-sub">How we protect your data</div></div>
+        <div class="settings-arrow">→</div>
+      </div>
+    </div>
+
+    <button class="btn-logout" onclick="handleLogout()">🚪 Logout from MediFast</button>
+  </div>
+
+  <div class="bottom-spacer"></div>
+</div>
+
+<nav class="bottom-nav">
+  <a class="nav-item" href="medifast-patient-search.html"><span class="nav-icon">🏠</span><span class="nav-label">Home</span></a>
+  <a class="nav-item" href="medifast-maps.html"><span class="nav-icon">🗺️</span><span class="nav-label">Map</span></a>
+  <a class="nav-item" href="medifast-order-tracking.html"><span class="nav-icon">🛒</span><span class="nav-label">Orders</span></a>
+  <a class="nav-item" href="medifast-healthcare.html"><span class="nav-icon">🏥</span><span class="nav-label">Health</span></a>
+  <a class="nav-item active" href="#"><span class="nav-icon">👤</span><span class="nav-label">Profile</span></a>
+</nav>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, onAuthStateChanged, signOut, updatePassword, EmailAuthProvider, reauthenticateWithCredential } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, query, where, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const app = initializeApp({
+  apiKey: "AIzaSyDuTHbKG_Gpagz4ioEDemdfhc4LeP35B1Y",
+  authDomain: "medifast-bf0d0.firebaseapp.com",
+  projectId: "medifast-bf0d0",
+  storageBucket: "medifast-bf0d0.firebasestorage.app",
+  messagingSenderId: "666399516240",
+  appId: "1:666399516240:web:82fde9e70b79cdcc0e1355"
+});
+
+const auth = getAuth(app);
+const db = getFirestore(app);
+let currentUser = null;
+
+onAuthStateChanged(auth, async (user) => {
+  if (!user) { window.location.href = 'medifast-auth.html'; return; }
+  currentUser = user;
+  loadProfile(user);
+  loadOrders(user.uid);
+});
+
+async function loadProfile(user) {
+  const snap = await getDoc(doc(db, 'users', user.uid));
+  const data = snap.exists() ? snap.data() : {};
+
+  const name = data.name || user.displayName || 'Patient';
+  const email = user.email || '';
+  const initial = name.charAt(0).toUpperCase();
+
+  document.getElementById('avatarBig').textContent = initial;
+  document.getElementById('profileName').textContent = name;
+  document.getElementById('profileEmail').textContent = email;
+  document.getElementById('nameInput').value = name;
+  document.getElementById('phoneInput').value = data.phone || '';
+  document.getElementById('emailInput').value = email;
+  document.getElementById('addressInput').value = data.address || '';
+
+  // Health info
+  if (data.health) {
+    const h = data.health;
+    document.getElementById('bloodGroup').textContent = h.bloodGroup || 'Not set';
+    document.getElementById('ageVal').textContent = h.age ? h.age + ' years' : 'Not set';
+    document.getElementById('weightVal').textContent = h.weight ? h.weight + ' kg' : 'Not set';
+    document.getElementById('heightVal').textContent = h.height ? h.height + ' cm' : 'Not set';
+    document.getElementById('allergiesVal').textContent = h.allergies || 'None';
+    document.getElementById('conditionsVal').textContent = h.conditions || 'None';
+    if (h.bloodGroup) document.getElementById('bloodInput').value = h.bloodGroup;
+    if (h.age) document.getElementById('ageInput').value = h.age;
+    if (h.weight) document.getElementById('weightInput').value = h.weight;
+    if (h.height) document.getElementById('heightInput').value = h.height;
+    if (h.allergies) document.getElementById('allergiesInput').value = h.allergies;
+    if (h.conditions) document.getElementById('conditionsInput').value = h.conditions;
+  }
+}
+
+async function loadOrders(uid) {
+  const container = document.getElementById('orderHistoryList');
+  try {
+    const q = query(collection(db, 'orders'), where('patientId', '==', uid));
+    const snap = await getDocs(q);
+    const orders = [];
+    snap.forEach(d => orders.push({ id: d.id, ...d.data() }));
+    orders.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+
+    document.getElementById('totalOrders').textContent = orders.length;
+
+    // Calculate savings (demo)
+    const savings = orders.reduce((sum, o) => sum + (o.total || 0) * 0.05, 0);
+    document.getElementById('totalSaved').textContent = '₹' + Math.round(savings);
+
+    if (orders.length === 0) {
+      container.innerHTML = `<div class="empty"><span class="empty-icon">📦</span><p>No orders yet!</p><a href="medifast-patient-search.html" style="display:inline-block;margin-top:0.8rem;background:var(--emerald);color:var(--navy);padding:0.6rem 1.2rem;border-radius:10px;font-weight:700;text-decoration:none;font-size:0.85rem;">Search Medicines</a></div>`;
+      return;
+    }
+
+    const statusColors = { delivered: 'ob-green', preparing: 'ob-yellow', new: 'ob-blue', cancelled: 'ob-red', out: 'ob-yellow' };
+    const statusIcons = { delivered: 'rgba(0,201,127,0.1)', new: 'rgba(77,166,255,0.1)', preparing: 'rgba(255,209,102,0.1)', out: 'rgba(251,146,60,0.1)', cancelled: 'rgba(255,92,92,0.1)' };
+
+    container.innerHTML = orders.map(o => `
+      <div class="order-item" onclick="window.location.href='medifast-order-tracking.html'">
+        <div class="order-icon" style="background:${statusIcons[o.status] || 'rgba(77,166,255,0.1)'};">
+          ${o.status === 'delivered' ? '✅' : o.status === 'cancelled' ? '❌' : o.status === 'out' ? '🛵' : '📦'}
+        </div>
+        <div class="order-info">
+          <div class="order-pharmacy">${o.pharmacyName || 'Pharmacy'}</div>
+          <div class="order-detail">
+            ${o.medicines?.map(m => m.name).join(', ') || 'Medicine order'} •
+            ${o.createdAt?.toDate?.()?.toLocaleDateString('en-IN') || 'Recently'}
+          </div>
+        </div>
+        <div class="order-right">
+          <span class="order-amount">₹${o.total || 0}</span>
+          <span class="order-badge ${statusColors[o.status] || 'ob-blue'}">${o.status || 'New'}</span>
+        </div>
+      </div>
+    `).join('');
+  } catch(e) {
+    container.innerHTML = `<div class="empty"><span class="empty-icon">📦</span><p>No orders yet!</p></div>`;
+  }
+}
+
+window.saveProfile = async function() {
+  if (!currentUser) return;
+  try {
+    await setDoc(doc(db, 'users', currentUser.uid), {
+      name: document.getElementById('nameInput').value,
+      phone: document.getElementById('phoneInput').value,
+      address: document.getElementById('addressInput').value,
+      updatedAt: serverTimestamp()
+    }, { merge: true });
+    toast('✅ Profile saved successfully!');
+  } catch(e) { toast('⚠️ Error saving profile!'); }
+};
+
+window.saveHealthInfo = async function() {
+  if (!currentUser) return;
+  try {
+    await setDoc(doc(db, 'users', currentUser.uid), {
+      health: {
+        bloodGroup: document.getElementById('bloodInput').value,
+        age: document.getElementById('ageInput').value,
+        weight: document.getElementById('weightInput').value,
+        height: document.getElementById('heightInput').value,
+        allergies: document.getElementById('allergiesInput').value,
+        conditions: document.getElementById('conditionsInput').value,
+      },
+      updatedAt: serverTimestamp()
+    }, { merge: true });
+    toast('✅ Health info saved!');
+    loadProfile(currentUser);
+  } catch(e) { toast('⚠️ Error saving health info!'); }
+};
+
+window.handleLogout = async function() {
+  if (!confirm('Are you sure you want to logout?')) return;
+  await signOut(auth);
+  window.location.href = 'medifast-auth.html';
+};
+
+window.changePassword = function() {
+  const newPass = prompt('Enter new password (min 6 characters):');
+  if (!newPass || newPass.length < 6) { toast('⚠️ Password too short!'); return; }
+  currentUser.updatePassword(newPass)
+    .then(() => toast('✅ Password changed successfully!'))
+    .catch(() => toast('⚠️ Please re-login to change password!'));
+};
+
+window.deleteAccount = function() {
+  if (!confirm('⚠️ Are you sure? This will permanently delete your account and all data!')) return;
+  toast('Contact support to delete your account: support@medifast.in');
+};
+</script>
+
+<script>
+function switchTab(tab, el) {
+  document.querySelectorAll('.ptab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById(tab + 'Section').classList.add('active');
+}
+
+function toast(msg) {
+  const t = document.createElement('div');
+  t.style.cssText = 'position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#131F33;border:1px solid rgba(0,201,127,0.3);color:white;padding:0.75rem 1.1rem;border-radius:12px;font-size:0.8rem;font-weight:600;z-index:500;box-shadow:0 8px 30px rgba(0,0,0,0.4);max-width:90%;text-align:center;';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 3500);
+}
+</script>
+
+</body>
+</html>
+<script>
+if("serviceWorker"in navigator){window.addEventListener("load",()=>{navigator.serviceWorker.register("/medifast-0.1/service-worker.js").then(()=>console.log("✅ MediFast PWA!")).catch(e=>console.log(e));});}
+let _dp;window.addEventListener("beforeinstallprompt",(e)=>{e.preventDefault();_dp=e;setTimeout(()=>{if(document.getElementById("pwa-b"))return;const b=document.createElement("div");b.id="pwa-b";b.style.cssText="position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#131F33;border:1px solid rgba(0,201,127,0.3);border-radius:14px;padding:0.8rem 1rem;display:flex;align-items:center;gap:0.8rem;z-index:9999;box-shadow:0 8px 30px rgba(0,0,0,0.4);width:340px;max-width:92%;";b.innerHTML='<span style="font-size:1.5rem;">💊</span><div style="flex:1;"><div style="font-size:0.82rem;font-weight:700;color:white;">Install MediFast!</div><div style="font-size:0.72rem;color:rgba(255,255,255,0.5);">Add to home screen</div></div><button onclick="if(_dp){_dp.prompt();_dp.userChoice.then(()=>{document.getElementById(\'pwa-b\')?.remove();_dp=null;});}" style="background:#00C97F;color:#0A1628;border:none;border-radius:8px;padding:0.4rem 0.8rem;font-size:0.78rem;font-weight:700;cursor:pointer;">Install ✅</button><button onclick="document.getElementById(\'pwa-b\').remove()" style="background:transparent;border:none;color:rgba(255,255,255,0.4);cursor:pointer;font-size:1.1rem;">✕</button>';document.body.appendChild(b);setTimeout(()=>b?.remove(),20000);},3000);});
+</script>
