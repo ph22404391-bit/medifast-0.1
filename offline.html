@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>MediFast — Offline</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: #0A1628;
+  color: white;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  text-align: center;
+}
+.icon { font-size: 5rem; margin-bottom: 1.5rem; animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.05)} }
+h1 { font-size: 1.5rem; font-weight: 800; margin-bottom: 0.5rem; }
+h1 span { color: #00C97F; }
+p { color: rgba(255,255,255,0.5); font-size: 0.9rem; line-height: 1.6; margin-bottom: 2rem; max-width: 300px; }
+.retry-btn {
+  background: #00C97F; color: #0A1628;
+  border: none; border-radius: 12px;
+  padding: 0.9rem 2rem; font-size: 0.95rem;
+  font-weight: 700; cursor: pointer;
+  margin-bottom: 1rem; width: 100%; max-width: 280px;
+  transition: all 0.2s;
+}
+.retry-btn:hover { background: #00A566; transform: translateY(-2px); }
+.status { font-size: 0.78rem; color: rgba(255,255,255,0.3); margin-top: 1rem; }
+.status-dot { display: inline-block; width: 8px; height: 8px; background: #FF5C5C; border-radius: 50%; margin-right: 0.3rem; animation: blink 1.5s infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+.cached-links { margin-top: 2rem; }
+.cached-links p { font-size: 0.82rem; color: rgba(255,255,255,0.4); margin-bottom: 0.8rem; }
+.link-btn {
+  display: block; background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 10px; padding: 0.7rem 1rem;
+  color: white; text-decoration: none;
+  font-size: 0.85rem; margin-bottom: 0.5rem;
+  transition: all 0.2s; max-width: 280px; margin: 0 auto 0.5rem;
+}
+.link-btn:hover { border-color: rgba(0,201,127,0.3); }
+</style>
+</head>
+<body>
+  <div class="icon">📶</div>
+  <h1>You're <span>Offline</span></h1>
+  <p>No internet connection detected. Please check your connection and try again.</p>
+
+  <button class="retry-btn" onclick="retryConnection()">🔄 Try Again</button>
+
+  <div class="status">
+    <span class="status-dot"></span>
+    No internet connection
+  </div>
+
+  <div class="cached-links">
+    <p>You can still access cached pages:</p>
+    <a href="/medifast-0.1/" class="link-btn">🏠 Home</a>
+    <a href="/medifast-0.1/medifast-patient-search.html" class="link-btn">🔍 Search Medicines</a>
+    <a href="/medifast-0.1/medifast-order-tracking.html" class="link-btn">📦 My Orders</a>
+  </div>
+
+  <script>
+    function retryConnection() {
+      if (navigator.onLine) {
+        window.location.href = '/medifast-0.1/';
+      } else {
+        const btn = document.querySelector('.retry-btn');
+        btn.textContent = '❌ Still offline...';
+        setTimeout(() => btn.textContent = '🔄 Try Again', 2000);
+      }
+    }
+
+    // Auto retry when connection restored
+    window.addEventListener('online', () => {
+      window.location.href = '/medifast-0.1/';
+    });
+  </script>
+</body>
+</html>

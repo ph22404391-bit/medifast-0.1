@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 200" width="500" height="200">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0A1628;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0F1E35;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="pillGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#00C97F;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#00A566;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="boltGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#C8FFF0;stop-opacity:1" />
+    </linearGradient>
+    <filter id="glow">
+      <feDropShadow dx="0" dy="0" stdDeviation="10" flood-color="#00C97F" flood-opacity="0.5"/>
+    </filter>
+    <filter id="shadow">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#00C97F" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+
+  <!-- DARK BACKGROUND -->
+  <rect width="500" height="200" fill="url(#bgGrad)" rx="16"/>
+
+  <!-- SUBTLE GRID PATTERN -->
+  <pattern id="grid" width="30" height="30" patternUnits="userSpaceOnUse">
+    <path d="M 30 0 L 0 0 0 30" fill="none" stroke="rgba(255,255,255,0.03)" stroke-width="1"/>
+  </pattern>
+  <rect width="500" height="200" fill="url(#grid)" rx="16"/>
+
+  <!-- GLOW BEHIND ICON -->
+  <ellipse cx="90" cy="100" rx="60" ry="60" fill="#00C97F" opacity="0.06"/>
+
+  <!-- ICON BACKGROUND -->
+  <rect x="30" y="30" width="120" height="140" rx="32" ry="32"
+    fill="url(#pillGrad)" filter="url(#shadow)"/>
+
+  <!-- ICON BORDER -->
+  <rect x="30" y="30" width="120" height="140" rx="32" ry="32"
+    fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="1.5"/>
+
+  <!-- PILL DIVIDER -->
+  <line x1="90" y1="42" x2="90" y2="158"
+    stroke="rgba(255,255,255,0.2)" stroke-width="1.5" stroke-dasharray="5,4"/>
+
+  <!-- LEFT DARKER HALF -->
+  <path d="M30,100 L30,62 Q30,30 62,30 L90,30 L90,170 L62,170 Q30,170 30,138 Z"
+    fill="rgba(0,0,0,0.1)"/>
+
+  <!-- LIGHTNING BOLT -->
+  <polygon
+    points="102,46 76,96 94,96 78,154 118,84 98,84"
+    fill="url(#boltGrad)" filter="url(#glow)"/>
+
+  <!-- SHINE -->
+  <ellipse cx="62" cy="58" rx="16" ry="9"
+    fill="rgba(255,255,255,0.15)" transform="rotate(-20 62 58)"/>
+
+  <!-- APP NAME -->
+  <text x="175" y="95"
+    font-family="Arial Black, sans-serif"
+    font-size="52"
+    font-weight="900"
+    fill="#FFFFFF"
+    letter-spacing="-2">Medi</text>
+
+  <text x="305" y="95"
+    font-family="Arial Black, sans-serif"
+    font-size="52"
+    font-weight="900"
+    fill="#00C97F"
+    letter-spacing="-2">Fast</text>
+
+  <!-- TAGLINE -->
+  <text x="176" y="125"
+    font-family="Arial, sans-serif"
+    font-size="13"
+    font-weight="500"
+    fill="rgba(255,255,255,0.5)"
+    letter-spacing="3">MEDICINE IN 10 MINUTES</text>
+
+  <!-- BOTTOM DOTS -->
+  <circle cx="176" cy="148" r="3" fill="#00C97F" opacity="0.8"/>
+  <circle cx="188" cy="148" r="3" fill="#00C97F" opacity="0.5"/>
+  <circle cx="200" cy="148" r="3" fill="#00C97F" opacity="0.3"/>
+
+  <!-- INDIA TAG -->
+  <rect x="380" y="155" width="95" height="26" rx="13" fill="rgba(0,201,127,0.1)" stroke="rgba(0,201,127,0.2)" stroke-width="1"/>
+  <text x="427" y="173" font-family="Arial, sans-serif" font-size="11" fill="#00C97F" text-anchor="middle" font-weight="600">🇮🇳 Made for India</text>
+</svg>

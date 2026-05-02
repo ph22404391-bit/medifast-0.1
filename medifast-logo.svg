@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 120" width="400" height="120">
+  <defs>
+    <linearGradient id="pillGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#00C97F;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#00A566;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="boltGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#E0FFF3;stop-opacity:1" />
+    </linearGradient>
+    <filter id="shadow">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#00C97F" flood-opacity="0.3"/>
+    </filter>
+    <filter id="textShadow">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#000000" flood-opacity="0.15"/>
+    </filter>
+  </defs>
+
+  <!-- PILL SHAPE BACKGROUND -->
+  <rect x="8" y="8" width="104" height="104" rx="28" ry="28"
+    fill="url(#pillGrad)" filter="url(#shadow)"/>
+
+  <!-- PILL DIVIDER LINE -->
+  <line x1="60" y1="20" x2="60" y2="100"
+    stroke="rgba(255,255,255,0.25)" stroke-width="2" stroke-dasharray="4,3"/>
+
+  <!-- LEFT HALF OF PILL (darker) -->
+  <path d="M8,60 L8,36 Q8,8 36,8 L60,8 L60,112 L36,112 Q8,112 8,84 Z"
+    fill="rgba(0,0,0,0.08)"/>
+
+  <!-- LIGHTNING BOLT ⚡ -->
+  <polygon
+    points="68,22 48,62 62,62 52,98 80,50 64,50"
+    fill="url(#boltGrad)"
+    filter="url(#shadow)"/>
+
+  <!-- APP NAME -->
+  <text x="130" y="58"
+    font-family="Arial Black, sans-serif"
+    font-size="42"
+    font-weight="900"
+    fill="#FFFFFF"
+    filter="url(#textShadow)"
+    letter-spacing="-1">Medi</text>
+
+  <text x="242" y="58"
+    font-family="Arial Black, sans-serif"
+    font-size="42"
+    font-weight="900"
+    fill="#00C97F"
+    filter="url(#textShadow)"
+    letter-spacing="-1">Fast</text>
+
+  <!-- TAGLINE -->
+  <text x="131" y="82"
+    font-family="Arial, sans-serif"
+    font-size="14"
+    font-weight="500"
+    fill="rgba(255,255,255,0.6)"
+    letter-spacing="2">MEDICINE IN 10 MINUTES</text>
+
+  <!-- SMALL DOTS DECORATION -->
+  <circle cx="131" cy="95" r="2.5" fill="#00C97F" opacity="0.6"/>
+  <circle cx="140" cy="95" r="2.5" fill="#00C97F" opacity="0.4"/>
+  <circle cx="149" cy="95" r="2.5" fill="#00C97F" opacity="0.2"/>
+</svg>

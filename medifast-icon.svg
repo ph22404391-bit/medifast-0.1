@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+  <defs>
+    <linearGradient id="pillGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#00C97F;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#00A566;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="boltGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#C8FFF0;stop-opacity:1" />
+    </linearGradient>
+    <filter id="shadow">
+      <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="#00C97F" flood-opacity="0.4"/>
+    </filter>
+  </defs>
+
+  <!-- ROUNDED SQUARE BACKGROUND -->
+  <rect x="6" y="6" width="108" height="108" rx="28" ry="28"
+    fill="url(#pillGrad)" filter="url(#shadow)"/>
+
+  <!-- INNER GLOW -->
+  <rect x="6" y="6" width="108" height="108" rx="28" ry="28"
+    fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="2"/>
+
+  <!-- PILL DIVIDER -->
+  <line x1="60" y1="14" x2="60" y2="106"
+    stroke="rgba(255,255,255,0.2)" stroke-width="1.5" stroke-dasharray="5,4"/>
+
+  <!-- LEFT DARKER HALF -->
+  <path d="M6,60 L6,34 Q6,6 34,6 L60,6 L60,114 L34,114 Q6,114 6,86 Z"
+    fill="rgba(0,0,0,0.1)"/>
+
+  <!-- LIGHTNING BOLT -->
+  <polygon
+    points="72,18 46,62 63,62 48,102 86,50 67,50"
+    fill="url(#boltGrad)"/>
+
+  <!-- SHINE EFFECT -->
+  <ellipse cx="38" cy="32" rx="14" ry="8"
+    fill="rgba(255,255,255,0.15)" transform="rotate(-20 38 32)"/>
+</svg>

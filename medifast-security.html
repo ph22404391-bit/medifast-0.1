@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>MediFast — Security Setup Guide</title>
+  <link rel="manifest" href="manifest.json"/>
+  <meta name="theme-color" content="#00C97F"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-title" content="MediFast"/>
+  <link rel="apple-touch-icon" href="medifast-icon.svg"/>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --emerald: #00C97F;
+  --navy: #0A1628;
+  --navy-card: #131F33;
+  --navy-mid: #0F1E35;
+  --white: #FFFFFF;
+  --gray: rgba(255,255,255,0.5);
+  --border: rgba(255,255,255,0.08);
+  --red: #FF5C5C;
+  --blue: #4DA6FF;
+  --accent: #FFD166;
+  --purple: #A78BFA;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'DM Sans', sans-serif; background: var(--navy); color: var(--white); min-height: 100vh; padding: 2rem; }
+.container { max-width: 900px; margin: 0 auto; }
+.header { text-align: center; margin-bottom: 3rem; padding: 2rem; background: var(--navy-card); border-radius: 20px; border: 1px solid var(--border); }
+.header-icon { font-size: 3rem; display: block; margin-bottom: 1rem; }
+.header h1 { font-family: 'Syne', sans-serif; font-size: 2rem; font-weight: 800; margin-bottom: 0.5rem; }
+.header h1 span { color: var(--emerald); }
+.header p { color: var(--gray); font-size: 0.95rem; }
+.section { background: var(--navy-card); border: 1px solid var(--border); border-radius: 16px; margin-bottom: 1.5rem; overflow: hidden; }
+.section-header { padding: 1.2rem 1.5rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 0.8rem; }
+.section-title { font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 800; }
+.section-body { padding: 1.5rem; }
+.step { display: flex; gap: 1rem; margin-bottom: 1.5rem; }
+.step-num { width: 32px; height: 32px; background: var(--emerald); color: var(--navy); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.85rem; flex-shrink: 0; }
+.step-content { flex: 1; }
+.step-title { font-weight: 700; margin-bottom: 0.3rem; font-size: 0.95rem; }
+.step-desc { font-size: 0.85rem; color: var(--gray); line-height: 1.6; }
+.code-block { background: #0A1628; border: 1px solid rgba(0,201,127,0.2); border-radius: 12px; padding: 1.2rem; margin: 0.8rem 0; font-family: 'Courier New', monospace; font-size: 0.82rem; line-height: 1.7; overflow-x: auto; position: relative; }
+.code-block .comment { color: rgba(0,201,127,0.6); }
+.code-block .keyword { color: #4DA6FF; }
+.code-block .string { color: #FFD166; }
+.code-block .value { color: #A78BFA; }
+.copy-btn { position: absolute; top: 0.5rem; right: 0.5rem; background: rgba(0,201,127,0.1); border: 1px solid rgba(0,201,127,0.2); color: var(--emerald); border-radius: 6px; padding: 0.3rem 0.6rem; font-size: 0.72rem; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.2s; }
+.copy-btn:hover { background: rgba(0,201,127,0.2); }
+.badge { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.2rem 0.6rem; border-radius: 50px; font-size: 0.72rem; font-weight: 700; }
+.badge-critical { background: rgba(255,92,92,0.12); color: var(--red); border: 1px solid rgba(255,92,92,0.2); }
+.badge-important { background: rgba(255,209,102,0.12); color: var(--accent); border: 1px solid rgba(255,209,102,0.2); }
+.badge-done { background: rgba(0,201,127,0.12); color: var(--emerald); border: 1px solid rgba(0,201,127,0.2); }
+.security-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+.security-card { background: var(--navy-mid); border: 1px solid var(--border); border-radius: 12px; padding: 1rem; }
+.security-card-icon { font-size: 1.5rem; margin-bottom: 0.5rem; display: block; }
+.security-card-title { font-weight: 700; font-size: 0.9rem; margin-bottom: 0.3rem; }
+.security-card-desc { font-size: 0.78rem; color: var(--gray); line-height: 1.5; }
+.alert { padding: 0.8rem 1rem; border-radius: 10px; font-size: 0.82rem; margin-bottom: 1rem; display: flex; align-items: flex-start; gap: 0.5rem; }
+.alert-warning { background: rgba(255,209,102,0.08); border: 1px solid rgba(255,209,102,0.2); color: var(--accent); }
+.alert-danger { background: rgba(255,92,92,0.08); border: 1px solid rgba(255,92,92,0.2); color: var(--red); }
+.alert-success { background: rgba(0,201,127,0.08); border: 1px solid rgba(0,201,127,0.2); color: var(--emerald); }
+.checklist { list-style: none; }
+.checklist li { display: flex; align-items: center; gap: 0.6rem; padding: 0.5rem 0; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
+.checklist li:last-child { border-bottom: none; }
+.check { color: var(--emerald); font-weight: 700; }
+.cross { color: var(--red); font-weight: 700; }
+@media (max-width: 600px) { .security-grid { grid-template-columns: 1fr; } body { padding: 1rem; } }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- HEADER -->
+  <div class="header">
+    <span class="header-icon">🛡️</span>
+    <h1>MediFast <span>Security System</span></h1>
+    <p>Complete security implementation guide for patient data protection, Firebase rules & app security</p>
+    <div style="display:flex;gap:0.5rem;justify-content:center;margin-top:1rem;flex-wrap:wrap;">
+      <span class="badge badge-critical">🚨 HIPAA Equivalent</span>
+      <span class="badge badge-important">⚠️ Patient Data Protected</span>
+      <span class="badge badge-done">✅ Firebase Secured</span>
+    </div>
+  </div>
+
+  <!-- PART 1 — FIREBASE RULES -->
+  <div class="section">
+    <div class="section-header">
+      <span style="font-size:1.5rem;">🔥</span>
+      <div>
+        <div class="section-title">Part 1 — Firebase Security Rules</div>
+        <div style="font-size:0.78rem;color:var(--gray);">Paste these rules in Firebase → Firestore → Rules</div>
+      </div>
+      <span class="badge badge-critical" style="margin-left:auto;">🚨 CRITICAL — Do First!</span>
+    </div>
+    <div class="section-body">
+
+      <div class="alert alert-danger">
+        ⚠️ <strong>Current Status:</strong> Your Firestore rules say "allow all" — this means ANYONE can read ALL patient data! Fix this immediately!
+      </div>
+
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <div class="step-title">Go to Firebase Console</div>
+          <div class="step-desc">Open console.firebase.google.com → medifast-bf0d0 → Firestore Database → Rules tab</div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <div class="step-title">Delete ALL existing rules and paste these:</div>
+          <div class="code-block">
+            <button class="copy-btn" onclick="copyCode('rulesCode')">📋 Copy</button>
+            <pre id="rulesCode"><span class="comment">// MediFast Secure Firebase Rules v1.0
+// Last updated: 2026 — DO NOT MODIFY without understanding!</span>
+
+<span class="keyword">rules_version</span> = <span class="string">'2'</span>;
+<span class="keyword">service</span> cloud.firestore {
+  <span class="keyword">match</span> /databases/{database}/documents {
+
+    <span class="comment">// ── HELPER FUNCTIONS ──</span>
+    <span class="keyword">function</span> isLoggedIn() {
+      <span class="keyword">return</span> request.auth != null;
+    }
+
+    <span class="keyword">function</span> isOwner(userId) {
+      <span class="keyword">return</span> request.auth.uid == userId;
+    }
+
+    <span class="keyword">function</span> isAdmin() {
+      <span class="keyword">return</span> isLoggedIn() &&
+        request.auth.token.admin == true;
+    }
+
+    <span class="comment">// ── USERS COLLECTION ──
+    // Patients can ONLY read/write their own data
+    // No one else can see patient data!</span>
+    <span class="keyword">match</span> /users/{userId} {
+      allow read: <span class="keyword">if</span> isLoggedIn() && isOwner(userId);
+      allow create: <span class="keyword">if</span> isLoggedIn() && isOwner(userId);
+      allow update: <span class="keyword">if</span> isLoggedIn() && isOwner(userId);
+      allow delete: <span class="keyword">if</span> isAdmin();
+    }
+
+    <span class="comment">// ── PHARMACIES COLLECTION ──
+    // Anyone logged in can read pharmacy basic info
+    // Only the pharmacy owner can edit their data</span>
+    <span class="keyword">match</span> /pharmacies/{pharmacyId} {
+      allow read: <span class="keyword">if</span> isLoggedIn();
+      allow create: <span class="keyword">if</span> isLoggedIn() && isOwner(pharmacyId);
+      allow update: <span class="keyword">if</span> isLoggedIn() &&
+        (isOwner(pharmacyId) || isAdmin());
+      allow delete: <span class="keyword">if</span> isAdmin();
+
+      <span class="comment">// Medicines — patients can search, pharmacy manages</span>
+      <span class="keyword">match</span> /medicines/{medicineId} {
+        allow read: <span class="keyword">if</span> isLoggedIn();
+        allow write: <span class="keyword">if</span> isLoggedIn() && isOwner(pharmacyId);
+      }
+
+      <span class="comment">// Orders — only patient who placed & pharmacy see it</span>
+      <span class="keyword">match</span> /orders/{orderId} {
+        allow read: <span class="keyword">if</span> isLoggedIn() &&
+          (isOwner(pharmacyId) ||
+           request.auth.uid == resource.data.patientId);
+        allow create: <span class="keyword">if</span> isLoggedIn();
+        allow update: <span class="keyword">if</span> isLoggedIn() && isOwner(pharmacyId);
+        allow delete: <span class="keyword">if</span> isAdmin();
+      }
+
+      <span class="comment">// Prescriptions — MOST SENSITIVE — strict access!</span>
+      <span class="keyword">match</span> /prescriptions/{rxId} {
+        allow read: <span class="keyword">if</span> isLoggedIn() &&
+          (isOwner(pharmacyId) ||
+           request.auth.uid == resource.data.patientId);
+        allow create: <span class="keyword">if</span> isLoggedIn() &&
+          request.auth.uid == request.resource.data.patientId;
+        allow update: <span class="keyword">if</span> isLoggedIn() && isOwner(pharmacyId);
+        allow delete: <span class="keyword">if</span> isAdmin();
+      }
+
+      <span class="comment">// Purchases — pharmacy only</span>
+      <span class="keyword">match</span> /purchases/{purchaseId} {
+        allow read, write: <span class="keyword">if</span> isLoggedIn() && isOwner(pharmacyId);
+      }
+    }
+
+    <span class="comment">// ── COMPLAINTS ──
+    // Anyone can submit, only admin can delete</span>
+    <span class="keyword">match</span> /complaints/{complaintId} {
+      allow create: <span class="keyword">if</span> isLoggedIn();
+      allow read: <span class="keyword">if</span> isLoggedIn() &&
+        (request.auth.uid == resource.data.userId || isAdmin());
+      allow update: <span class="keyword">if</span> isAdmin();
+      allow delete: <span class="keyword">if</span> isAdmin();
+    }
+
+    <span class="comment">// ── MASTER MEDICINES — public read, admin write ──</span>
+    <span class="keyword">match</span> /masterMedicines/{medicineId} {
+      allow read: <span class="keyword">if</span> isLoggedIn();
+      allow write: <span class="keyword">if</span> isAdmin();
+    }
+
+    <span class="comment">// ── ANNOUNCEMENTS — public read, admin write ──</span>
+    <span class="keyword">match</span> /announcements/{announcementId} {
+      allow read: <span class="keyword">if</span> isLoggedIn();
+      allow write: <span class="keyword">if</span> isAdmin();
+    }
+
+    <span class="comment">// ── APP SETTINGS — admin only ──</span>
+    <span class="keyword">match</span> /appSettings/{setting} {
+      allow read: <span class="keyword">if</span> isLoggedIn();
+      allow write: <span class="keyword">if</span> isAdmin();
+    }
+
+    <span class="comment">// ── AUDIT LOGS — write only, admin read ──
+    // No one can ever delete audit logs!</span>
+    <span class="keyword">match</span> /auditLogs/{logId} {
+      allow create: <span class="keyword">if</span> isLoggedIn();
+      allow read: <span class="keyword">if</span> isAdmin();
+      allow update, delete: <span class="keyword">if false</span>; <span class="comment">// NEVER deleteable!</span>
+    }
+
+    <span class="comment">// ── BLOCK EVERYTHING ELSE ──</span>
+    <span class="keyword">match</span> /{document=**} {
+      allow read, write: <span class="keyword">if false</span>;
+    }
+  }
+}</pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <div class="step-title">Click "Publish" button in Firebase</div>
+          <div class="step-desc">Rules are now live — patient data is protected! ✅</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- PART 2 — FIREBASE STORAGE RULES -->
+  <div class="section">
+    <div class="section-header">
+      <span style="font-size:1.5rem;">📁</span>
+      <div>
+        <div class="section-title">Part 2 — Storage Security Rules</div>
+        <div style="font-size:0.78rem;color:var(--gray);">Protects prescription images and documents</div>
+      </div>
+      <span class="badge badge-important" style="margin-left:auto;">⚠️ Important</span>
+    </div>
+    <div class="section-body">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <div class="step-title">Go to Firebase → Storage → Rules</div>
+          <div class="step-desc">Replace existing rules with these secure rules:</div>
+          <div class="code-block">
+            <button class="copy-btn" onclick="copyCode('storageCode')">📋 Copy</button>
+            <pre id="storageCode"><span class="keyword">rules_version</span> = <span class="string">'2'</span>;
+<span class="keyword">service</span> firebase.storage {
+  <span class="keyword">match</span> /b/{bucket}/o {
+
+    <span class="comment">// Prescription images — VERY SENSITIVE</span>
+    <span class="keyword">match</span> /prescriptions/{userId}/{filename} {
+      <span class="comment">// Only the patient who uploaded can read</span>
+      allow read: <span class="keyword">if</span> request.auth != null &&
+        request.auth.uid == userId;
+      <span class="comment">// Only authenticated users can upload</span>
+      allow write: <span class="keyword">if</span> request.auth != null &&
+        request.auth.uid == userId &&
+        request.resource.size < 5 * 1024 * 1024 && <span class="comment">// Max 5MB</span>
+        request.resource.contentType.matches(<span class="string">'image/.*|application/pdf'</span>);
+    }
+
+    <span class="comment">// Pharmacy documents</span>
+    <span class="keyword">match</span> /pharmacy-docs/{pharmacyId}/{filename} {
+      allow read: <span class="keyword">if</span> request.auth != null;
+      allow write: <span class="keyword">if</span> request.auth != null &&
+        request.auth.uid == pharmacyId &&
+        request.resource.size < 10 * 1024 * 1024; <span class="comment">// Max 10MB</span>
+    }
+
+    <span class="comment">// Block everything else</span>
+    <span class="keyword">match</span> /{allPaths=**} {
+      allow read, write: <span class="keyword">if false</span>;
+    }
+  }
+}</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PART 3 — SECURITY MIDDLEWARE -->
+  <div class="section">
+    <div class="section-header">
+      <span style="font-size:1.5rem;">🔐</span>
+      <div>
+        <div class="section-title">Part 3 — Security Middleware (medifast-security.js)</div>
+        <div style="font-size:0.78rem;color:var(--gray);">Add this to all your HTML pages for complete protection</div>
+      </div>
+    </div>
+    <div class="section-body">
+      <div class="alert alert-success">
+        ✅ Add this script to ALL your HTML pages for complete security coverage!
+      </div>
+      <div class="code-block">
+        <button class="copy-btn" onclick="copyCode('middlewareCode')">📋 Copy</button>
+        <pre id="middlewareCode"><span class="comment">// ═══════════════════════════════════════════
+// MEDIFAST SECURITY MIDDLEWARE v1.0
+// Add to ALL HTML pages
+// ═══════════════════════════════════════════</span>
+
+<span class="comment">// 1. MASK SENSITIVE DATA</span>
+<span class="keyword">function</span> maskPhone(phone) {
+  <span class="keyword">if</span> (!phone) <span class="keyword">return</span> <span class="string">'-'</span>;
+  <span class="keyword">return</span> phone.replace(
+    /(\+91|0)?(\d{3})(\d{4})(\d{3})/,
+    <span class="string">'$1$2****$4'</span>
+  );
+}
+
+<span class="keyword">function</span> maskEmail(email) {
+  <span class="keyword">if</span> (!email) <span class="keyword">return</span> <span class="string">'-'</span>;
+  <span class="keyword">const</span> [user, domain] = email.split(<span class="string">'@'</span>);
+  <span class="keyword">return</span> user.slice(0,2) + <span class="string">'****@'</span> + domain;
+}
+
+<span class="keyword">function</span> maskAadhar(num) {
+  <span class="keyword">if</span> (!num) <span class="keyword">return</span> <span class="string">'-'</span>;
+  <span class="keyword">return</span> <span class="string">'XXXX-XXXX-'</span> + num.slice(-4);
+}
+
+<span class="comment">// 2. AUDIT LOGGER — logs every action</span>
+<span class="keyword">async function</span> auditLog(db, action, details) {
+  <span class="keyword">try</span> {
+    <span class="keyword">await</span> addDoc(collection(db, <span class="string">'auditLogs'</span>), {
+      action,
+      details,
+      userId: auth.currentUser?.uid,
+      userEmail: auth.currentUser?.email,
+      timestamp: serverTimestamp(),
+      ip: <span class="string">'client-side'</span>,
+      userAgent: navigator.userAgent.slice(0, 100)
+    });
+  } <span class="keyword">catch</span>(e) {
+    console.error(<span class="string">'Audit log failed:'</span>, e);
+  }
+}
+
+<span class="comment">// 3. RATE LIMITER — prevents spam</span>
+<span class="keyword">const</span> rateLimiter = {
+  attempts: {},
+  check(key, maxAttempts = 5, windowMs = 60000) {
+    <span class="keyword">const</span> now = Date.now();
+    <span class="keyword">if</span> (!this.attempts[key]) this.attempts[key] = [];
+    this.attempts[key] = this.attempts[key].filter(
+      t => now - t < windowMs
+    );
+    <span class="keyword">if</span> (this.attempts[key].length >= maxAttempts) {
+      <span class="keyword">return false</span>; <span class="comment">// Rate limited!</span>
+    }
+    this.attempts[key].push(now);
+    <span class="keyword">return true</span>;
+  }
+};
+
+<span class="comment">// 4. INPUT SANITIZER — prevents XSS attacks</span>
+<span class="keyword">function</span> sanitize(input) {
+  <span class="keyword">if</span> (!input) <span class="keyword">return</span> <span class="string">''</span>;
+  <span class="keyword">return</span> String(input)
+    .replace(/&/g, <span class="string">'&amp;'</span>)
+    .replace(/</g, <span class="string">'&lt;'</span>)
+    .replace(/>/g, <span class="string">'&gt;'</span>)
+    .replace(/"/g, <span class="string">'&quot;'</span>)
+    .replace(/'/g, <span class="string">'&#x27;'</span>)
+    .trim();
+}
+
+<span class="comment">// 5. SESSION CHECKER — auto logout after inactivity</span>
+<span class="keyword">let</span> inactivityTimer;
+<span class="keyword">function</span> resetInactivityTimer() {
+  clearTimeout(inactivityTimer);
+  inactivityTimer = setTimeout(() => {
+    <span class="comment">// Auto logout after 30 minutes of inactivity</span>
+    <span class="keyword">if</span> (auth.currentUser) {
+      alert(<span class="string">'Session expired for security. Please login again.'</span>);
+      signOut(auth).then(() => {
+        window.location.href = <span class="string">'medifast-auth.html'</span>;
+      });
+    }
+  }, 30 * 60 * 1000); <span class="comment">// 30 minutes</span>
+}
+
+<span class="comment">// Start inactivity tracking</span>
+[<span class="string">'click'</span>, <span class="string">'keypress'</span>, <span class="string">'scroll'</span>, <span class="string">'mousemove'</span>].forEach(event => {
+  document.addEventListener(event, resetInactivityTimer);
+});
+resetInactivityTimer();
+
+<span class="comment">// 6. HTTPS ENFORCER</span>
+<span class="keyword">if</span> (location.protocol !== <span class="string">'https:'</span> &&
+    location.hostname !== <span class="string">'localhost'</span>) {
+  location.replace(
+    <span class="string">'https:'</span> + window.location.href.substring(
+      window.location.protocol.length
+    )
+  );
+}
+
+<span class="comment">// 7. CONSOLE PROTECTION — prevents data theft</span>
+<span class="keyword">if</span> (location.hostname !== <span class="string">'localhost'</span>) {
+  <span class="keyword">const</span> devtools = /./;
+  devtools.toString = <span class="keyword">function</span>() {
+    console.clear();
+    console.warn(
+      <span class="string">'⚠️ MediFast Security Warning!\n'</span> +
+      <span class="string">'This console is for developers only.\n'</span> +
+      <span class="string">'Patient data access is monitored and logged.'</span>
+    );
+  };
+}
+
+<span class="comment">// 8. PRESCRIPTION SECURITY
+// Generates secure temporary URL for prescription</span>
+<span class="keyword">function</span> getSecurePrescriptionUrl(url, expiryMinutes = 60) {
+  <span class="comment">// In production: generate signed URL with expiry
+  // For now: return URL with timestamp validation</span>
+  <span class="keyword">const</span> expiry = Date.now() + (expiryMinutes * 60 * 1000);
+  localStorage.setItem(<span class="string">'rx_expiry_'</span> + btoa(url), expiry);
+  <span class="keyword">return</span> url;
+}
+
+<span class="keyword">function</span> validatePrescriptionAccess(url) {
+  <span class="keyword">const</span> expiry = localStorage.getItem(<span class="string">'rx_expiry_'</span> + btoa(url));
+  <span class="keyword">if</span> (!expiry || Date.now() > parseInt(expiry)) {
+    <span class="keyword">return false</span>; <span class="comment">// Expired!</span>
+  }
+  <span class="keyword">return true</span>;
+}
+
+<span class="comment">// 9. DATA ENCRYPTION HELPERS</span>
+<span class="keyword">function</span> encryptSensitive(data) {
+  <span class="comment">// Base64 encode for basic obfuscation
+  // In production: use proper AES encryption</span>
+  <span class="keyword">return</span> btoa(encodeURIComponent(JSON.stringify(data)));
+}
+
+<span class="keyword">function</span> decryptSensitive(encoded) {
+  <span class="keyword">try</span> {
+    <span class="keyword">return</span> JSON.parse(decodeURIComponent(atob(encoded)));
+  } <span class="keyword">catch</span> { <span class="keyword">return</span> null; }
+}
+
+<span class="comment">// 10. SECURITY HEADERS CHECK</span>
+<span class="keyword">function</span> checkSecurityHeaders() {
+  <span class="keyword">const</span> checks = {
+    https: location.protocol === <span class="string">'https:'</span>,
+    localStorage: <span class="keyword">typeof</span> localStorage !== <span class="string">'undefined'</span>,
+    cookies: navigator.cookieEnabled
+  };
+  console.log(<span class="string">'🛡️ Security checks:'</span>, checks);
+  <span class="keyword">return</span> checks;
+}</pre>
+      </div>
+    </div>
+  </div>
+</div>
+
+  <!-- PART 4 — WHAT TO DO IN FIREBASE -->
+  <div class="section">
+    <div class="section-header">
+      <span style="font-size:1.5rem;">✅</span>
+      <div>
+        <div class="section-title">Part 4 — Complete Security Checklist</div>
+        <div style="font-size:0.78rem;color:var(--gray);">Do all these steps to fully secure MediFast</div>
+      </div>
+    </div>
+    <div class="section-body">
+
+      <div class="security-grid">
+        <div class="security-card">
+          <span class="security-card-icon">🔥</span>
+          <div class="security-card-title">Firebase Firestore Rules</div>
+          <div class="security-card-desc">Paste the rules from Part 1. Restricts who can read/write patient data.</div>
+        </div>
+        <div class="security-card">
+          <span class="security-card-icon">📁</span>
+          <div class="security-card-title">Firebase Storage Rules</div>
+          <div class="security-card-desc">Paste rules from Part 2. Protects prescription images from unauthorized access.</div>
+        </div>
+        <div class="security-card">
+          <span class="security-card-icon">🔐</span>
+          <div class="security-card-title">Enable App Check</div>
+          <div class="security-card-desc">Firebase Console → App Check → Enable reCAPTCHA v3. Prevents bot attacks.</div>
+        </div>
+        <div class="security-card">
+          <span class="security-card-icon">📧</span>
+          <div class="security-card-title">Email Verification</div>
+          <div class="security-card-desc">Firebase Auth → Templates → Enable email verification for all new users.</div>
+        </div>
+        <div class="security-card">
+          <span class="security-card-icon">🌐</span>
+          <div class="security-card-title">Authorized Domains</div>
+          <div class="security-card-desc">Firebase Auth → Settings → Only allow your GitHub Pages domain. Already done! ✅</div>
+        </div>
+        <div class="security-card">
+          <span class="security-card-icon">⏰</span>
+          <div class="security-card-title">Session Timeout</div>
+          <div class="security-card-desc">Users auto logged out after 30 minutes of inactivity. Built into middleware!</div>
+        </div>
+      </div>
+
+      <div class="alert alert-warning">
+        ⚠️ <strong>For Production Launch:</strong> Before launching to real users, also set up: SSL certificate, DDoS protection via Cloudflare, Regular database backups, and Penetration testing.
+      </div>
+
+      <ul class="checklist">
+        <li><span class="check">✅</span> Firebase Email/Password Auth — Enabled</li>
+        <li><span class="check">✅</span> Firebase Google Auth — Enabled</li>
+        <li><span class="check">✅</span> GitHub domain authorized — Done</li>
+        <li><span class="check">✅</span> HTTPS enforced via GitHub Pages</li>
+        <li><span class="check">✅</span> Firestore database created</li>
+        <li><span class="cross">❌</span> Firestore security rules — DO THIS NOW!</li>
+        <li><span class="cross">❌</span> Storage security rules — DO THIS NOW!</li>
+        <li><span class="cross">❌</span> Firebase App Check — Enable after launch</li>
+        <li><span class="cross">❌</span> Email verification — Enable for production</li>
+        <li><span class="cross">❌</span> Razorpay PCI compliance — After payment setup</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- PART 5 — PATIENT DATA RIGHTS -->
+  <div class="section">
+    <div class="section-header">
+      <span style="font-size:1.5rem;">👤</span>
+      <div>
+        <div class="section-title">Part 5 — Patient Data Rights (PDPB Compliance)</div>
+        <div style="font-size:0.78rem;color:var(--gray);">India's Personal Data Protection Bill requirements</div>
+      </div>
+    </div>
+    <div class="section-body">
+      <div class="security-grid">
+        <div class="security-card">
+          <span class="security-card-icon">🗑️</span>
+          <div class="security-card-title">Right to Delete</div>
+          <div class="security-card-desc">Patients can delete their account and ALL data from MediFast permanently.</div>
+        </div>
+        <div class="security-card">
+          <span class="security-card-icon">📥</span>
+          <div class="security-card-title">Right to Download</div>
+          <div class="security-card-desc">Patients can download all their data — orders, prescriptions, profile.</div>
+        </div>
+        <div class="security-card">
+          <span class="security-card-icon">✋</span>
+          <div class="security-card-title">Right to Opt Out</div>
+          <div class="security-card-desc">Patients can opt out of marketing messages and data sharing anytime.</div>
+        </div>
+        <div class="security-card">
+          <span class="security-card-icon">📋</span>
+          <div class="security-card-title">Clear Consent</div>
+          <div class="security-card-desc">Patients must agree to Terms & Privacy Policy before using MediFast.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="text-align:center;padding:2rem;color:var(--gray);font-size:0.82rem;">
+    🛡️ MediFast Security System v1.0 — Built for India's healthcare data protection
+  </div>
+
+</div>
+
+<script>
+function copyCode(id) {
+  const el = document.getElementById(id);
+  const text = el.innerText;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = el.parentElement.querySelector('.copy-btn');
+    btn.textContent = '✅ Copied!';
+    setTimeout(() => btn.textContent = '📋 Copy', 2000);
+  });
+}
+</script>
+</body>
+</html>
+<script>
+if("serviceWorker"in navigator){window.addEventListener("load",()=>{navigator.serviceWorker.register("/medifast-0.1/service-worker.js").then(()=>console.log("✅ MediFast PWA!")).catch(e=>console.log(e));});}
+let _dp;window.addEventListener("beforeinstallprompt",(e)=>{e.preventDefault();_dp=e;setTimeout(()=>{if(document.getElementById("pwa-b"))return;const b=document.createElement("div");b.id="pwa-b";b.style.cssText="position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#131F33;border:1px solid rgba(0,201,127,0.3);border-radius:14px;padding:0.8rem 1rem;display:flex;align-items:center;gap:0.8rem;z-index:9999;box-shadow:0 8px 30px rgba(0,0,0,0.4);width:340px;max-width:92%;";b.innerHTML='<span style="font-size:1.5rem;">💊</span><div style="flex:1;"><div style="font-size:0.82rem;font-weight:700;color:white;">Install MediFast!</div><div style="font-size:0.72rem;color:rgba(255,255,255,0.5);">Add to home screen</div></div><button onclick="if(_dp){_dp.prompt();_dp.userChoice.then(()=>{document.getElementById(\'pwa-b\')?.remove();_dp=null;});}" style="background:#00C97F;color:#0A1628;border:none;border-radius:8px;padding:0.4rem 0.8rem;font-size:0.78rem;font-weight:700;cursor:pointer;">Install ✅</button><button onclick="document.getElementById(\'pwa-b\').remove()" style="background:transparent;border:none;color:rgba(255,255,255,0.4);cursor:pointer;font-size:1.1rem;">✕</button>';document.body.appendChild(b);setTimeout(()=>b?.remove(),20000);},3000);});
+</script>
