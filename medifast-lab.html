@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>MediFast — Lab Dashboard</title>
+<link rel="manifest" href="manifest.json"/>
+<meta name="theme-color" content="#7C3AED"/>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --purple: #7C3AED;
+  --purple-dark: #6D28D9;
+  --purple-light: rgba(124,58,237,0.1);
+  --navy: #0A1628;
+  --navy-mid: #0F1E35;
+  --navy-card: #131F33;
+  --white: #FFFFFF;
+  --gray: rgba(255,255,255,0.5);
+  --gray-dim: rgba(255,255,255,0.06);
+  --border: rgba(255,255,255,0.07);
+  --emerald: #00C97F;
+  --accent: #FFD166;
+  --red: #FF5C5C;
+  --blue: #4DA6FF;
+  --teal: #14B8A6;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--navy);color:var(--white);min-height:100vh;display:flex;}
+
+.sidebar{width:240px;background:var(--navy-mid);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;}
+.sidebar-logo{padding:1.2rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:0.7rem;}
+.logo-icon{width:38px;height:38px;background:linear-gradient(135deg,var(--purple),var(--teal));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;box-shadow:0 0 16px rgba(124,58,237,0.3);}
+.logo-text{font-family:'Syne',sans-serif;font-weight:800;font-size:1rem;}
+.logo-text span{color:var(--purple);}
+.logo-sub{font-size:0.6rem;color:var(--purple);background:rgba(124,58,237,0.1);border:1px solid rgba(124,58,237,0.2);padding:0.1rem 0.5rem;border-radius:50px;margin-top:0.2rem;width:fit-content;}
+.nav-section{padding:0.8rem;flex:1;overflow-y:auto;}
+.nav-label{font-size:0.6rem;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:1px;padding:0 0.7rem;margin-bottom:0.3rem;margin-top:0.8rem;}
+.nav-item{display:flex;align-items:center;gap:0.6rem;padding:0.6rem 0.8rem;border-radius:10px;cursor:pointer;transition:all 0.2s;color:var(--gray);font-size:0.82rem;font-weight:500;text-decoration:none;margin-bottom:0.1rem;}
+.nav-item:hover{background:var(--gray-dim);color:var(--white);}
+.nav-item.active{background:var(--purple-light);color:var(--purple);font-weight:600;}
+.nav-badge{margin-left:auto;background:var(--red);color:white;font-size:0.6rem;font-weight:700;padding:0.1rem 0.4rem;border-radius:50px;}
+.sidebar-lab{padding:0.8rem;border-top:1px solid var(--border);}
+.lab-info{background:var(--purple-light);border:1px solid rgba(124,58,237,0.2);border-radius:12px;padding:0.7rem;display:flex;align-items:center;gap:0.6rem;}
+.lab-avatar{width:34px;height:34px;background:linear-gradient(135deg,var(--purple),var(--teal));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:0.9rem;flex-shrink:0;}
+
+.main{margin-left:240px;flex:1;display:flex;flex-direction:column;min-height:100vh;}
+.topbar{background:rgba(10,22,40,0.92);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0.85rem 1.5rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
+.topbar-title{font-family:'Syne',sans-serif;font-size:1rem;font-weight:800;}
+.btn{padding:0.45rem 0.9rem;border-radius:8px;font-size:0.78rem;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s;border:none;display:inline-flex;align-items:center;gap:0.3rem;}
+.btn-purple{background:var(--purple);color:white;}
+.btn-green{background:var(--emerald);color:var(--navy);}
+.btn-red{background:rgba(255,92,92,0.1);color:var(--red);border:1px solid rgba(255,92,92,0.2)!important;}
+.btn-outline{background:var(--gray-dim);color:var(--white);border:1px solid var(--border)!important;}
+
+.content{padding:1.2rem;flex:1;}
+.section{display:none;}
+.section.active{display:block;}
+
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:0.8rem;margin-bottom:1.2rem;}
+.stat-card{background:var(--navy-card);border:1px solid var(--border);border-radius:14px;padding:1.1rem;position:relative;overflow:hidden;transition:all 0.3s;animation:fadeUp 0.5s ease both;}
+.stat-card:hover{transform:translateY(-3px);}
+.stat-card::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.stat-card.purple::after{background:var(--purple);}
+.stat-card.green::after{background:var(--emerald);}
+.stat-card.yellow::after{background:var(--accent);}
+.stat-card.blue::after{background:var(--blue);}
+.stat-icon{font-size:1.3rem;margin-bottom:0.6rem;display:block;}
+.stat-value{font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;display:block;margin-bottom:0.1rem;}
+.stat-label{font-size:0.7rem;color:var(--gray);}
+
+.card{background:var(--navy-card);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:1rem;}
+.card-header{padding:0.85rem 1rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.card-title{font-family:'Syne',sans-serif;font-size:0.88rem;font-weight:700;display:flex;align-items:center;gap:0.5rem;}
+
+.booking-card{background:var(--gray-dim);border:1px solid var(--border);border-radius:12px;padding:1rem;margin-bottom:0.7rem;transition:all 0.2s;animation:fadeUp 0.4s ease both;}
+.booking-card:hover{border-color:rgba(124,58,237,0.2);}
+.booking-card.urgent{border-color:rgba(255,209,102,0.3);background:rgba(255,209,102,0.04);}
+.booking-top{display:flex;gap:0.8rem;align-items:flex-start;margin-bottom:0.6rem;}
+.patient-icon{width:42px;height:42px;background:var(--purple-light);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;}
+.patient-name{font-size:0.88rem;font-weight:700;margin-bottom:0.15rem;}
+.patient-detail{font-size:0.72rem;color:var(--gray);}
+.booking-actions{display:flex;gap:0.5rem;margin-top:0.7rem;flex-wrap:wrap;}
+
+.badge{font-size:0.67rem;font-weight:700;padding:0.2rem 0.55rem;border-radius:50px;}
+.badge-new{background:rgba(255,209,102,0.12);color:var(--accent);}
+.badge-accepted{background:rgba(0,201,127,0.12);color:var(--emerald);}
+.badge-sample{background:rgba(77,166,255,0.12);color:var(--blue);}
+.badge-processing{background:rgba(124,58,237,0.12);color:var(--purple);}
+.badge-completed{background:rgba(0,201,127,0.12);color:var(--emerald);}
+.badge-cancelled{background:rgba(255,92,92,0.12);color:var(--red);}
+
+.data-table{width:100%;border-collapse:collapse;}
+.data-table th{font-size:0.67rem;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:0.5px;padding:0.6rem 0.8rem;text-align:left;border-bottom:1px solid var(--border);}
+.data-table td{padding:0.75rem 0.8rem;font-size:0.82rem;border-bottom:1px solid var(--border);vertical-align:middle;}
+.data-table tr:last-child td{border-bottom:none;}
+.data-table tr:hover td{background:var(--gray-dim);}
+
+.upload-zone{border:2px dashed rgba(124,58,237,0.3);border-radius:12px;padding:1.5rem;text-align:center;cursor:pointer;transition:all 0.2s;background:var(--purple-light);margin-bottom:0.6rem;}
+.upload-zone:hover{border-color:var(--purple);}
+.upload-zone input{display:none;}
+
+.fg{margin-bottom:0.8rem;}
+.fl{font-size:0.72rem;font-weight:600;color:rgba(255,255,255,0.6);display:block;margin-bottom:0.3rem;}
+.fi{width:100%;background:rgba(255,255,255,0.05);border:1.5px solid var(--border);border-radius:10px;padding:0.72rem 0.9rem;font-family:'DM Sans',sans-serif;font-size:0.88rem;color:white;outline:none;transition:all 0.2s;}
+.fi::placeholder{color:rgba(255,255,255,0.2);}
+.fi:focus{border-color:var(--purple);}
+.fi-select{width:100%;background:rgba(255,255,255,0.05);border:1.5px solid var(--border);border-radius:10px;padding:0.72rem 0.9rem;font-family:'DM Sans',sans-serif;font-size:0.88rem;color:white;outline:none;cursor:pointer;}
+.fi-select option{background:var(--navy-card);}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:0.7rem;}
+.btn-submit{width:100%;background:var(--purple);color:white;border:none;border-radius:12px;padding:0.9rem;font-size:0.93rem;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;margin-top:0.5rem;}
+
+.alert{padding:0.7rem 0.9rem;border-radius:10px;font-size:0.8rem;margin-bottom:0.8rem;display:none;align-items:center;gap:0.5rem;}
+.alert.show{display:flex;}
+.alert-success{background:rgba(0,201,127,0.1);border:1px solid rgba(0,201,127,0.2);color:var(--emerald);}
+.alert-error{background:rgba(255,92,92,0.1);border:1px solid rgba(255,92,92,0.2);color:var(--red);}
+.alert-info{background:rgba(124,58,237,0.1);border:1px solid rgba(124,58,237,0.2);color:var(--purple);}
+
+.pending-screen{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:2rem;}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+
+/* Tests chips */
+.test-chip{display:inline-flex;align-items:center;gap:0.3rem;background:var(--purple-light);border:1px solid rgba(124,58,237,0.2);color:var(--purple);border-radius:50px;padding:0.25rem 0.7rem;font-size:0.72rem;font-weight:600;margin:0.2rem;}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">🔬</div>
+    <div>
+      <span class="logo-text">Medi<span>Fast</span></span>
+      <span class="logo-sub">🧪 LAB PANEL</span>
+    </div>
+  </div>
+  <nav class="nav-section">
+    <div class="nav-label">Overview</div>
+    <a class="nav-item active" onclick="showSection('dashboard',this)"><span style="width:20px;text-align:center;">📊</span> Dashboard</a>
+    <a class="nav-item" onclick="showSection('bookings',this)"><span style="width:20px;text-align:center;">📋</span> Test Bookings <span class="nav-badge" id="bookingBadge">0</span></a>
+    <div class="nav-label">Tests & Reports</div>
+    <a class="nav-item" onclick="showSection('reports',this)"><span style="width:20px;text-align:center;">📄</span> Upload Reports</a>
+    <a class="nav-item" onclick="showSection('tests',this)"><span style="width:20px;text-align:center;">🧪</span> Manage Tests</a>
+    <a class="nav-item" onclick="showSection('collection',this)"><span style="width:20px;text-align:center;">🏠</span> Home Collection</a>
+    <div class="nav-label">Analytics</div>
+    <a class="nav-item" onclick="showSection('analytics',this)"><span style="width:20px;text-align:center;">📊</span> Analytics</a>
+    <div class="nav-label">Account</div>
+    <a class="nav-item" onclick="showSection('profile',this)"><span style="width:20px;text-align:center;">🏥</span> Lab Profile</a>
+    <a class="nav-item" onclick="showSection('settings',this)"><span style="width:20px;text-align:center;">⚙️</span> Settings</a>
+  </nav>
+  <div class="sidebar-lab">
+    <div class="lab-info">
+      <div class="lab-avatar">🔬</div>
+      <div>
+        <div style="font-size:0.78rem;font-weight:700;" id="labName">Lab Loading...</div>
+        <div style="font-size:0.62rem;color:var(--purple);">🧪 Diagnostics</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+  <div class="topbar">
+    <div class="topbar-title" id="pageTitle">📊 Dashboard</div>
+    <div style="display:flex;align-items:center;gap:0.7rem;">
+      <div style="display:flex;align-items:center;gap:0.4rem;background:rgba(0,201,127,0.1);border:1px solid rgba(0,201,127,0.2);border-radius:50px;padding:0.3rem 0.8rem;font-size:0.75rem;font-weight:600;color:var(--emerald);">
+        <div style="width:7px;height:7px;background:var(--emerald);border-radius:50%;animation:blink 1.5s infinite;"></div>
+        Open
+      </div>
+      <button class="btn btn-purple" onclick="showSection('reports',null)">📄 Upload Report</button>
+    </div>
+  </div>
+
+  <div class="content">
+    <div id="alertContainer"></div>
+
+    <!-- ── DASHBOARD ── -->
+    <div class="section active" id="dashboardSection">
+      <div class="stats-grid">
+        <div class="stat-card purple" style="animation-delay:0.05s">
+          <span class="stat-icon">📋</span>
+          <span class="stat-value" id="todayBookings">0</span>
+          <div class="stat-label">Today's Bookings</div>
+        </div>
+        <div class="stat-card yellow" style="animation-delay:0.1s">
+          <span class="stat-icon">⏳</span>
+          <span class="stat-value" id="pendingTests">0</span>
+          <div class="stat-label">Pending Tests</div>
+        </div>
+        <div class="stat-card green" style="animation-delay:0.15s">
+          <span class="stat-icon">📄</span>
+          <span class="stat-value" id="reportsUploaded">0</span>
+          <div class="stat-label">Reports Uploaded</div>
+        </div>
+        <div class="stat-card blue" style="animation-delay:0.2s">
+          <span class="stat-icon">💰</span>
+          <span class="stat-value" id="todayRevenue">₹0</span>
+          <div class="stat-label">Today's Revenue</div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">📋 Recent Bookings</div>
+            <button class="btn btn-outline" onclick="showSection('bookings',null)">View All</button>
+          </div>
+          <div style="padding:0.8rem;" id="dashBookingList">
+            <div style="text-align:center;padding:1.5rem;color:var(--gray);font-size:0.82rem;">Loading...</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">⚡ Quick Actions</div></div>
+          <div style="padding:0.8rem;display:flex;flex-direction:column;gap:0.5rem;">
+            <button class="btn btn-purple" style="width:100%;justify-content:center;" onclick="showSection('reports',null)">📄 Upload Test Report</button>
+            <button class="btn btn-green" style="width:100%;justify-content:center;" onclick="showSection('bookings',null)">📋 View All Bookings</button>
+            <button class="btn btn-outline" style="width:100%;justify-content:center;" onclick="showSection('collection',null)">🏠 Home Collection Requests</button>
+            <button class="btn btn-outline" style="width:100%;justify-content:center;" onclick="showSection('tests',null)">🧪 Manage Test Menu</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── BOOKINGS ── -->
+    <div class="section" id="bookingsSection">
+      <div style="display:flex;gap:0.5rem;margin-bottom:1rem;flex-wrap:wrap;">
+        <button class="btn btn-purple" onclick="filterBookings('all')">All</button>
+        <button class="btn btn-outline" onclick="filterBookings('new')">🆕 New</button>
+        <button class="btn btn-outline" onclick="filterBookings('accepted')">✅ Accepted</button>
+        <button class="btn btn-outline" onclick="filterBookings('sample_collected')">🩸 Sample Collected</button>
+        <button class="btn btn-outline" onclick="filterBookings('processing')">🔬 Processing</button>
+        <button class="btn btn-outline" onclick="filterBookings('completed')">✔️ Completed</button>
+      </div>
+      <div id="bookingsList">
+        <div style="text-align:center;padding:2rem;color:var(--gray);">Loading bookings...</div>
+      </div>
+    </div>
+
+    <!-- ── UPLOAD REPORTS ── -->
+    <div class="section" id="reportsSection">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+        <div class="card">
+          <div class="card-header"><div class="card-title">📄 Upload Test Report</div></div>
+          <div style="padding:1rem;">
+            <div class="fg">
+              <label class="fl">🔖 Booking ID / Patient Name</label>
+              <input type="text" class="fi" id="reportBookingId" placeholder="Booking ID or patient name"/>
+            </div>
+            <div class="fg">
+              <label class="fl">👤 Patient Phone</label>
+              <input type="tel" class="fi" id="reportPatientPhone" placeholder="+91 XXXXX XXXXX"/>
+            </div>
+            <div class="fg">
+              <label class="fl">🧪 Test Name</label>
+              <input type="text" class="fi" id="reportTestName" placeholder="e.g. Complete Blood Count, HbA1c"/>
+            </div>
+            <div class="fg">
+              <label class="fl">📅 Report Date</label>
+              <input type="date" class="fi" id="reportDate"/>
+            </div>
+            <div class="fg">
+              <label class="fl">📊 Test Result Summary</label>
+              <textarea class="fi" id="reportSummary" placeholder="Brief summary of results..." style="min-height:80px;resize:vertical;"></textarea>
+            </div>
+            <div class="fg">
+              <label class="fl">📄 Upload Report File (PDF/Image)</label>
+              <div class="upload-zone" onclick="document.getElementById('reportFile').click()">
+                <input type="file" id="reportFile" accept=".pdf,image/*" onchange="handleReportFile(this)"/>
+                <div style="font-size:1.5rem;margin-bottom:0.3rem;">📄</div>
+                <div style="font-size:0.82rem;font-weight:600;" id="reportFileLabel">Click to upload report</div>
+                <div style="font-size:0.7rem;color:var(--gray);">PDF or Image • Max 10MB</div>
+              </div>
+            </div>
+            <div class="fg">
+              <label class="fl">🔒 Report Visibility</label>
+              <select class="fi-select" id="reportVisibility">
+                <option value="patient_only">Patient Only</option>
+                <option value="patient_doctor">Patient + Referring Doctor</option>
+              </select>
+            </div>
+            <button class="btn-submit" onclick="uploadReport()">📤 Upload & Send to Patient</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div class="card-title">📋 Recent Reports</div></div>
+          <div style="padding:0.8rem;" id="recentReportsList">
+            <div style="text-align:center;padding:1.5rem;color:var(--gray);font-size:0.82rem;">No reports uploaded yet!</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── MANAGE TESTS ── -->
+    <div class="section" id="testsSection">
+      <div class="card" style="margin-bottom:1rem;">
+        <div class="card-header">
+          <div class="card-title">➕ Add New Test</div>
+        </div>
+        <div style="padding:1rem;">
+          <div class="form-row" style="margin-bottom:0.8rem;">
+            <div class="fg"><label class="fl">Test Name</label><input type="text" class="fi" id="testName" placeholder="e.g. Complete Blood Count"/></div>
+            <div class="fg"><label class="fl">Category</label>
+              <select class="fi-select" id="testCategory">
+                <option>Haematology</option><option>Biochemistry</option><option>Microbiology</option>
+                <option>Radiology</option><option>Pathology</option><option>Cardiology</option>
+                <option>Hormones</option><option>Vitamins</option><option>Diabetes</option>
+                <option>Thyroid</option><option>Liver Function</option><option>Kidney Function</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row" style="margin-bottom:0.8rem;">
+            <div class="fg"><label class="fl">Price (₹)</label><input type="number" class="fi" id="testPrice" placeholder="Test price"/></div>
+            <div class="fg"><label class="fl">Report Time</label>
+              <select class="fi-select" id="testReportTime">
+                <option>Same day (4-6 hrs)</option><option>Next day</option>
+                <option>2-3 days</option><option>Immediate (1 hr)</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="fg"><label class="fl">Home Collection</label>
+              <select class="fi-select" id="testHomeCollection">
+                <option value="yes">Yes — Available</option>
+                <option value="no">No — Visit Lab Only</option>
+              </select>
+            </div>
+            <div class="fg"><label class="fl">Fasting Required</label>
+              <select class="fi-select" id="testFasting">
+                <option value="no">No</option>
+                <option value="yes">Yes — 8-12 hours fast</option>
+                <option value="optional">Optional</option>
+              </select>
+            </div>
+          </div>
+          <button class="btn btn-purple" style="margin-top:0.5rem;" onclick="addTest()">+ Add Test</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">🧪 Test Menu</div>
+          <input type="text" placeholder="🔍 Search test..." style="background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:8px;padding:0.4rem 0.7rem;color:white;font-size:0.8rem;outline:none;width:170px;" oninput="searchTests(this.value)"/>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="data-table">
+            <thead>
+              <tr><th>Test Name</th><th>Category</th><th>Price</th><th>Report Time</th><th>Home Collection</th><th>Status</th><th>Actions</th></tr>
+            </thead>
+            <tbody id="testTableBody">
+              <tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--gray);">No tests added yet!</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── HOME COLLECTION ── -->
+    <div class="section" id="collectionSection">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">🏠 Home Collection Requests</div>
+        </div>
+        <div style="padding:1rem;" id="collectionList">
+          <div style="text-align:center;padding:2rem;color:var(--gray);">
+            <div style="font-size:2rem;margin-bottom:0.5rem;">🏠</div>
+            <p>No home collection requests yet!</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── ANALYTICS ── -->
+    <div class="section" id="analyticsSection">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+        <div class="card">
+          <div class="card-header"><div class="card-title">📊 Monthly Overview</div></div>
+          <div style="padding:1rem;" id="monthlyAnalytics">
+            <div style="text-align:center;color:var(--gray);">Loading analytics...</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">🧪 Popular Tests</div></div>
+          <div style="padding:1rem;" id="popularTests">
+            <div style="text-align:center;color:var(--gray);">Loading...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── LAB PROFILE ── -->
+    <div class="section" id="profileSection">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+        <div class="card">
+          <div class="card-header"><div class="card-title">🏥 Lab Details</div></div>
+          <div style="padding:1rem;">
+            <div class="fg"><label class="fl">Lab Name</label><input type="text" class="fi" id="profileLabName" placeholder="Lab name"/></div>
+            <div class="fg"><label class="fl">Lab Type</label>
+              <select class="fi-select" id="profileLabType">
+                <option>Pathology Lab</option><option>Radiology Centre</option>
+                <option>Pathology + Radiology</option><option>Diagnostic Centre</option>
+              </select>
+            </div>
+            <div class="fg"><label class="fl">Owner Name</label><input type="text" class="fi" id="profileOwner" placeholder="Owner/Manager name"/></div>
+            <div class="fg"><label class="fl">Phone</label><input type="tel" class="fi" id="profilePhone" placeholder="+91 XXXXX XXXXX"/></div>
+            <div class="fg"><label class="fl">Address</label><input type="text" class="fi" id="profileAddress" placeholder="Full lab address"/></div>
+            <div class="form-row">
+              <div class="fg"><label class="fl">Open Time</label><input type="time" class="fi" id="openTime"/></div>
+              <div class="fg"><label class="fl">Close Time</label><input type="time" class="fi" id="closeTime"/></div>
+            </div>
+            <div class="fg">
+              <label class="fl">🏅 Certifications</label>
+              <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+                <label style="display:flex;align-items:center;gap:0.3rem;font-size:0.8rem;cursor:pointer;"><input type="checkbox" id="certNABL"/> NABL</label>
+                <label style="display:flex;align-items:center;gap:0.3rem;font-size:0.8rem;cursor:pointer;"><input type="checkbox" id="certISO"/> ISO</label>
+                <label style="display:flex;align-items:center;gap:0.3rem;font-size:0.8rem;cursor:pointer;"><input type="checkbox" id="certNABH"/> NABH</label>
+                <label style="display:flex;align-items:center;gap:0.3rem;font-size:0.8rem;cursor:pointer;"><input type="checkbox" id="certCAP"/> CAP</label>
+              </div>
+            </div>
+            <div class="fg">
+              <label class="fl">🏠 Home Collection Available</label>
+              <select class="fi-select" id="profileHomeCollection">
+                <option value="yes">Yes</option>
+                <option value="no">No</option>
+              </select>
+            </div>
+            <button class="btn-submit" onclick="saveLabProfile()">💾 Save Lab Profile</button>
+          </div>
+        </div>
+
+        <!-- Certificate Upload -->
+        <div class="card">
+          <div class="card-header"><div class="card-title">📄 Lab Certificates</div></div>
+          <div style="padding:1rem;">
+            <div style="background:var(--purple-light);border:1px solid rgba(124,58,237,0.2);border-radius:10px;padding:0.8rem;margin-bottom:1rem;">
+              <div style="font-size:0.8rem;font-weight:700;color:var(--purple);margin-bottom:0.3rem;">🔬 Verification Required</div>
+              <div style="font-size:0.75rem;color:rgba(255,255,255,0.6);line-height:1.5;">Upload your lab registration and quality certificates for faster approval and patient trust.</div>
+            </div>
+
+            <div class="fg">
+              <label class="fl">📜 Lab Registration Certificate (Required)</label>
+              <div class="upload-zone" onclick="document.getElementById('labRegCert').click()">
+                <input type="file" id="labRegCert" accept="image/*,.pdf" onchange="handleLabCert(this,'labReg')"/>
+                <div style="font-size:1.5rem;">📄</div>
+                <div style="font-size:0.8rem;font-weight:600;" id="labRegLabel">Upload Registration</div>
+              </div>
+            </div>
+
+            <div class="fg">
+              <label class="fl">🏅 Quality Certificate (NABL/ISO)</label>
+              <div class="upload-zone" onclick="document.getElementById('labQualCert').click()">
+                <input type="file" id="labQualCert" accept="image/*,.pdf" onchange="handleLabCert(this,'quality')"/>
+                <div style="font-size:1.5rem;">🏅</div>
+                <div style="font-size:0.8rem;font-weight:600;" id="labQualLabel">Upload NABL/ISO Certificate</div>
+              </div>
+            </div>
+
+            <div class="fg">
+              <label class="fl">🪪 Owner Photo ID</label>
+              <div class="upload-zone" onclick="document.getElementById('labOwnerId').click()">
+                <input type="file" id="labOwnerId" accept="image/*,.pdf" onchange="handleLabCert(this,'ownerId')"/>
+                <div style="font-size:1.5rem;">🪪</div>
+                <div style="font-size:0.8rem;font-weight:600;" id="labOwnerIdLabel">Upload Aadhar/PAN</div>
+              </div>
+            </div>
+
+            <button class="btn-submit" onclick="submitLabVerification()">📤 Submit for Verification</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SETTINGS ── -->
+    <div class="section" id="settingsSection">
+      <div class="card">
+        <div class="card-header"><div class="card-title">⚙️ Settings</div></div>
+        <div style="padding:1rem;">
+          <div class="fg"><label class="fl">🔔 New Booking Notifications</label>
+            <select class="fi-select"><option>Sound + Popup</option><option>Popup only</option></select>
+          </div>
+          <div class="fg"><label class="fl">📱 WhatsApp Reports</label>
+            <select class="fi-select"><option value="yes">Yes — Send report via WhatsApp</option><option value="no">No</option></select>
+          </div>
+          <button class="btn-submit" onclick="saveLabSettings()">💾 Save Settings</button>
+          <button onclick="handleLogout()" style="width:100%;background:rgba(255,92,92,0.08);border:1px solid rgba(255,92,92,0.2);color:var(--red);border-radius:12px;padding:0.9rem;font-size:0.88rem;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;margin-top:0.5rem;">🚪 Logout</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import {
+  getFirestore, collection, doc, setDoc, getDoc, getDocs,
+  addDoc, updateDoc, onSnapshot, query, where, serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
+
+const app = initializeApp({
+  apiKey: "AIzaSyDuTHbKG_Gpagz4ioEDemdfhc4LeP35B1Y",
+  authDomain: "medifast-bf0d0.firebaseapp.com",
+  projectId: "medifast-bf0d0",
+  storageBucket: "medifast-bf0d0.firebasestorage.app",
+  messagingSenderId: "666399516240",
+  appId: "1:666399516240:web:82fde9e70b79cdcc0e1355"
+});
+
+const auth = getAuth(app);
+const db = getFirestore(app);
+const storage = getStorage(app);
+
+let currentLab = null;
+let labData = {};
+let allBookings = [];
+let allTests = [];
+let labCertFiles = {};
+let reportFile = null;
+
+onAuthStateChanged(auth, async (user) => {
+  if (!user) { window.location.href = 'medifast-auth.html'; return; }
+  currentLab = user;
+
+  const snap = await getDoc(doc(db, 'labs', user.uid));
+  if (snap.exists()) {
+    labData = snap.data();
+    if (labData.status === 'pending') { showPendingScreen(); return; }
+    if (labData.status === 'rejected') { showRejectedScreen(); return; }
+    loadLabProfile();
+    startRealTimeBookings();
+    loadTests();
+    loadAnalytics();
+  } else {
+    showSection('profile', null);
+    showAlert('info', '👋 Welcome! Please complete your lab profile to get started!');
+  }
+});
+
+function loadLabProfile() {
+  document.getElementById('labName').textContent = labData.name || 'My Lab';
+  document.getElementById('profileLabName').value = labData.name || '';
+  document.getElementById('profileOwner').value = labData.owner || '';
+  document.getElementById('profilePhone').value = labData.phone || '';
+  document.getElementById('profileAddress').value = labData.address || '';
+}
+
+function showPendingScreen() {
+  document.querySelector('.main').innerHTML = `
+    <div class="pending-screen">
+      <div style="font-size:4rem;margin-bottom:1rem;">⏳</div>
+      <div style="font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:800;margin-bottom:0.5rem;">Verification Pending!</div>
+      <div style="color:rgba(255,255,255,0.5);margin-bottom:1.5rem;max-width:400px;line-height:1.6;">Your lab documents are being verified by MediFast admin. This usually takes 24-48 hours.</div>
+      <a href="medifast-auth.html" style="background:var(--purple);color:white;padding:0.8rem 2rem;border-radius:12px;text-decoration:none;font-weight:700;">← Go Back</a>
+    </div>
+  `;
+}
+
+function showRejectedScreen() {
+  document.querySelector('.main').innerHTML = `
+    <div class="pending-screen">
+      <div style="font-size:4rem;margin-bottom:1rem;">❌</div>
+      <div style="font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:800;margin-bottom:0.5rem;">Application Rejected</div>
+      <div style="color:rgba(255,255,255,0.5);margin-bottom:1.5rem;max-width:400px;line-height:1.6;">Reason: ${labData.rejectionReason || 'Does not meet requirements'}.</div>
+      <a href="medifast-auth.html" style="background:var(--purple);color:white;padding:0.8rem 2rem;border-radius:12px;text-decoration:none;font-weight:700;">← Go Back</a>
+    </div>
+  `;
+}
+
+// ── REAL TIME BOOKINGS ──
+function startRealTimeBookings() {
+  const q = query(collection(db, 'labBookings'), where('labId', '==', currentLab.uid));
+  onSnapshot(q, (snap) => {
+    const bookings = [];
+    snap.forEach(d => bookings.push({ id: d.id, ...d.data() }));
+    bookings.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+    allBookings = bookings;
+
+    const newCount = bookings.filter(b => b.status === 'new').length;
+    document.getElementById('bookingBadge').textContent = newCount;
+    document.getElementById('todayBookings').textContent = bookings.length;
+    document.getElementById('pendingTests').textContent = bookings.filter(b => b.status !== 'completed' && b.status !== 'cancelled').length;
+
+    const revenue = bookings.filter(b => b.status === 'completed').reduce((sum, b) => sum + (parseFloat(b.price) || 0), 0);
+    document.getElementById('todayRevenue').textContent = '₹' + revenue;
+
+    renderBookings(bookings);
+    renderDashBookings(bookings.slice(0, 3));
+  });
+}
+
+function renderDashBookings(bookings) {
+  const c = document.getElementById('dashBookingList');
+  if (bookings.length === 0) {
+    c.innerHTML = `<div style="text-align:center;padding:1.5rem;color:var(--gray);font-size:0.82rem;">No bookings yet!</div>`;
+    return;
+  }
+  c.innerHTML = bookings.map(b => `
+    <div style="display:flex;align-items:center;gap:0.7rem;padding:0.7rem;background:rgba(255,255,255,0.03);border-radius:10px;margin-bottom:0.5rem;">
+      <div style="font-size:1.2rem;">🧪</div>
+      <div style="flex:1;">
+        <div style="font-size:0.82rem;font-weight:700;">${b.patientName || 'Patient'}</div>
+        <div style="font-size:0.7rem;color:rgba(255,255,255,0.4);">${b.testName || 'Lab Test'} • ${b.time || 'TBD'}</div>
+      </div>
+      <span class="badge badge-${b.status || 'new'}">${b.status || 'new'}</span>
+    </div>
+  `).join('');
+}
+
+function renderBookings(bookings) {
+  const c = document.getElementById('bookingsList');
+  if (bookings.length === 0) {
+    c.innerHTML = `<div style="text-align:center;padding:3rem;color:var(--gray);"><div style="font-size:2.5rem;margin-bottom:0.5rem;">🧪</div><p>No bookings yet!</p></div>`;
+    return;
+  }
+  c.innerHTML = bookings.map((b, i) => `
+    <div class="booking-card ${b.status === 'new' ? 'urgent' : ''}" style="animation-delay:${i*0.07}s">
+      <div class="booking-top">
+        <div class="patient-icon">🧪</div>
+        <div style="flex:1;">
+          <div class="patient-name">${b.patientName || 'Patient'}</div>
+          <div class="patient-detail">📱 ${b.patientPhone || '-'} • ${b.testName || 'Lab Test'}</div>
+          <div class="patient-detail" style="margin-top:0.2rem;">
+            ${b.homeCollection ? '🏠 Home Collection' : '🏥 Visit Lab'} •
+            📅 ${b.date || 'Today'} • 🕐 ${b.time || 'TBD'}
+          </div>
+          <div class="patient-detail">💳 ₹${b.price || 0} • ${b.paymentMethod || 'Pending'}</div>
+        </div>
+        <span class="badge badge-${b.status || 'new'}">${b.status || 'New'}</span>
+      </div>
+      <div class="booking-actions">
+        ${b.status === 'new' ? `
+          <button class="btn btn-green" onclick="updateBookingStatus('${b.id}','accepted')" style="flex:1;justify-content:center;">✅ Accept</button>
+          <button class="btn btn-red" onclick="updateBookingStatus('${b.id}','cancelled')">❌ Reject</button>
+          <button onclick="callPatient('${b.patientPhone}')" style="background:rgba(77,166,255,0.1);border:1px solid rgba(77,166,255,0.2);color:var(--blue);border-radius:8px;padding:0.45rem 0.7rem;cursor:pointer;font-size:0.78rem;font-weight:700;">📞</button>
+        ` : b.status === 'accepted' ? `
+          <button class="btn btn-purple" onclick="updateBookingStatus('${b.id}','sample_collected')" style="flex:1;justify-content:center;">🩸 Sample Collected</button>
+          <button onclick="callPatient('${b.patientPhone}')" style="background:rgba(77,166,255,0.1);border:1px solid rgba(77,166,255,0.2);color:var(--blue);border-radius:8px;padding:0.45rem 0.7rem;cursor:pointer;font-size:0.78rem;font-weight:700;">📞</button>
+        ` : b.status === 'sample_collected' ? `
+          <button class="btn btn-purple" onclick="updateBookingStatus('${b.id}','processing')" style="flex:1;justify-content:center;">🔬 Start Processing</button>
+        ` : b.status === 'processing' ? `
+          <button class="btn btn-green" onclick="showSection('reports',null);document.getElementById('reportBookingId').value='${b.patientName}';document.getElementById('reportPatientPhone').value='${b.patientPhone}';document.getElementById('reportTestName').value='${b.testName}'" style="flex:1;justify-content:center;">📄 Upload Report</button>
+        ` : b.status === 'completed' ? `
+          <span style="font-size:0.78rem;color:var(--emerald);">✅ Report sent to patient</span>
+        ` : `
+          <span style="font-size:0.78rem;color:rgba(255,92,92,0.7);">❌ Cancelled</span>
+        `}
+      </div>
+    </div>
+  `).join('');
+}
+
+window.updateBookingStatus = async function(id, status) {
+  try {
+    await updateDoc(doc(db, 'labBookings', id), { status, updatedAt: serverTimestamp() });
+    const msgs = {
+      accepted: '✅ Booking accepted!',
+      sample_collected: '🩸 Sample collected!',
+      processing: '🔬 Processing started!',
+      completed: '✅ Test completed!',
+      cancelled: '❌ Booking cancelled!'
+    };
+    showAlert('success', msgs[status] || '✅ Status updated!');
+  } catch(e) { showAlert('error', '⚠️ Error: ' + e.message); }
+};
+
+window.filterBookings = function(status) {
+  const filtered = status === 'all' ? allBookings : allBookings.filter(b => b.status === status);
+  renderBookings(filtered);
+};
+
+window.callPatient = function(phone) {
+  if (phone) window.location.href = 'tel:' + phone;
+};
+
+// ── UPLOAD REPORT ──
+window.handleReportFile = function(input) {
+  reportFile = input.files[0];
+  if (reportFile) document.getElementById('reportFileLabel').textContent = '✅ ' + reportFile.name;
+};
+
+window.uploadReport = async function() {
+  const patientName = document.getElementById('reportBookingId').value.trim();
+  const patientPhone = document.getElementById('reportPatientPhone').value.trim();
+  const testName = document.getElementById('reportTestName').value.trim();
+
+  if (!patientName || !testName) { showAlert('error', '⚠️ Please fill patient name and test name!'); return; }
+
+  try {
+    let reportUrl = null;
+    if (reportFile) {
+      const storageRef = ref(storage, `lab-reports/${currentLab.uid}/${Date.now()}_${reportFile.name}`);
+      await uploadBytes(storageRef, reportFile);
+      reportUrl = await getDownloadURL(storageRef);
+    }
+
+    await addDoc(collection(db, 'labReports'), {
+      labId: currentLab.uid,
+      labName: labData.name || 'Lab',
+      patientName,
+      patientPhone,
+      testName,
+      reportDate: document.getElementById('reportDate').value,
+      summary: document.getElementById('reportSummary').value,
+      reportUrl,
+      visibility: document.getElementById('reportVisibility').value,
+      createdAt: serverTimestamp()
+    });
+
+    // Update booking status to completed
+    const booking = allBookings.find(b => b.patientPhone === patientPhone && b.testName === testName);
+    if (booking) await updateDoc(doc(db, 'labBookings', booking.id), { status: 'completed', updatedAt: serverTimestamp() });
+
+    document.getElementById('reportsUploaded').textContent =
+      parseInt(document.getElementById('reportsUploaded').textContent || 0) + 1;
+
+    showAlert('success', `✅ Report uploaded and sent to ${patientName}!`);
+    document.getElementById('reportBookingId').value = '';
+    document.getElementById('reportPatientPhone').value = '';
+    document.getElementById('reportTestName').value = '';
+    document.getElementById('reportSummary').value = '';
+    document.getElementById('reportFileLabel').textContent = 'Click to upload report';
+    reportFile = null;
+  } catch(e) { showAlert('error', '⚠️ Error uploading report: ' + e.message); }
+};
+
+// ── ADD TEST ──
+window.addTest = async function() {
+  const name = document.getElementById('testName').value.trim();
+  const price = document.getElementById('testPrice').value;
+  if (!name || !price) { showAlert('error', '⚠️ Please fill test name and price!'); return; }
+
+  try {
+    await addDoc(collection(db, `labs/${currentLab.uid}/tests`), {
+      name,
+      category: document.getElementById('testCategory').value,
+      price: parseFloat(price),
+      reportTime: document.getElementById('testReportTime').value,
+      homeCollection: document.getElementById('testHomeCollection').value,
+      fasting: document.getElementById('testFasting').value,
+      isActive: true,
+      createdAt: serverTimestamp()
+    });
+    showAlert('success', `✅ ${name} added to test menu!`);
+    document.getElementById('testName').value = '';
+    document.getElementById('testPrice').value = '';
+    loadTests();
+  } catch(e) { showAlert('error', '⚠️ Error: ' + e.message); }
+};
+
+async function loadTests() {
+  try {
+    const snap = await getDocs(collection(db, `labs/${currentLab.uid}/tests`));
+    const tests = [];
+    snap.forEach(d => tests.push({ id: d.id, ...d.data() }));
+    allTests = tests;
+    renderTests(tests);
+  } catch(e) {}
+}
+
+function renderTests(tests) {
+  const tbody = document.getElementById('testTableBody');
+  if (tests.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--gray);">No tests added yet!</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = tests.map(t => `
+    <tr>
+      <td style="font-weight:600;">${t.name}</td>
+      <td>${t.category}</td>
+      <td style="color:var(--emerald);font-weight:700;">₹${t.price}</td>
+      <td>${t.reportTime}</td>
+      <td><span style="color:${t.homeCollection === 'yes' ? 'var(--emerald)' : 'var(--gray)'};">${t.homeCollection === 'yes' ? '✅ Yes' : '❌ No'}</span></td>
+      <td><span style="font-size:0.72rem;background:rgba(0,201,127,0.1);color:var(--emerald);padding:0.2rem 0.5rem;border-radius:50px;">Active</span></td>
+      <td><button onclick="deleteTest('${t.id}','${t.name}')" style="background:rgba(255,92,92,0.1);border:1px solid rgba(255,92,92,0.2);color:var(--red);border-radius:6px;padding:0.3rem 0.5rem;cursor:pointer;font-size:0.75rem;">🗑️</button></td>
+    </tr>
+  `).join('');
+}
+
+window.deleteTest = async function(id, name) {
+  if (!confirm(`Delete ${name}?`)) return;
+  try {
+    const { deleteDoc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+    await deleteDoc(doc(db, `labs/${currentLab.uid}/tests`, id));
+    showAlert('success', `✅ ${name} removed!`);
+    loadTests();
+  } catch(e) { showAlert('error', '⚠️ Error!'); }
+};
+
+window.searchTests = function(q) {
+  const filtered = allTests.filter(t => t.name.toLowerCase().includes(q.toLowerCase()));
+  renderTests(filtered);
+};
+
+// ── ANALYTICS ──
+async function loadAnalytics() {
+  try {
+    const snap = await getDocs(query(collection(db, 'labBookings'), where('labId', '==', currentLab.uid)));
+    const bookings = [];
+    snap.forEach(d => bookings.push({ id: d.id, ...d.data() }));
+    const completed = bookings.filter(b => b.status === 'completed');
+    const revenue = completed.reduce((sum, b) => sum + (parseFloat(b.price) || 0), 0);
+
+    document.getElementById('monthlyAnalytics').innerHTML = `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.7rem;">
+        <div style="background:var(--purple-light);border:1px solid rgba(124,58,237,0.2);border-radius:12px;padding:0.9rem;text-align:center;">
+          <div style="font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:800;color:var(--purple);">${bookings.length}</div>
+          <div style="font-size:0.72rem;color:var(--gray);">Total Bookings</div>
+        </div>
+        <div style="background:rgba(0,201,127,0.08);border:1px solid rgba(0,201,127,0.15);border-radius:12px;padding:0.9rem;text-align:center;">
+          <div style="font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:800;color:var(--emerald);">₹${revenue}</div>
+          <div style="font-size:0.72rem;color:var(--gray);">Total Revenue</div>
+        </div>
+      </div>
+    `;
+
+    const testCounts = {};
+    bookings.forEach(b => { testCounts[b.testName] = (testCounts[b.testName] || 0) + 1; });
+    const sorted = Object.entries(testCounts).sort((a,b) => b[1]-a[1]).slice(0,5);
+    document.getElementById('popularTests').innerHTML = sorted.length === 0
+      ? `<div style="text-align:center;color:var(--gray);">No data yet!</div>`
+      : sorted.map(([name, count]) => `
+          <div style="display:flex;justify-content:space-between;padding:0.5rem 0;border-bottom:1px solid var(--border);">
+            <span style="font-size:0.82rem;">${name}</span>
+            <span style="font-weight:700;color:var(--purple);">${count}x</span>
+          </div>
+        `).join('');
+  } catch(e) {}
+}
+
+// ── LAB PROFILE ──
+window.handleLabCert = function(input, type) {
+  const file = input.files[0];
+  if (!file) return;
+  labCertFiles[type] = file;
+  const el = document.getElementById('lab' + type.charAt(0).toUpperCase() + type.slice(1) + 'Label');
+  if (el) el.textContent = '✅ ' + file.name;
+};
+
+window.submitLabVerification = async function() {
+  const name = document.getElementById('profileLabName').value.trim();
+  if (!name) { showAlert('error', '⚠️ Please enter lab name!'); return; }
+  if (!labCertFiles['labReg']) { showAlert('error', '⚠️ Please upload Lab Registration Certificate!'); return; }
+
+  try {
+    const uploads = {};
+    for (const [type, file] of Object.entries(labCertFiles)) {
+      const storageRef = ref(storage, `lab-certs/${currentLab.uid}/${type}_${file.name}`);
+      await uploadBytes(storageRef, file);
+      uploads[type + 'Url'] = await getDownloadURL(storageRef);
+    }
+
+    await setDoc(doc(db, 'labs', currentLab.uid), {
+      uid: currentLab.uid,
+      name,
+      type: document.getElementById('profileLabType').value,
+      owner: document.getElementById('profileOwner').value,
+      phone: document.getElementById('profilePhone').value,
+      address: document.getElementById('profileAddress').value,
+      email: currentLab.email,
+      homeCollection: document.getElementById('profileHomeCollection').value,
+      certificates: uploads,
+      certifications: {
+        nabl: document.getElementById('certNABL').checked,
+        iso: document.getElementById('certISO').checked,
+        nabh: document.getElementById('certNABH').checked,
+        cap: document.getElementById('certCAP').checked
+      },
+      status: 'pending',
+      createdAt: serverTimestamp()
+    }, { merge: true });
+
+    showAlert('success', '✅ Documents submitted! Admin will verify within 24-48 hours.');
+    setTimeout(() => showPendingScreen(), 2000);
+  } catch(e) { showAlert('error', '⚠️ Error: ' + e.message); }
+};
+
+window.saveLabProfile = async function() {
+  try {
+    await setDoc(doc(db, 'labs', currentLab.uid), {
+      name: document.getElementById('profileLabName').value,
+      owner: document.getElementById('profileOwner').value,
+      phone: document.getElementById('profilePhone').value,
+      address: document.getElementById('profileAddress').value,
+      homeCollection: document.getElementById('profileHomeCollection').value,
+      updatedAt: serverTimestamp()
+    }, { merge: true });
+    labData.name = document.getElementById('profileLabName').value;
+    document.getElementById('labName').textContent = labData.name;
+    showAlert('success', '✅ Lab profile saved!');
+  } catch(e) { showAlert('error', '⚠️ Error!'); }
+};
+
+window.saveLabSettings = function() { showAlert('success', '✅ Settings saved!'); };
+
+window.handleLogout = async function() {
+  if (!confirm('Logout?')) return;
+  await signOut(auth);
+  window.location.href = 'medifast-auth.html';
+};
+
+function showAlert(type, msg) {
+  const c = document.getElementById('alertContainer');
+  const div = document.createElement('div');
+  div.className = `alert alert-${type} show`;
+  div.textContent = msg;
+  c.innerHTML = '';
+  c.appendChild(div);
+  setTimeout(() => div.remove(), 4000);
+}
+</script>
+
+<script>
+function showSection(s, el) {
+  document.querySelectorAll('.section').forEach(x => x.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById(s + 'Section').classList.add('active');
+  if (el) el.classList.add('active');
+  const titles = {
+    dashboard:'📊 Dashboard', bookings:'📋 Test Bookings',
+    reports:'📄 Upload Reports', tests:'🧪 Test Menu',
+    collection:'🏠 Home Collection', analytics:'📊 Analytics',
+    profile:'🏥 Lab Profile', settings:'⚙️ Settings'
+  };
+  document.getElementById('pageTitle').textContent = titles[s] || s;
+}
+</script>
+</body>
+</html>
+<script>
+if("serviceWorker"in navigator){window.addEventListener("load",()=>{navigator.serviceWorker.register("/medifast-0.1/service-worker.js").then(()=>console.log("✅ MediFast PWA!")).catch(e=>console.log(e));});}
+let _dp2;window.addEventListener("beforeinstallprompt",(e)=>{e.preventDefault();_dp2=e;setTimeout(()=>{if(document.getElementById("pwa-b"))return;const b=document.createElement("div");b.id="pwa-b";b.style.cssText="position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#131F33;border:1px solid rgba(0,201,127,0.3);border-radius:14px;padding:0.8rem 1rem;display:flex;align-items:center;gap:0.8rem;z-index:9999;box-shadow:0 8px 30px rgba(0,0,0,0.4);width:340px;max-width:92%;";b.innerHTML='<span style="font-size:1.5rem;">💊</span><div style="flex:1;"><div style="font-size:0.82rem;font-weight:700;color:white;">Install MediFast!</div><div style="font-size:0.72rem;color:rgba(255,255,255,0.5);">Add to home screen</div></div><button onclick="if(_dp2){_dp2.prompt();_dp2.userChoice.then(()=>{document.getElementById(\'pwa-b\')?.remove();_dp2=null;});}" style="background:#00C97F;color:#0A1628;border:none;border-radius:8px;padding:0.4rem 0.8rem;font-size:0.78rem;font-weight:700;cursor:pointer;">Install ✅</button><button onclick="document.getElementById(\'pwa-b\').remove()" style="background:transparent;border:none;color:rgba(255,255,255,0.4);cursor:pointer;font-size:1.1rem;">✕</button>';document.body.appendChild(b);setTimeout(()=>b?.remove(),20000);},3000);});
+</script>
