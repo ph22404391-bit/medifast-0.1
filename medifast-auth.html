@@ -409,6 +409,10 @@ body::after {
             <span class="role-emoji">🏪</span>
             <div class="role-name">Pharmacy</div>
           </div>
+          <div class="role-card" id="role-doctor" onclick="selectRole('doctor')">
+            <span class="role-emoji">👨‍⚕️</span>
+            <div class="role-name">Doctor</div>
+          </div>
           <div class="role-card" id="role-lab" onclick="selectRole('lab')">
             <span class="role-emoji">🧪</span>
             <div class="role-name">Lab</div>
@@ -619,6 +623,7 @@ function showSuccess(name, role) {
     pharmacy: '🏪 Redirecting to Pharmacy Dashboard...',
     admin: '👨‍💼 Redirecting to Admin Panel...',
     lab: '🧪 Redirecting to Lab Dashboard...',
+    doctor: '👨‍⚕️ Redirecting to Doctor Panel...',
     patient: '💊 Redirecting to MediFast App...'
   };
 
@@ -626,12 +631,15 @@ function showSuccess(name, role) {
   document.getElementById('successSub').textContent = roleMessages[role] || roleMessages.patient;
 
   setTimeout(() => {
+    console.log('Redirecting role:', role);
     if (role === 'pharmacy') {
       window.location.href = 'medifast-pharmacy.html';
     } else if (role === 'admin') {
       window.location.href = 'medifast-admin.html';
     } else if (role === 'lab') {
       window.location.href = 'medifast-lab.html';
+    } else if (role === 'doctor') {
+      window.location.href = 'medifast-doctor.html';
     } else {
       window.location.href = 'medifast-patient-search.html';
     }
@@ -703,9 +711,11 @@ window.handleForgotPassword = function() {
 
 function selectRole(role) {
   window.selectedRole = role;
-  ['patient','pharmacy','lab'].forEach(r => {
-    document.getElementById('role-' + r).classList.toggle('selected', r === role);
+  ['patient','pharmacy','lab','doctor'].forEach(r => {
+    const el = document.getElementById('role-' + r);
+    if (el) el.classList.toggle('selected', r === role);
   });
+  console.log('Selected role:', role);
 }
 
 function togglePass(id, btn) {
