@@ -126,6 +126,13 @@ body{font-family:'DM Sans',sans-serif;background:var(--navy);color:var(--white);
 </style>
 </head>
 <body>
+<script>
+// MEDIFAST SECURITY LAYER v1.0
+if(location.protocol!=="https:"&&location.hostname!=="localhost"&&location.hostname!=="127.0.0.1"){location.replace("https:"+window.location.href.substring(window.location.protocol.length));}
+window.sanitize=function(s){if(!s)return"";return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#x27;");};
+window.rateLimiter={attempts:{},check:function(k,max,ms){const n=Date.now();if(!this.attempts[k])this.attempts[k]=[];this.attempts[k]=this.attempts[k].filter(t=>n-t<ms);if(this.attempts[k].length>=max)return false;this.attempts[k].push(n);return true;}};
+window.addEventListener("unhandledrejection",function(e){e.preventDefault();});
+</script>
 
 <!-- SIDEBAR -->
 <aside class="sidebar">
@@ -470,6 +477,32 @@ body{font-family:'DM Sans',sans-serif;background:var(--navy);color:var(--white);
             <button class="btn-submit" onclick="submitLabVerification()">📤 Submit for Verification</button>
           </div>
         </div>
+
+        <!-- LAB QR CODE CARD -->
+        <div class="card" id="labQRCard" style="display:none;">
+          <div class="card-header">
+            <div class="card-title">📱 Your MediFast QR Code</div>
+          </div>
+          <div style="padding:1.2rem;text-align:center;">
+            <div style="background:var(--purple-light);border:1px solid rgba(124,58,237,0.2);border-radius:12px;padding:1rem;margin-bottom:1rem;">
+              <div style="font-size:0.82rem;color:rgba(255,255,255,0.7);">
+                🎯 Share this QR with patients! When they scan it, they can directly book lab tests with you on MediFast!
+              </div>
+            </div>
+
+            <div style="background:white;padding:16px;border-radius:16px;display:inline-block;margin-bottom:1rem;box-shadow:0 8px 30px rgba(0,0,0,0.3);">
+              <div id="labQRCode"></div>
+            </div>
+
+            <div style="font-size:0.72rem;color:var(--gray);margin-bottom:1rem;word-break:break-all;padding:0 1rem;" id="labQRUrl"></div>
+
+            <div style="display:flex;flex-direction:column;gap:0.5rem;">
+              <button onclick="downloadLabQR()" style="background:var(--purple);color:white;border:none;border-radius:10px;padding:0.75rem;font-size:0.85rem;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;">⬇️ Download QR Card</button>
+              <button onclick="shareLabQR()" style="background:rgba(37,204,97,0.15);border:1px solid rgba(37,204,97,0.3);color:#25CC61;border-radius:10px;padding:0.75rem;font-size:0.85rem;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;">📤 Share via WhatsApp</button>
+              <button onclick="copyLabLink()" style="background:var(--gray-dim);border:1px solid var(--border);color:white;border-radius:10px;padding:0.75rem;font-size:0.85rem;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;">🔗 Copy Profile Link</button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -547,6 +580,11 @@ function loadLabProfile() {
   document.getElementById('profileOwner').value = labData.owner || '';
   document.getElementById('profilePhone').value = labData.phone || '';
   document.getElementById('profileAddress').value = labData.address || '';
+
+  // Generate QR if approved
+  if (labData.status === 'approved') {
+    setTimeout(() => generateLabQR(currentLab.uid, labData.name || 'Lab'), 500);
+  }
 }
 
 function showPendingScreen() {
@@ -914,7 +952,106 @@ function showAlert(type, msg) {
 }
 </script>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
+// ── LAB QR CODE ──
+let labQRGenerated = false;
+
+window.generateLabQR = function(labId, labName) {
+  const profileUrl = `https://ph22404391-bit.github.io/medifast-0.1/medifast-profile-qr.html?id=${labId}&type=lab`;
+
+  document.getElementById('labQRCard').style.display = 'block';
+  document.getElementById('labQRUrl').textContent = profileUrl;
+
+  if (!labQRGenerated) {
+    document.getElementById('labQRCode').innerHTML = '';
+    new QRCode(document.getElementById('labQRCode'), {
+      text: profileUrl,
+      width: 180,
+      height: 180,
+      colorDark: '#000000',
+      colorLight: '#FFFFFF',
+      correctLevel: QRCode.CorrectLevel.H
+    });
+    labQRGenerated = true;
+  }
+
+  window._labProfileUrl = profileUrl;
+  window._labName = labName;
+};
+
+window.downloadLabQR = function() {
+  const canvas = document.querySelector('#labQRCode canvas');
+  if (!canvas) { alert('QR not ready yet!'); return; }
+
+  const downloadCanvas = document.createElement('canvas');
+  downloadCanvas.width = 320;
+  downloadCanvas.height = 420;
+  const ctx = downloadCanvas.getContext('2d');
+
+  // Background
+  ctx.fillStyle = '#0A1628';
+  ctx.fillRect(0, 0, 320, 420);
+
+  // Header
+  ctx.fillStyle = '#7C3AED';
+  ctx.fillRect(0, 0, 320, 70);
+  ctx.fillStyle = '#FFFFFF';
+  ctx.font = 'bold 20px Arial';
+  ctx.textAlign = 'center';
+  ctx.fillText('💊 MediFast', 160, 30);
+  ctx.font = '12px Arial';
+  ctx.fillText('Healthcare in 10 Minutes', 160, 52);
+
+  // Lab name
+  ctx.fillStyle = '#FFFFFF';
+  ctx.font = 'bold 15px Arial';
+  ctx.fillText('🔬 ' + (window._labName || 'Lab'), 160, 100);
+  ctx.font = '11px Arial';
+  ctx.fillStyle = 'rgba(255,255,255,0.6)';
+  ctx.fillText('MediFast Verified Lab', 160, 118);
+
+  // QR Code
+  ctx.drawImage(canvas, 70, 130, 180, 180);
+
+  // Footer
+  ctx.fillStyle = 'rgba(255,255,255,0.8)';
+  ctx.font = 'bold 12px Arial';
+  ctx.fillText('Scan to Book Lab Test', 160, 335);
+  ctx.fillStyle = '#A78BFA';
+  ctx.font = '11px Arial';
+  ctx.fillText('medifast.in', 160, 355);
+
+  // Badge
+  ctx.fillStyle = 'rgba(167,139,250,0.2)';
+  ctx.fillRect(85, 370, 150, 28);
+  ctx.fillStyle = '#A78BFA';
+  ctx.font = 'bold 11px Arial';
+  ctx.fillText('✅ MediFast Verified Lab', 160, 389);
+
+  const link = document.createElement('a');
+  link.download = `medifast-qr-lab-${(window._labName || 'lab').replace(/\s+/g,'-')}.png`;
+  link.href = downloadCanvas.toDataURL('image/png');
+  link.click();
+};
+
+window.shareLabQR = function() {
+  const url = window._labProfileUrl;
+  if (!url) return;
+  const msg = encodeURIComponent(`🔬 Book lab tests at ${window._labName || 'Lab'} on MediFast!\n\n🏠 Home collection available!\n📄 Digital reports delivered!\n\n🔗 ${url}`);
+  window.open(`https://wa.me/?text=${msg}`, '_blank');
+};
+
+window.copyLabLink = function() {
+  const url = window._labProfileUrl;
+  if (!url) return;
+  navigator.clipboard.writeText(url).then(() => {
+    showAlert('success', '✅ Profile link copied!');
+  }).catch(() => {
+    prompt('Copy this link:', url);
+  });
+};
+
 function showSection(s, el) {
   document.querySelectorAll('.section').forEach(x => x.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -929,9 +1066,18 @@ function showSection(s, el) {
   document.getElementById('pageTitle').textContent = titles[s] || s;
 }
 </script>
+
+<!-- COPYRIGHT FOOTER -->
+<div id="medifast-copyright" style="display:none;">© 2026 MediFast Technology. All Rights Reserved.</div>
+
+<!-- MEDIFAST LEGAL FOOTER -->
+<div style="text-align:center;padding:0.8rem;font-size:0.7rem;color:rgba(255,255,255,0.25);border-top:1px solid rgba(255,255,255,0.05);margin-top:1rem;">
+  © 2026 MediFast Technology. All Rights Reserved. &nbsp;|&nbsp;
+  <a href="medifast-privacy.html" style="color:rgba(0,201,127,0.5);text-decoration:none;">Privacy Policy</a> &nbsp;|&nbsp;
+  <a href="medifast-terms.html" style="color:rgba(0,201,127,0.5);text-decoration:none;">Terms of Service</a>
+</div>
 </body>
 </html>
 <script>
-if("serviceWorker"in navigator){window.addEventListener("load",()=>{navigator.serviceWorker.register("/medifast-0.1/service-worker.js").then(()=>console.log("✅ MediFast PWA!")).catch(e=>console.log(e));});}
 let _dp2;window.addEventListener("beforeinstallprompt",(e)=>{e.preventDefault();_dp2=e;setTimeout(()=>{if(document.getElementById("pwa-b"))return;const b=document.createElement("div");b.id="pwa-b";b.style.cssText="position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#131F33;border:1px solid rgba(0,201,127,0.3);border-radius:14px;padding:0.8rem 1rem;display:flex;align-items:center;gap:0.8rem;z-index:9999;box-shadow:0 8px 30px rgba(0,0,0,0.4);width:340px;max-width:92%;";b.innerHTML='<span style="font-size:1.5rem;">💊</span><div style="flex:1;"><div style="font-size:0.82rem;font-weight:700;color:white;">Install MediFast!</div><div style="font-size:0.72rem;color:rgba(255,255,255,0.5);">Add to home screen</div></div><button onclick="if(_dp2){_dp2.prompt();_dp2.userChoice.then(()=>{document.getElementById(\'pwa-b\')?.remove();_dp2=null;});}" style="background:#00C97F;color:#0A1628;border:none;border-radius:8px;padding:0.4rem 0.8rem;font-size:0.78rem;font-weight:700;cursor:pointer;">Install ✅</button><button onclick="document.getElementById(\'pwa-b\').remove()" style="background:transparent;border:none;color:rgba(255,255,255,0.4);cursor:pointer;font-size:1.1rem;">✕</button>';document.body.appendChild(b);setTimeout(()=>b?.remove(),20000);},3000);});
 </script>
