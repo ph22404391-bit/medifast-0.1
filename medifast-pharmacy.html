@@ -1767,12 +1767,6 @@ window.printBill = function(orderId) {
     <html>
     <head>
       <title>MediFast Bill — #MF${order.id?.slice(-6).toUpperCase()}</title>
-  <link rel="manifest" href="manifest.json"/>
-  <meta name="theme-color" content="#00C97F"/>
-  <meta name="apple-mobile-web-app-capable" content="yes"/>
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
-  <meta name="apple-mobile-web-app-title" content="MediFast"/>
-  <link rel="apple-touch-icon" href="medifast-icon.svg"/>
       <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Courier New', monospace; max-width: 350px; margin: 0 auto; padding: 1rem; font-size: 12px; }
@@ -2948,12 +2942,6 @@ window.generateBill = function() {
   const printWindow = window.open('', '_blank');
   printWindow.document.write(`
     <html><head><title>MediFast Bill - ${billNo}</title>
-  <link rel="manifest" href="manifest.json"/>
-  <meta name="theme-color" content="#00C97F"/>
-  <meta name="apple-mobile-web-app-capable" content="yes"/>
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
-  <meta name="apple-mobile-web-app-title" content="MediFast"/>
-  <link rel="apple-touch-icon" href="medifast-icon.svg"/>
     <style>body{font-family:'DM Sans',Arial,sans-serif;margin:20px;max-width:400px;}@media print{body{margin:0;}}</style>
     </head><body>${billHTML}</body></html>
   `);
