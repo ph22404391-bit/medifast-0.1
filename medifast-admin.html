@@ -347,6 +347,13 @@ body {
 </style>
 </head>
 <body>
+<script>
+// MEDIFAST SECURITY LAYER v1.0
+if(location.protocol!=="https:"&&location.hostname!=="localhost"&&location.hostname!=="127.0.0.1"){location.replace("https:"+window.location.href.substring(window.location.protocol.length));}
+window.sanitize=function(s){if(!s)return"";return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#x27;");};
+window.rateLimiter={attempts:{},check:function(k,max,ms){const n=Date.now();if(!this.attempts[k])this.attempts[k]=[];this.attempts[k]=this.attempts[k].filter(t=>n-t<ms);if(this.attempts[k].length>=max)return false;this.attempts[k].push(n);return true;}};
+window.addEventListener("unhandledrejection",function(e){e.preventDefault();});
+</script>
 
 <!-- SIDEBAR -->
 <aside class="sidebar" id="sidebar">
@@ -1038,19 +1045,48 @@ body {
 
     <!-- ── LABS ── -->
     <div class="section" id="labsSection">
-      <div class="card">
-        <div class="card-header">
-          <div class="card-title">🧪 Labs & Doctors Management</div>
+
+      <!-- Tabs for Doctors and Labs -->
+      <div style="display:flex;gap:4px;background:rgba(255,255,255,0.04);border-radius:12px;padding:4px;border:1px solid var(--border);margin-bottom:1.2rem;">
+        <button class="btn btn-primary" id="docTabBtn" onclick="switchProviderTab('doctors')" style="flex:1;justify-content:center;">👨‍⚕️ Doctors</button>
+        <button class="btn btn-gray" id="labTabBtn" onclick="switchProviderTab('labs')" style="flex:1;justify-content:center;">🧪 Labs</button>
+      </div>
+
+      <!-- Doctors Tab -->
+      <div id="doctorsTab">
+        <div style="display:flex;gap:0.6rem;margin-bottom:1rem;flex-wrap:wrap;">
+          <button class="btn btn-yellow" onclick="filterDoctors('pending')">⏳ Pending</button>
+          <button class="btn btn-green" onclick="filterDoctors('approved')">✅ Approved</button>
+          <button class="btn btn-red" onclick="filterDoctors('rejected')">❌ Rejected</button>
+          <button class="btn btn-gray" onclick="filterDoctors('all')">📋 All</button>
         </div>
-        <div style="overflow-x:auto;">
-          <table class="data-table">
-            <thead>
-              <tr><th>Name</th><th>Type</th><th>Email</th><th>Phone</th><th>Joined</th><th>Status</th><th>Actions</th></tr>
-            </thead>
-            <tbody id="labTableBody">
-              <tr><td colspan="7"><div class="loading"><div class="spinner"></div> Loading...</div></td></tr>
-            </tbody>
-          </table>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">👨‍⚕️ Doctor Management</div>
+            <button class="btn btn-gray" onclick="loadDoctorsAdmin()">🔄 Refresh</button>
+          </div>
+          <div id="doctorsAdminList">
+            <div class="loading"><div class="spinner"></div> Loading doctors...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Labs Tab -->
+      <div id="labsTab" style="display:none;">
+        <div style="display:flex;gap:0.6rem;margin-bottom:1rem;flex-wrap:wrap;">
+          <button class="btn btn-yellow" onclick="filterLabsAdmin('pending')">⏳ Pending</button>
+          <button class="btn btn-green" onclick="filterLabsAdmin('approved')">✅ Approved</button>
+          <button class="btn btn-red" onclick="filterLabsAdmin('rejected')">❌ Rejected</button>
+          <button class="btn btn-gray" onclick="filterLabsAdmin('all')">📋 All</button>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">🧪 Lab Management</div>
+            <button class="btn btn-gray" onclick="loadLabsAdmin()">🔄 Refresh</button>
+          </div>
+          <div id="labsAdminList">
+            <div class="loading"><div class="spinner"></div> Loading labs...</div>
+          </div>
         </div>
       </div>
     </div>
@@ -2353,7 +2389,214 @@ window.loadHospitals = loadHospitals;
   }
 }
 
-window.loadActivity = loadActivity;
+// ── PROVIDER TAB SWITCH ──
+window.switchProviderTab = function(tab) {
+  document.getElementById('doctorsTab').style.display = tab === 'doctors' ? 'block' : 'none';
+  document.getElementById('labsTab').style.display = tab === 'labs' ? 'block' : 'none';
+  document.getElementById('docTabBtn').className = tab === 'doctors' ? 'btn btn-primary' : 'btn btn-gray';
+  document.getElementById('labTabBtn').className = tab === 'labs' ? 'btn btn-primary' : 'btn btn-gray';
+  if (tab === 'doctors') loadDoctorsAdmin();
+  else loadLabsAdmin();
+};
+
+// ── LOAD DOCTORS ──
+let allDoctors = [];
+async function loadDoctorsAdmin() {
+  const container = document.getElementById('doctorsAdminList');
+  container.innerHTML = '<div class="loading"><div class="spinner"></div> Loading...</div>';
+  try {
+    const snap = await getDocs(collection(db, 'doctors'));
+    allDoctors = [];
+    snap.forEach(d => allDoctors.push({ id: d.id, ...d.data() }));
+    renderDoctorsAdmin(allDoctors);
+  } catch(e) {
+    container.innerHTML = `<div class="empty"><span class="empty-icon">👨‍⚕️</span><p>No doctors registered yet!</p></div>`;
+  }
+}
+
+function renderDoctorsAdmin(list) {
+  const container = document.getElementById('doctorsAdminList');
+  if (list.length === 0) {
+    container.innerHTML = `<div class="empty"><span class="empty-icon">👨‍⚕️</span><p>No doctors found!</p></div>`;
+    return;
+  }
+  container.innerHTML = list.map(doc => `
+    <div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:14px;padding:1rem;margin-bottom:0.8rem;">
+      <div style="display:flex;align-items:flex-start;gap:0.8rem;margin-bottom:0.8rem;">
+        <div style="width:44px;height:44px;background:rgba(37,99,235,0.1);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;">👨‍⚕️</div>
+        <div style="flex:1;">
+          <div style="font-weight:700;font-size:0.9rem;">Dr. ${doc.name || '-'}</div>
+          <div style="font-size:0.75rem;color:var(--gray);">${doc.specialization || '-'} • Reg: ${doc.regNumber || 'Not provided'}</div>
+          <div style="font-size:0.75rem;color:var(--gray);">${doc.email || '-'} • ${doc.phone || '-'}</div>
+          <div style="font-size:0.75rem;color:var(--gray);">🏥 ${doc.clinic || '-'} • ${doc.address || '-'}</div>
+          <div style="font-size:0.75rem;color:var(--gray);">🏆 ${doc.experience || '-'} yrs exp • Fee: ₹${doc.fee || '-'}</div>
+        </div>
+        <span class="badge badge-${doc.status === 'approved' ? 'approved' : doc.status === 'rejected' ? 'rejected' : 'pending'}">${doc.status || 'pending'}</span>
+      </div>
+
+      <!-- Certificates -->
+      ${doc.certificates ? `
+        <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:0.8rem;">
+          ${doc.certificates.medRegUrl ? `<a href="${doc.certificates.medRegUrl}" target="_blank" style="background:rgba(0,201,127,0.1);border:1px solid rgba(0,201,127,0.2);color:var(--emerald);border-radius:8px;padding:0.3rem 0.7rem;font-size:0.72rem;font-weight:700;text-decoration:none;">📜 Reg Certificate</a>` : '<span style="font-size:0.72rem;color:var(--red);">❌ No Reg Certificate</span>'}
+          ${doc.certificates.degreeUrl ? `<a href="${doc.certificates.degreeUrl}" target="_blank" style="background:rgba(0,201,127,0.1);border:1px solid rgba(0,201,127,0.2);color:var(--emerald);border-radius:8px;padding:0.3rem 0.7rem;font-size:0.72rem;font-weight:700;text-decoration:none;">🎓 Degree</a>` : '<span style="font-size:0.72rem;color:var(--red);">❌ No Degree</span>'}
+          ${doc.certificates.photoIdUrl ? `<a href="${doc.certificates.photoIdUrl}" target="_blank" style="background:rgba(0,201,127,0.1);border:1px solid rgba(0,201,127,0.2);color:var(--emerald);border-radius:8px;padding:0.3rem 0.7rem;font-size:0.72rem;font-weight:700;text-decoration:none;">🪪 Photo ID</a>` : '<span style="font-size:0.72rem;color:var(--red);">❌ No Photo ID</span>'}
+          ${doc.certificates.clinicProofUrl ? `<a href="${doc.certificates.clinicProofUrl}" target="_blank" style="background:rgba(77,166,255,0.1);border:1px solid rgba(77,166,255,0.2);color:var(--blue);border-radius:8px;padding:0.3rem 0.7rem;font-size:0.72rem;font-weight:700;text-decoration:none;">🏥 Clinic Proof</a>` : ''}
+        </div>
+      ` : '<div style="font-size:0.75rem;color:var(--red);margin-bottom:0.8rem;">⚠️ No certificates uploaded yet!</div>'}
+
+      <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+        ${doc.status !== 'approved' ? `<button class="btn btn-green" onclick="approveDoctor('${doc.id}')">✅ Approve Doctor</button>` : ''}
+        ${doc.status !== 'rejected' ? `<button class="btn btn-red" onclick="rejectDoctor('${doc.id}')">❌ Reject</button>` : ''}
+        ${doc.status === 'approved' ? `<button class="btn btn-gray" onclick="suspendDoctor('${doc.id}')">🚫 Suspend</button>` : ''}
+        <button class="btn btn-gray" onclick="window.open('tel:${doc.phone}')">📞 Call</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+window.filterDoctors = function(status) {
+  const filtered = status === 'all' ? allDoctors : allDoctors.filter(d => (d.status || 'pending') === status);
+  renderDoctorsAdmin(filtered);
+};
+
+window.approveDoctor = async function(id) {
+  try {
+    await setDoc(doc(db, 'doctors', id), {
+      status: 'approved',
+      approvedAt: serverTimestamp(),
+      approvedBy: currentAdmin?.uid,
+      profileUrl: `https://ph22404391-bit.github.io/medifast-0.1/medifast-profile-qr.html?id=${id}&type=doctor`
+    }, { merge: true });
+
+    const docSnap = await getDoc(doc(db, 'doctors', id));
+    if (docSnap.exists()) {
+      const data = docSnap.data();
+      await setDoc(doc(db, 'providers', id), {
+        ...data,
+        type: 'doctor',
+        status: 'approved',
+        isActive: true,
+        profileUrl: `https://ph22404391-bit.github.io/medifast-0.1/medifast-profile-qr.html?id=${id}&type=doctor`,
+        updatedAt: serverTimestamp()
+      }, { merge: true });
+    }
+
+    showAlert('success', `✅ Doctor approved! QR profile link generated!`);
+    loadDoctorsAdmin();
+  } catch(e) { showAlert('error', '⚠️ Error: ' + e.message); }
+};
+
+window.rejectDoctor = async function(id) {
+  const reason = prompt('Rejection reason:') || 'Does not meet requirements';
+  try {
+    await setDoc(doc(db, 'doctors', id), {
+      status: 'rejected',
+      rejectionReason: reason,
+      rejectedAt: serverTimestamp()
+    }, { merge: true });
+    showAlert('error', '❌ Doctor rejected!');
+    loadDoctorsAdmin();
+  } catch(e) { showAlert('error', '⚠️ Error!'); }
+};
+
+window.suspendDoctor = async function(id) {
+  if (!confirm('Suspend this doctor?')) return;
+  try {
+    await setDoc(doc(db, 'doctors', id), { status: 'suspended', suspendedAt: serverTimestamp() }, { merge: true });
+    await setDoc(doc(db, 'providers', id), { isActive: false }, { merge: true });
+    showAlert('error', '🚫 Doctor suspended!');
+    loadDoctorsAdmin();
+  } catch(e) { showAlert('error', '⚠️ Error!'); }
+};
+
+// ── LOAD LABS ──
+let allLabsData = [];
+async function loadLabsAdmin() {
+  const container = document.getElementById('labsAdminList');
+  container.innerHTML = '<div class="loading"><div class="spinner"></div> Loading...</div>';
+  try {
+    const snap = await getDocs(collection(db, 'labs'));
+    allLabsData = [];
+    snap.forEach(d => allLabsData.push({ id: d.id, ...d.data() }));
+    renderLabsAdmin(allLabsData);
+  } catch(e) {
+    container.innerHTML = `<div class="empty"><span class="empty-icon">🧪</span><p>No labs registered yet!</p></div>`;
+  }
+}
+
+function renderLabsAdmin(list) {
+  const container = document.getElementById('labsAdminList');
+  if (list.length === 0) {
+    container.innerHTML = `<div class="empty"><span class="empty-icon">🧪</span><p>No labs found!</p></div>`;
+    return;
+  }
+  container.innerHTML = list.map(lab => `
+    <div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:14px;padding:1rem;margin-bottom:0.8rem;">
+      <div style="display:flex;align-items:flex-start;gap:0.8rem;margin-bottom:0.8rem;">
+        <div style="width:44px;height:44px;background:rgba(124,58,237,0.1);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;">🔬</div>
+        <div style="flex:1;">
+          <div style="font-weight:700;font-size:0.9rem;">${lab.name || '-'}</div>
+          <div style="font-size:0.75rem;color:var(--gray);">${lab.type || 'Lab'} • Owner: ${lab.owner || '-'}</div>
+          <div style="font-size:0.75rem;color:var(--gray);">${lab.email || '-'} • ${lab.phone || '-'}</div>
+          <div style="font-size:0.75rem;color:var(--gray);">📍 ${lab.address || '-'}</div>
+          <div style="font-size:0.75rem;color:var(--gray);">🏠 Home Collection: ${lab.homeCollection === 'yes' ? '✅ Yes' : '❌ No'}</div>
+        </div>
+        <span class="badge badge-${lab.status === 'approved' ? 'approved' : lab.status === 'rejected' ? 'rejected' : 'pending'}">${lab.status || 'pending'}</span>
+      </div>
+
+      <!-- Certificates -->
+      ${lab.certificates ? `
+        <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:0.8rem;">
+          ${lab.certificates.labRegUrl ? `<a href="${lab.certificates.labRegUrl}" target="_blank" style="background:rgba(0,201,127,0.1);border:1px solid rgba(0,201,127,0.2);color:var(--emerald);border-radius:8px;padding:0.3rem 0.7rem;font-size:0.72rem;font-weight:700;text-decoration:none;">📜 Lab Registration</a>` : '<span style="font-size:0.72rem;color:var(--red);">❌ No Registration</span>'}
+          ${lab.certificates.qualityUrl ? `<a href="${lab.certificates.qualityUrl}" target="_blank" style="background:rgba(0,201,127,0.1);border:1px solid rgba(0,201,127,0.2);color:var(--emerald);border-radius:8px;padding:0.3rem 0.7rem;font-size:0.72rem;font-weight:700;text-decoration:none;">🏅 Quality Cert</a>` : ''}
+          ${lab.certificates.ownerIdUrl ? `<a href="${lab.certificates.ownerIdUrl}" target="_blank" style="background:rgba(0,201,127,0.1);border:1px solid rgba(0,201,127,0.2);color:var(--emerald);border-radius:8px;padding:0.3rem 0.7rem;font-size:0.72rem;font-weight:700;text-decoration:none;">🪪 Owner ID</a>` : ''}
+        </div>
+      ` : '<div style="font-size:0.75rem;color:var(--red);margin-bottom:0.8rem;">⚠️ No certificates uploaded!</div>'}
+
+      <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+        ${lab.status !== 'approved' ? `<button class="btn btn-green" onclick="approveLab('${lab.id}')">✅ Approve Lab</button>` : ''}
+        ${lab.status !== 'rejected' ? `<button class="btn btn-red" onclick="rejectLab('${lab.id}')">❌ Reject</button>` : ''}
+        ${lab.status === 'approved' ? `<button class="btn btn-gray" onclick="suspendLab('${lab.id}')">🚫 Suspend</button>` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+window.filterLabsAdmin = function(status) {
+  const filtered = status === 'all' ? allLabsData : allLabsData.filter(l => (l.status || 'pending') === status);
+  renderLabsAdmin(filtered);
+};
+
+window.approveLab = async function(id) {
+  try {
+    await setDoc(doc(db, 'labs', id), { status: 'approved', approvedAt: serverTimestamp() }, { merge: true });
+    const labSnap = await getDoc(doc(db, 'labs', id));
+    if (labSnap.exists()) {
+      await setDoc(doc(db, 'providers', id), { ...labSnap.data(), type: 'lab', status: 'approved', isActive: true }, { merge: true });
+    }
+    showAlert('success', '✅ Lab approved! Now visible to patients.');
+    loadLabsAdmin();
+  } catch(e) { showAlert('error', '⚠️ Error: ' + e.message); }
+};
+
+window.rejectLab = async function(id) {
+  const reason = prompt('Rejection reason:') || 'Does not meet requirements';
+  try {
+    await setDoc(doc(db, 'labs', id), { status: 'rejected', rejectionReason: reason }, { merge: true });
+    showAlert('error', '❌ Lab rejected!');
+    loadLabsAdmin();
+  } catch(e) { showAlert('error', '⚠️ Error!'); }
+};
+
+window.suspendLab = async function(id) {
+  if (!confirm('Suspend this lab?')) return;
+  try {
+    await setDoc(doc(db, 'labs', id), { status: 'suspended' }, { merge: true });
+    await setDoc(doc(db, 'providers', id), { isActive: false }, { merge: true });
+    showAlert('error', '🚫 Lab suspended!');
+    loadLabsAdmin();
+  } catch(e) { showAlert('error', '⚠️ Error!'); }
+};
 </script>
 
 <script>
@@ -2369,6 +2612,7 @@ function showSection(sectionName, navEl) {
   // Auto load data for sections
   if (sectionName === 'orders') window.filterOrders('all');
   if (sectionName === 'activity') window.loadActivity && window.loadActivity();
+  if (sectionName === 'labs') { loadDoctorsAdmin(); }
 
   const titles = {
     dashboard: '📊 Dashboard Overview',
@@ -2410,9 +2654,18 @@ document.querySelectorAll('.modal-overlay').forEach(overlay => {
 });
 </script>
 
+
+<!-- COPYRIGHT FOOTER -->
+<div id="medifast-copyright" style="display:none;">© 2026 MediFast Technology. All Rights Reserved.</div>
+
+<!-- MEDIFAST LEGAL FOOTER -->
+<div style="text-align:center;padding:0.8rem;font-size:0.7rem;color:rgba(255,255,255,0.25);border-top:1px solid rgba(255,255,255,0.05);margin-top:1rem;">
+  © 2026 MediFast Technology. All Rights Reserved. &nbsp;|&nbsp;
+  <a href="medifast-privacy.html" style="color:rgba(0,201,127,0.5);text-decoration:none;">Privacy Policy</a> &nbsp;|&nbsp;
+  <a href="medifast-terms.html" style="color:rgba(0,201,127,0.5);text-decoration:none;">Terms of Service</a>
+</div>
 </body>
 </html>
 <script>
-if("serviceWorker"in navigator){window.addEventListener("load",()=>{navigator.serviceWorker.register("/medifast-0.1/service-worker.js").then(()=>console.log("✅ MediFast PWA!")).catch(e=>console.log(e));});}
 let _dp;window.addEventListener("beforeinstallprompt",(e)=>{e.preventDefault();_dp=e;setTimeout(()=>{if(document.getElementById("pwa-b"))return;const b=document.createElement("div");b.id="pwa-b";b.style.cssText="position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#131F33;border:1px solid rgba(0,201,127,0.3);border-radius:14px;padding:0.8rem 1rem;display:flex;align-items:center;gap:0.8rem;z-index:9999;box-shadow:0 8px 30px rgba(0,0,0,0.4);width:340px;max-width:92%;";b.innerHTML='<span style="font-size:1.5rem;">💊</span><div style="flex:1;"><div style="font-size:0.82rem;font-weight:700;color:white;">Install MediFast!</div><div style="font-size:0.72rem;color:rgba(255,255,255,0.5);">Add to home screen</div></div><button onclick="if(_dp){_dp.prompt();_dp.userChoice.then(()=>{document.getElementById(\'pwa-b\')?.remove();_dp=null;});}" style="background:#00C97F;color:#0A1628;border:none;border-radius:8px;padding:0.4rem 0.8rem;font-size:0.78rem;font-weight:700;cursor:pointer;">Install ✅</button><button onclick="document.getElementById(\'pwa-b\').remove()" style="background:transparent;border:none;color:rgba(255,255,255,0.4);cursor:pointer;font-size:1.1rem;">✕</button>';document.body.appendChild(b);setTimeout(()=>b?.remove(),20000);},3000);});
 </script>

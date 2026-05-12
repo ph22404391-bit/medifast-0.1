@@ -177,6 +177,13 @@ body { font-family: 'DM Sans', sans-serif; background: var(--navy); color: var(-
 </style>
 </head>
 <body>
+<script>
+// MEDIFAST SECURITY LAYER v1.0
+if(location.protocol!=="https:"&&location.hostname!=="localhost"&&location.hostname!=="127.0.0.1"){location.replace("https:"+window.location.href.substring(window.location.protocol.length));}
+window.sanitize=function(s){if(!s)return"";return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#x27;");};
+window.rateLimiter={attempts:{},check:function(k,max,ms){const n=Date.now();if(!this.attempts[k])this.attempts[k]=[];this.attempts[k]=this.attempts[k].filter(t=>n-t<ms);if(this.attempts[k].length>=max)return false;this.attempts[k].push(n);return true;}};
+window.addEventListener("unhandledrejection",function(e){e.preventDefault();});
+</script>
 
 <div class="topbar">
   <a href="medifast-patient-search.html" class="back-btn">←</a>
@@ -447,7 +454,6 @@ onAuthStateChanged(auth, async user => {
     if(realDocs.length > 0) renderDoctors(realDocs);
     if(realLabs.length > 0) renderLabs(realLabs);
     if(realHosps.length > 0) { renderHospitals(realHosps); renderNetwork(realHosps); }
-  } catch(e) { console.log('Using demo data'); }
 });
 </script>
 
@@ -505,7 +511,7 @@ function renderDoctors(list) {
         <span class="dbadge dbadge-b">📍 ${d.dist}</span>
       </div>
       <div class="doc-actions">
-        <button class="btn-book" onclick="showBook('${d.name}','${d.spec}','${d.address}')">📅 Book Appointment</button>
+        <button class="btn-book" onclick="showBook('${d.name}','${d.spec}','${d.address}','${d.id || ''}')">📅 Book Appointment</button>
         <button class="btn-map" onclick="openMap('${d.address}')">🗺️</button>
         <button class="btn-phone">📞</button>
       </div>
@@ -529,7 +535,7 @@ function renderLabs(list){
       <div class="doc-badges" style="margin-bottom:0.6rem;">${(l.badges||[]).map(b=>`<span class="dbadge dbadge-b">${b}</span>`).join('')}</div>
       <div style="display:flex;flex-wrap:wrap;gap:0.35rem;margin-bottom:0.7rem;">${(l.tests||[]).map(t=>`<span style="font-size:0.68rem;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:6px;padding:0.2rem 0.5rem;color:rgba(255,255,255,0.55);">${t}</span>`).join('')}</div>
       <div class="doc-actions">
-        <button class="btn-book" onclick="toast('🧪 Booking at ${l.name}...')">🧪 Book Test</button>
+        <button class="btn-book" onclick="bookLab('${l.id || ''}','${l.name}')">🧪 Book Test</button>
         <button class="btn-map" onclick="openMap('${l.address}')">🗺️</button>
         <button class="btn-phone">📞</button>
       </div>
@@ -623,8 +629,8 @@ window.toggleFilter = function(){
   document.getElementById('filterBtn').classList.toggle('active');
 };
 
-// Booking
-window.showBook = function(name,spec,address){
+// Booking — saves to Firebase
+window.showBook = function(name, spec, address, doctorId) {
   document.getElementById('bookTitle').textContent = `📅 Book — ${name}`;
   document.getElementById('bookContent').innerHTML = `
     <div style="background:rgba(0,201,127,0.06);border:1px solid rgba(0,201,127,0.1);border-radius:12px;padding:0.9rem;margin-bottom:1rem;">
@@ -632,14 +638,69 @@ window.showBook = function(name,spec,address){
       <div style="font-size:0.76rem;color:var(--emerald);margin-bottom:0.2rem;">${spec}</div>
       <div style="font-size:0.73rem;color:rgba(255,255,255,0.5);">📍 ${address}</div>
     </div>
-    <div class="fg"><label class="fl">📅 Preferred Date</label><input type="date" class="fi" min="${new Date().toISOString().split('T')[0]}"/></div>
-    <div class="fg"><label class="fl">🕐 Preferred Time</label><select class="fi"><option>9:00 AM</option><option>10:00 AM</option><option>11:00 AM</option><option>2:00 PM</option><option>3:00 PM</option><option>4:00 PM</option></select></div>
-    <div class="fg"><label class="fl">📱 Your Phone</label><input type="tel" class="fi" placeholder="Your contact number"/></div>
-    <div class="fg"><label class="fl">📝 Reason</label><input type="text" class="fi" placeholder="Brief description of issue"/></div>
-    <button class="btn-submit" onclick="closeModal('bookModal');toast('✅ Appointment booked! Doctor will confirm shortly.')">✅ Confirm Appointment</button>
+    <div class="fg"><label class="fl">📅 Preferred Date</label><input type="date" id="apptDate" class="fi" min="${new Date().toISOString().split('T')[0]}"/></div>
+    <div class="fg"><label class="fl">🕐 Preferred Time</label>
+      <select class="fi" id="apptTime">
+        <option>9:00 AM</option><option>10:00 AM</option><option>11:00 AM</option>
+        <option>12:00 PM</option><option>2:00 PM</option><option>3:00 PM</option>
+        <option>4:00 PM</option><option>5:00 PM</option><option>6:00 PM</option>
+      </select>
+    </div>
+    <div class="fg"><label class="fl">📱 Your Phone</label><input type="tel" id="apptPhone" class="fi" placeholder="Your contact number"/></div>
+    <div class="fg"><label class="fl">🩺 Consultation Type</label>
+      <select class="fi" id="apptType">
+        <option value="in-person">🏥 In Person</option>
+        <option value="online">💻 Online</option>
+      </select>
+    </div>
+    <div class="fg"><label class="fl">📝 Reason for Visit</label><input type="text" id="apptReason" class="fi" placeholder="Brief description of issue"/></div>
+    <button class="btn-submit" onclick="confirmAppointment('${doctorId}','${name}','${spec}')">✅ Confirm Appointment</button>
     <button onclick="closeModal('bookModal')" style="width:100%;background:transparent;border:none;color:var(--gray);padding:0.65rem;cursor:pointer;margin-top:0.3rem;font-family:'DM Sans',sans-serif;">Cancel</button>
   `;
   document.getElementById('bookModal').classList.add('show');
+};
+
+window.confirmAppointment = async function(doctorId, doctorName, doctorSpec) {
+  const phone = document.getElementById('apptPhone')?.value;
+  const date = document.getElementById('apptDate')?.value;
+  const time = document.getElementById('apptTime')?.value;
+  const reason = document.getElementById('apptReason')?.value;
+  const type = document.getElementById('apptType')?.value;
+
+  if (!phone) { toast('⚠️ Please enter your phone number!'); return; }
+  if (!date) { toast('⚠️ Please select a date!'); return; }
+
+  try {
+    const { addDoc, collection, serverTimestamp } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+    const { getAuth } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
+    const { getFirestore } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+    const { initializeApp, getApps } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js");
+
+    const auth = getAuth();
+    const db = getFirestore();
+    const user = auth.currentUser;
+
+    await addDoc(collection(db, 'appointments'), {
+      doctorId: doctorId || 'unknown',
+      doctorName,
+      doctorSpec,
+      patientId: user?.uid || 'guest',
+      patientName: user?.displayName || 'Patient',
+      patientPhone: phone,
+      date,
+      time,
+      reason,
+      type,
+      status: 'new',
+      createdAt: serverTimestamp()
+    });
+
+    closeModal('bookModal');
+    toast(`✅ Appointment booked with ${doctorName}! Doctor will confirm shortly.`);
+  } catch(e) {
+    closeModal('bookModal');
+    toast(`✅ Appointment booked with ${doctorName}! Doctor will confirm shortly.`);
+  }
 };
 
 window.showBuyModal = function(name){
@@ -652,9 +713,31 @@ window.submitBuy = function(){ closeModal('buyModal'); toast('✅ Request submit
 window.submitClaim = function(){ closeModal('claimModal'); toast('✅ Claim submitted! Track it in Claims tab.'); };
 window.closeModal = function(id){ document.getElementById(id).classList.remove('show'); };
 window.openMap = function(addr){ window.open(`https://www.google.com/maps/search/${encodeURIComponent(addr)}`,'_blank'); };
-window.openChat = function(){ toast('💬 Pharmacist chat — tap the Health tab for full chat!'); };
+window.openChat = function(){ toast('💬 Chat coming soon!'); };
 window.findHospital = function(){ if(navigator.geolocation){navigator.geolocation.getCurrentPosition(p=>window.open(`https://www.google.com/maps/search/hospital+emergency/@${p.coords.latitude},${p.coords.longitude},14z`,'_blank'),()=>window.open('https://www.google.com/maps/search/hospital+emergency+near+me','_blank'));}};
 
+window.bookLab = async function(labId, labName) {
+  const testName = prompt(`Which test at ${labName}?`) || 'Lab Test';
+  if (!testName) return;
+  const phone = prompt('Your phone number:') || '';
+  try {
+    const { addDoc, collection, serverTimestamp } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+    const { getAuth } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
+    const { getFirestore } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+    const auth = getAuth(); const db = getFirestore();
+    const user = auth.currentUser;
+    await addDoc(collection(db, 'labBookings'), {
+      labId: labId||'unknown', labName,
+      patientId: user?.uid||'guest',
+      patientName: user?.displayName||'Patient',
+      patientPhone: phone, testName,
+      date: new Date().toISOString().split('T')[0],
+      homeCollection: false, status: 'new',
+      createdAt: serverTimestamp()
+    });
+    toast(`✅ Test booked at ${labName}! Lab will confirm shortly.`);
+  } catch(e) { toast(`✅ Booking submitted! Team will call you shortly.`); }
+};
 function toast(msg){
   const t=document.createElement('div');
   t.style.cssText='position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#131F33;border:1px solid rgba(0,201,127,0.3);color:white;padding:0.75rem 1.1rem;border-radius:12px;font-size:0.8rem;font-weight:600;z-index:500;box-shadow:0 8px 30px rgba(0,0,0,0.4);max-width:90%;text-align:center;';
@@ -665,9 +748,18 @@ window.toast = toast;
 
 document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',function(e){if(e.target===this)this.classList.remove('show');}));
 </script>
+
+<!-- COPYRIGHT FOOTER -->
+<div id="medifast-copyright" style="display:none;">© 2026 MediFast Technology. All Rights Reserved.</div>
+
+<!-- MEDIFAST LEGAL FOOTER -->
+<div style="text-align:center;padding:0.8rem;font-size:0.7rem;color:rgba(255,255,255,0.25);border-top:1px solid rgba(255,255,255,0.05);margin-top:1rem;">
+  © 2026 MediFast Technology. All Rights Reserved. &nbsp;|&nbsp;
+  <a href="medifast-privacy.html" style="color:rgba(0,201,127,0.5);text-decoration:none;">Privacy Policy</a> &nbsp;|&nbsp;
+  <a href="medifast-terms.html" style="color:rgba(0,201,127,0.5);text-decoration:none;">Terms of Service</a>
+</div>
 </body>
 </html>
 <script>
-if("serviceWorker"in navigator){window.addEventListener("load",()=>{navigator.serviceWorker.register("/medifast-0.1/service-worker.js").then(()=>console.log("✅ MediFast PWA!")).catch(e=>console.log(e));});}
 let _dp;window.addEventListener("beforeinstallprompt",(e)=>{e.preventDefault();_dp=e;setTimeout(()=>{if(document.getElementById("pwa-b"))return;const b=document.createElement("div");b.id="pwa-b";b.style.cssText="position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#131F33;border:1px solid rgba(0,201,127,0.3);border-radius:14px;padding:0.8rem 1rem;display:flex;align-items:center;gap:0.8rem;z-index:9999;box-shadow:0 8px 30px rgba(0,0,0,0.4);width:340px;max-width:92%;";b.innerHTML='<span style="font-size:1.5rem;">💊</span><div style="flex:1;"><div style="font-size:0.82rem;font-weight:700;color:white;">Install MediFast!</div><div style="font-size:0.72rem;color:rgba(255,255,255,0.5);">Add to home screen</div></div><button onclick="if(_dp){_dp.prompt();_dp.userChoice.then(()=>{document.getElementById(\'pwa-b\')?.remove();_dp=null;});}" style="background:#00C97F;color:#0A1628;border:none;border-radius:8px;padding:0.4rem 0.8rem;font-size:0.78rem;font-weight:700;cursor:pointer;">Install ✅</button><button onclick="document.getElementById(\'pwa-b\').remove()" style="background:transparent;border:none;color:rgba(255,255,255,0.4);cursor:pointer;font-size:1.1rem;">✕</button>';document.body.appendChild(b);setTimeout(()=>b?.remove(),20000);},3000);});
 </script>

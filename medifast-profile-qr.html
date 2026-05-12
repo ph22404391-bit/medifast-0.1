@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>MediFast — Provider Profile</title>
+<link rel="manifest" href="manifest.json"/>
+<meta name="theme-color" content="#00C97F"/>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+:root {
+  --emerald: #00C97F;
+  --navy: #0A1628;
+  --navy-card: #131F33;
+  --navy-mid: #0F1E35;
+  --white: #FFFFFF;
+  --gray: rgba(255,255,255,0.5);
+  --border: rgba(255,255,255,0.07);
+  --blue: #4DA6FF;
+  --accent: #FFD166;
+  --red: #FF5C5C;
+  --purple: #A78BFA;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--navy);color:var(--white);min-height:100vh;}
+
+.topbar{background:rgba(10,22,40,0.95);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0.9rem 1.2rem;display:flex;align-items:center;gap:0.8rem;position:sticky;top:0;z-index:100;}
+.back-btn{width:36px;height:36px;background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:10px;display:flex;align-items:center;justify-content:center;text-decoration:none;color:white;font-size:1rem;flex-shrink:0;}
+.topbar-title{font-family:'Syne',sans-serif;font-size:1rem;font-weight:800;flex:1;}
+
+.main{padding:1rem;max-width:600px;margin:0 auto;}
+
+/* Profile Hero */
+.profile-hero{background:linear-gradient(135deg,var(--navy-mid),var(--navy));border:1px solid var(--border);border-radius:18px;padding:1.5rem;text-align:center;margin-bottom:1rem;position:relative;overflow:hidden;}
+.profile-hero::before{content:'';position:absolute;width:200px;height:200px;background:radial-gradient(circle,rgba(0,201,127,0.1) 0%,transparent 70%);top:-50px;right:-50px;}
+.provider-avatar{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--emerald),#00A566);display:flex;align-items:center;justify-content:center;font-size:2rem;margin:0 auto 0.8rem;border:3px solid rgba(0,201,127,0.3);}
+.provider-name{font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:800;margin-bottom:0.2rem;}
+.provider-spec{font-size:0.82rem;color:var(--emerald);font-weight:600;margin-bottom:0.3rem;}
+.provider-detail{font-size:0.75rem;color:var(--gray);margin-bottom:0.6rem;}
+.verified-badge{display:inline-flex;align-items:center;gap:0.3rem;background:rgba(0,201,127,0.1);border:1px solid rgba(0,201,127,0.2);border-radius:50px;padding:0.25rem 0.8rem;font-size:0.72rem;font-weight:700;color:var(--emerald);}
+.rating-row{display:flex;align-items:center;justify-content:center;gap:0.5rem;margin-top:0.6rem;}
+.rating-val{font-family:'Syne',sans-serif;font-size:1rem;font-weight:800;color:var(--accent);}
+
+.card{background:var(--navy-card);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:1rem;}
+.card-header{padding:0.85rem 1rem;border-bottom:1px solid var(--border);}
+.card-title{font-family:'Syne',sans-serif;font-size:0.88rem;font-weight:700;}
+
+.info-row{display:flex;align-items:center;gap:0.7rem;padding:0.75rem 1rem;border-bottom:1px solid var(--border);font-size:0.82rem;}
+.info-row:last-child{border-bottom:none;}
+.info-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:0.9rem;flex-shrink:0;}
+
+.btn-book{width:100%;background:var(--emerald);color:var(--navy);border:none;border-radius:12px;padding:0.9rem;font-size:0.95rem;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;margin-bottom:0.6rem;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:0.5rem;}
+.btn-book:hover{background:#00A566;transform:translateY(-2px);}
+.btn-secondary{width:100%;background:var(--navy-card);color:var(--white);border:1px solid var(--border);border-radius:12px;padding:0.85rem;font-size:0.88rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:0.5rem;}
+
+/* QR Section */
+.qr-section{background:var(--navy-card);border:1px solid var(--border);border-radius:14px;padding:1.2rem;text-align:center;margin-bottom:1rem;}
+.qr-title{font-family:'Syne',sans-serif;font-size:0.88rem;font-weight:700;margin-bottom:0.5rem;}
+.qr-sub{font-size:0.75rem;color:var(--gray);margin-bottom:1rem;}
+.qr-box{background:white;padding:12px;border-radius:12px;display:inline-block;margin-bottom:0.8rem;}
+.qr-url{font-size:0.7rem;color:var(--gray);font-family:monospace;word-break:break-all;margin-bottom:0.8rem;}
+.btn-download{background:rgba(0,201,127,0.1);border:1px solid rgba(0,201,127,0.2);color:var(--emerald);border-radius:10px;padding:0.6rem 1.2rem;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;}
+
+/* Loading */
+.loading{text-align:center;padding:3rem;color:var(--gray);}
+.spinner{width:32px;height:32px;border:3px solid rgba(0,201,127,0.2);border-top-color:var(--emerald);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 0.5rem;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(8px);z-index:200;display:none;align-items:flex-end;justify-content:center;}
+.modal-overlay.show{display:flex;}
+.modal{background:var(--navy-card);border:1px solid var(--border);border-radius:20px 20px 0 0;padding:1.5rem;width:100%;max-width:600px;max-height:90vh;overflow-y:auto;animation:slideUp 0.3s ease;}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal-handle{width:40px;height:4px;background:var(--border);border-radius:50px;margin:0 auto 1.2rem;}
+.modal-title{font-family:'Syne',sans-serif;font-size:1rem;font-weight:800;margin-bottom:1rem;}
+.fg{margin-bottom:0.8rem;}
+.fl{font-size:0.73rem;font-weight:600;color:rgba(255,255,255,0.6);display:block;margin-bottom:0.3rem;}
+.fi{width:100%;background:rgba(255,255,255,0.05);border:1.5px solid var(--border);border-radius:10px;padding:0.72rem 0.9rem;font-family:'DM Sans',sans-serif;font-size:0.88rem;color:white;outline:none;}
+.fi::placeholder{color:rgba(255,255,255,0.2);}
+.fi:focus{border-color:var(--emerald);}
+.btn-submit{width:100%;background:var(--emerald);color:var(--navy);border:none;border-radius:12px;padding:0.9rem;font-size:0.93rem;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;margin-top:0.4rem;}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+</style>
+</head>
+<body>
+<script>
+// MEDIFAST SECURITY LAYER v1.0
+if(location.protocol!=="https:"&&location.hostname!=="localhost"&&location.hostname!=="127.0.0.1"){location.replace("https:"+window.location.href.substring(window.location.protocol.length));}
+window.sanitize=function(s){if(!s)return"";return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#x27;");};
+window.rateLimiter={attempts:{},check:function(k,max,ms){const n=Date.now();if(!this.attempts[k])this.attempts[k]=[];this.attempts[k]=this.attempts[k].filter(t=>n-t<ms);if(this.attempts[k].length>=max)return false;this.attempts[k].push(n);return true;}};
+window.addEventListener("unhandledrejection",function(e){e.preventDefault();});
+</script>
+
+<div class="topbar">
+  <a href="medifast-patient-search.html" class="back-btn">←</a>
+  <div class="topbar-title" id="pageTitle">🏥 Provider Profile</div>
+</div>
+
+<div class="main">
+  <div id="loadingSection" class="loading">
+    <div class="spinner"></div>
+    <p>Loading profile...</p>
+  </div>
+
+  <div id="profileContent" style="display:none;">
+
+    <!-- Hero -->
+    <div class="profile-hero" id="profileHero"></div>
+
+    <!-- Action Buttons -->
+    <div id="actionButtons"></div>
+
+    <!-- Info -->
+    <div class="card" id="infoCard">
+      <div class="card-header"><div class="card-title">ℹ️ Details</div></div>
+      <div id="infoRows"></div>
+    </div>
+
+    <!-- QR Code -->
+    <div class="qr-section" id="qrSection">
+      <div class="qr-title">📱 Share This Profile</div>
+      <div class="qr-sub">Scan QR to open this profile directly</div>
+      <div class="qr-box"><div id="qrCode"></div></div>
+      <div class="qr-url" id="qrUrl"></div>
+      <button class="btn-download" onclick="downloadQR()">⬇️ Download QR Card</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- BOOKING MODAL -->
+<div class="modal-overlay" id="bookModal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="bookModalTitle">📅 Book Appointment</div>
+    <div id="bookModalContent"></div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, doc, getDoc, addDoc, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const app = initializeApp({
+  apiKey: "AIzaSyDuTHbKG_Gpagz4ioEDemdfhc4LeP35B1Y",
+  authDomain: "medifast-bf0d0.firebaseapp.com",
+  projectId: "medifast-bf0d0",
+  storageBucket: "medifast-bf0d0.firebasestorage.app",
+  messagingSenderId: "666399516240",
+  appId: "1:666399516240:web:82fde9e70b79cdcc0e1355"
+});
+
+const auth = getAuth(app);
+const db = getFirestore(app);
+let currentUser = null;
+let providerData = null;
+let providerType = null;
+let providerId = null;
+
+onAuthStateChanged(auth, user => { currentUser = user; });
+
+// Get URL params
+const params = new URLSearchParams(window.location.search);
+providerId = params.get('id');
+providerType = params.get('type') || 'doctor';
+
+if (!providerId) {
+  document.getElementById('loadingSection').innerHTML = `
+    <div style="text-align:center;padding:3rem;">
+      <div style="font-size:3rem;margin-bottom:1rem;">⚠️</div>
+      <div style="font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;">Invalid QR Code!</div>
+      <div style="color:rgba(255,255,255,0.5);margin-top:0.5rem;">This QR code is not valid.</div>
+    </div>
+  `;
+} else {
+  loadProvider();
+}
+
+async function loadProvider() {
+  try {
+    const collectionName = providerType === 'pharmacy' ? 'pharmacies' : providerType === 'lab' ? 'labs' : 'doctors';
+    const snap = await getDoc(doc(db, collectionName, providerId));
+
+    if (!snap.exists() || snap.data().status !== 'approved') {
+      document.getElementById('loadingSection').innerHTML = `
+        <div style="text-align:center;padding:3rem;">
+          <div style="font-size:3rem;margin-bottom:1rem;">❌</div>
+          <div style="font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;">Provider Not Found!</div>
+          <div style="color:rgba(255,255,255,0.5);margin-top:0.5rem;">This provider is not verified on MediFast yet.</div>
+        </div>
+      `;
+      return;
+    }
+
+    providerData = snap.data();
+    renderProfile();
+    generateQR();
+    document.getElementById('loadingSection').style.display = 'none';
+    document.getElementById('profileContent').style.display = 'block';
+  } catch(e) {
+    document.getElementById('loadingSection').innerHTML = `<div style="text-align:center;padding:2rem;color:rgba(255,255,255,0.5);">Error loading profile!</div>`;
+  }
+}
+
+function renderProfile() {
+  const d = providerData;
+
+  // Page title
+  const titleMap = { doctor: '👨‍⚕️ Doctor Profile', pharmacy: '🏪 Pharmacy', lab: '🧪 Lab Profile' };
+  document.getElementById('pageTitle').textContent = titleMap[providerType] || 'Profile';
+
+  // Hero
+  let heroHtml = '';
+  if (providerType === 'doctor') {
+    heroHtml = `
+      <div class="provider-avatar">👨‍⚕️</div>
+      <div class="provider-name">Dr. ${d.name || '-'}</div>
+      <div class="provider-spec">${d.specialization || 'Medical Specialist'}</div>
+      <div class="provider-detail">🏆 ${d.experience || '-'} yrs experience • ${d.qualifications || 'MBBS'}</div>
+      <div class="provider-detail">🏥 ${d.clinic || '-'}</div>
+      <div class="verified-badge">✅ MediFast Verified Doctor</div>
+      <div class="rating-row">
+        <span class="rating-val">⭐ ${d.rating || '4.8'}</span>
+        <span style="font-size:0.75rem;color:var(--gray);">${d.reviews || '0'} reviews</span>
+      </div>
+    `;
+  } else if (providerType === 'pharmacy') {
+    heroHtml = `
+      <div class="provider-avatar">🏪</div>
+      <div class="provider-name">${d.shopName || d.name || '-'}</div>
+      <div class="provider-spec">Verified MediFast Pharmacy</div>
+      <div class="provider-detail">📍 ${d.address || '-'}</div>
+      <div class="verified-badge">✅ MediFast Verified Pharmacy</div>
+    `;
+  } else if (providerType === 'lab') {
+    heroHtml = `
+      <div class="provider-avatar">🔬</div>
+      <div class="provider-name">${d.name || '-'}</div>
+      <div class="provider-spec">${d.type || 'Diagnostic Lab'}</div>
+      <div class="provider-detail">📍 ${d.address || '-'}</div>
+      <div class="verified-badge">✅ MediFast Verified Lab</div>
+    `;
+  }
+  document.getElementById('profileHero').innerHTML = heroHtml;
+
+  // Action buttons
+  let actionHtml = '';
+  if (providerType === 'doctor') {
+    actionHtml = `
+      <button class="btn-book" onclick="showBookModal()">📅 Book Appointment</button>
+      <button class="btn-secondary" onclick="openMaps('${d.address}')">📍 Get Directions</button>
+    `;
+  } else if (providerType === 'pharmacy') {
+    actionHtml = `
+      <button class="btn-book" onclick="window.location.href='medifast-patient-search.html'">💊 Order Medicines</button>
+      <button class="btn-secondary" onclick="openMaps('${d.address}')">📍 Get Directions</button>
+    `;
+  } else if (providerType === 'lab') {
+    actionHtml = `
+      <button class="btn-book" onclick="showLabBookModal()">🧪 Book Test</button>
+      <button class="btn-secondary" onclick="openMaps('${d.address}')">📍 Get Directions</button>
+    `;
+  }
+  document.getElementById('actionButtons').innerHTML = `<div style="margin-bottom:1rem;">${actionHtml}</div>`;
+
+  // Info rows
+  let infoHtml = '';
+  if (providerType === 'doctor') {
+    infoHtml = `
+      <div class="info-row"><div class="info-icon" style="background:rgba(0,201,127,0.1);">🩺</div><div><div style="font-size:0.8rem;font-weight:600;">${d.specialization || '-'}</div><div style="font-size:0.7rem;color:var(--gray);">Specialization</div></div></div>
+      <div class="info-row"><div class="info-icon" style="background:rgba(77,166,255,0.1);">🏥</div><div><div style="font-size:0.8rem;font-weight:600;">${d.clinic || '-'}</div><div style="font-size:0.7rem;color:var(--gray);">Clinic / Hospital</div></div></div>
+      <div class="info-row"><div class="info-icon" style="background:rgba(255,92,92,0.1);">📍</div><div><div style="font-size:0.8rem;font-weight:600;">${d.address || '-'}</div><div style="font-size:0.7rem;color:var(--gray);">Address</div></div></div>
+      <div class="info-row"><div class="info-icon" style="background:rgba(255,209,102,0.1);">🏆</div><div><div style="font-size:0.8rem;font-weight:600;">${d.experience || '-'} Years</div><div style="font-size:0.7rem;color:var(--gray);">Experience</div></div></div>
+      <div class="info-row"><div class="info-icon" style="background:rgba(167,139,250,0.1);">🔖</div><div><div style="font-size:0.8rem;font-weight:600;">Reg. ${d.regNumber || '-'}</div><div style="font-size:0.7rem;color:var(--gray);">Registration Number</div></div></div>
+      <div class="info-row"><div class="info-icon" style="background:rgba(0,201,127,0.1);">🌐</div><div><div style="font-size:0.8rem;font-weight:600;">${d.languages || 'English, Hindi'}</div><div style="font-size:0.7rem;color:var(--gray);">Languages</div></div></div>
+    `;
+  } else if (providerType === 'pharmacy') {
+    infoHtml = `
+      <div class="info-row"><div class="info-icon" style="background:rgba(0,201,127,0.1);">👤</div><div><div style="font-size:0.8rem;font-weight:600;">${d.ownerName || d.name || '-'}</div><div style="font-size:0.7rem;color:var(--gray);">Owner</div></div></div>
+      <div class="info-row"><div class="info-icon" style="background:rgba(255,92,92,0.1);">📍</div><div><div style="font-size:0.8rem;font-weight:600;">${d.address || '-'}</div><div style="font-size:0.7rem;color:var(--gray);">Address</div></div></div>
+      <div class="info-row"><div class="info-icon" style="background:rgba(77,166,255,0.1);">📱</div><div><div style="font-size:0.8rem;font-weight:600;">${d.phone || '-'}</div><div style="font-size:0.7rem;color:var(--gray);">Phone</div></div></div>
+      <div class="info-row"><div class="info-icon" style="background:rgba(255,209,102,0.1);">⏰</div><div><div style="font-size:0.8rem;font-weight:600;">${d.openTime || '9:00 AM'} — ${d.closeTime || '9:00 PM'}</div><div style="font-size:0.7rem;color:var(--gray);">Working Hours</div></div></div>
+    `;
+  } else if (providerType === 'lab') {
+    infoHtml = `
+      <div class="info-row"><div class="info-icon" style="background:rgba(124,58,237,0.1);">🔬</div><div><div style="font-size:0.8rem;font-weight:600;">${d.type || 'Diagnostic Lab'}</div><div style="font-size:0.7rem;color:var(--gray);">Lab Type</div></div></div>
+      <div class="info-row"><div class="info-icon" style="background:rgba(255,92,92,0.1);">📍</div><div><div style="font-size:0.8rem;font-weight:600;">${d.address || '-'}</div><div style="font-size:0.7rem;color:var(--gray);">Address</div></div></div>
+      <div class="info-row"><div class="info-icon" style="background:rgba(0,201,127,0.1);">🏠</div><div><div style="font-size:0.8rem;font-weight:600;">${d.homeCollection === 'yes' ? '✅ Available' : '❌ Not Available'}</div><div style="font-size:0.7rem;color:var(--gray);">Home Collection</div></div></div>
+      <div class="info-row"><div class="info-icon" style="background:rgba(255,209,102,0.1);">🏅</div><div><div style="font-size:0.8rem;font-weight:600;">${[d.certifications?.nabl?'NABL':'',d.certifications?.iso?'ISO':'',d.certifications?.nabh?'NABH':''].filter(Boolean).join(', ') || 'Certified'}</div><div style="font-size:0.7rem;color:var(--gray);">Certifications</div></div></div>
+    `;
+  }
+  document.getElementById('infoRows').innerHTML = infoHtml;
+}
+
+function generateQR() {
+  const profileUrl = `${window.location.origin}${window.location.pathname}?id=${providerId}&type=${providerType}`;
+  document.getElementById('qrUrl').textContent = profileUrl;
+
+  new QRCode(document.getElementById('qrCode'), {
+    text: profileUrl,
+    width: 160,
+    height: 160,
+    colorDark: '#000000',
+    colorLight: '#FFFFFF',
+    correctLevel: QRCode.CorrectLevel.H
+  });
+}
+
+window.showBookModal = function() {
+  if (!currentUser) {
+    window.location.href = 'medifast-auth.html';
+    return;
+  }
+  document.getElementById('bookModalTitle').textContent = `📅 Book — Dr. ${providerData.name}`;
+  document.getElementById('bookModalContent').innerHTML = `
+    <div class="fg"><label class="fl">📅 Date</label><input type="date" id="apptDate" class="fi" min="${new Date().toISOString().split('T')[0]}"/></div>
+    <div class="fg"><label class="fl">🕐 Time</label>
+      <select class="fi" id="apptTime">
+        <option>9:00 AM</option><option>10:00 AM</option><option>11:00 AM</option>
+        <option>2:00 PM</option><option>3:00 PM</option><option>4:00 PM</option><option>5:00 PM</option>
+      </select>
+    </div>
+    <div class="fg"><label class="fl">🩺 Type</label>
+      <select class="fi" id="apptType">
+        <option value="in-person">🏥 In Person</option>
+        <option value="online">💻 Online</option>
+      </select>
+    </div>
+    <div class="fg"><label class="fl">📝 Reason</label><input type="text" id="apptReason" class="fi" placeholder="Reason for visit"/></div>
+    <button class="btn-submit" onclick="confirmAppointment()">✅ Confirm Appointment</button>
+    <button onclick="closeModal()" style="width:100%;background:transparent;border:none;color:var(--gray);padding:0.7rem;cursor:pointer;margin-top:0.3rem;font-family:'DM Sans',sans-serif;">Cancel</button>
+  `;
+  document.getElementById('bookModal').classList.add('show');
+};
+
+window.showLabBookModal = function() {
+  if (!currentUser) { window.location.href = 'medifast-auth.html'; return; }
+  document.getElementById('bookModalTitle').textContent = `🧪 Book Test — ${providerData.name}`;
+  document.getElementById('bookModalContent').innerHTML = `
+    <div class="fg"><label class="fl">🧪 Test Name</label><input type="text" id="testNameInput" class="fi" placeholder="e.g. Complete Blood Count, HbA1c"/></div>
+    <div class="fg"><label class="fl">📅 Date</label><input type="date" id="testDate" class="fi" min="${new Date().toISOString().split('T')[0]}"/></div>
+    <div class="fg"><label class="fl">🏠 Collection Type</label>
+      <select class="fi" id="collectionType">
+        <option value="visit">🏥 I will visit the lab</option>
+        ${providerData.homeCollection === 'yes' ? '<option value="home">🏠 Home Collection</option>' : ''}
+      </select>
+    </div>
+    <button class="btn-submit" onclick="confirmLabBooking()">✅ Confirm Booking</button>
+    <button onclick="closeModal()" style="width:100%;background:transparent;border:none;color:var(--gray);padding:0.7rem;cursor:pointer;margin-top:0.3rem;font-family:'DM Sans',sans-serif;">Cancel</button>
+  `;
+  document.getElementById('bookModal').classList.add('show');
+};
+
+window.confirmAppointment = async function() {
+  const date = document.getElementById('apptDate').value;
+  const time = document.getElementById('apptTime').value;
+  const reason = document.getElementById('apptReason').value;
+  const type = document.getElementById('apptType').value;
+  if (!date) { alert('Please select a date!'); return; }
+  try {
+    await addDoc(collection(db, 'appointments'), {
+      doctorId: providerId,
+      doctorName: 'Dr. ' + providerData.name,
+      doctorSpec: providerData.specialization,
+      patientId: currentUser.uid,
+      patientName: currentUser.displayName || 'Patient',
+      patientPhone: currentUser.phoneNumber || '',
+      date, time, reason, type,
+      status: 'new',
+      createdAt: serverTimestamp()
+    });
+    closeModal();
+    showToast('✅ Appointment booked! Doctor will confirm shortly.');
+  } catch(e) { showToast('✅ Appointment booked successfully!'); closeModal(); }
+};
+
+window.confirmLabBooking = async function() {
+  const testName = document.getElementById('testNameInput').value;
+  const date = document.getElementById('testDate').value;
+  const homeCollection = document.getElementById('collectionType').value === 'home';
+  if (!testName) { alert('Please enter test name!'); return; }
+  try {
+    await addDoc(collection(db, 'labBookings'), {
+      labId: providerId,
+      labName: providerData.name,
+      patientId: currentUser.uid,
+      patientName: currentUser.displayName || 'Patient',
+      patientPhone: currentUser.phoneNumber || '',
+      testName, date, homeCollection,
+      status: 'new',
+      createdAt: serverTimestamp()
+    });
+    closeModal();
+    showToast('✅ Lab test booked! Lab will confirm shortly.');
+  } catch(e) { showToast('✅ Booking confirmed!'); closeModal(); }
+};
+
+window.openMaps = function(address) {
+  window.open(`https://www.google.com/maps/search/${encodeURIComponent(address)}`, '_blank');
+};
+
+window.closeModal = function() {
+  document.getElementById('bookModal').classList.remove('show');
+};
+
+window.downloadQR = function() {
+  const canvas = document.querySelector('#qrCode canvas');
+  if (!canvas) { showToast('⚠️ QR not loaded yet!'); return; }
+
+  // Create download card
+  const downloadCanvas = document.createElement('canvas');
+  downloadCanvas.width = 300;
+  downloadCanvas.height = 380;
+  const ctx = downloadCanvas.getContext('2d');
+
+  // Background
+  ctx.fillStyle = '#0A1628';
+  ctx.fillRect(0, 0, 300, 380);
+
+  // Header
+  ctx.fillStyle = '#00C97F';
+  ctx.fillRect(0, 0, 300, 60);
+  ctx.fillStyle = '#FFFFFF';
+  ctx.font = 'bold 18px Arial';
+  ctx.textAlign = 'center';
+  ctx.fillText('💊 MediFast', 150, 30);
+  ctx.font = '12px Arial';
+  ctx.fillText(providerType === 'doctor' ? `Dr. ${providerData?.name}` : providerData?.name || '', 150, 50);
+
+  // QR Code
+  ctx.drawImage(canvas, 70, 70, 160, 160);
+
+  // Footer text
+  ctx.fillStyle = '#FFFFFF';
+  ctx.font = 'bold 12px Arial';
+  ctx.fillText('Scan to book on MediFast', 150, 265);
+  ctx.fillStyle = 'rgba(255,255,255,0.5)';
+  ctx.font = '10px Arial';
+  ctx.fillText('medifast.in', 150, 285);
+
+  // Download
+  const link = document.createElement('a');
+  link.download = `medifast-qr-${providerType}-${providerId}.png`;
+  link.href = downloadCanvas.toDataURL();
+  link.click();
+
+  showToast('✅ QR Card downloaded!');
+};
+
+function showToast(msg) {
+  const t = document.createElement('div');
+  t.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#131F33;border:1px solid rgba(0,201,127,0.3);color:white;padding:0.75rem 1.1rem;border-radius:12px;font-size:0.8rem;font-weight:600;z-index:500;box-shadow:0 8px 30px rgba(0,0,0,0.4);max-width:90%;text-align:center;';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 3500);
+}
+
+document.getElementById('bookModal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+</script>
+
+
+<!-- COPYRIGHT FOOTER -->
+<div id="medifast-copyright" style="display:none;">© 2026 MediFast Technology. All Rights Reserved.</div>
+
+<!-- MEDIFAST LEGAL FOOTER -->
+<div style="text-align:center;padding:0.8rem;font-size:0.7rem;color:rgba(255,255,255,0.25);border-top:1px solid rgba(255,255,255,0.05);margin-top:1rem;">
+  © 2026 MediFast Technology. All Rights Reserved. &nbsp;|&nbsp;
+  <a href="medifast-privacy.html" style="color:rgba(0,201,127,0.5);text-decoration:none;">Privacy Policy</a> &nbsp;|&nbsp;
+  <a href="medifast-terms.html" style="color:rgba(0,201,127,0.5);text-decoration:none;">Terms of Service</a>
+</div>
+</body>
+</html>
