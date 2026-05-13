@@ -3,73 +3,344 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>MediFast v2 — Medicine in 10 Minutes</title>
-<meta name="description" content="MediFast — Hyperlocal medicine delivery, doctor booking, lab tests in 10 minutes!"/>
-<meta name="theme-color" content="#00C97F"/>
-<link rel="manifest" href="../manifest.json"/>
-<link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<title>MediFast — Medicine in 10 Minutes</title>
+  <link rel="manifest" href="manifest.json"/>
+  <meta name="theme-color" content="#00C97F"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-title" content="MediFast"/>
+  <link rel="apple-touch-icon" href="medifast-icon.svg"/>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: #060D1A; color: white; font-family: 'DM Sans', sans-serif; }
-  #root { min-height: 100vh; }
-  .initial-loader {
-    position: fixed; inset: 0;
-    background: #060D1A;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-  }
-  .loader-icon {
-    width: 64px; height: 64px;
-    background: linear-gradient(135deg,#00C97F,#00A566);
-    border-radius: 18px;
-    display: flex; align-items: center;
-    justify-content: center;
-    font-size: 1.8rem;
-    margin-bottom: 1rem;
-    animation: pulse 2s ease-in-out infinite;
-  }
-  .loader-title {
-    font-family: 'Syne', sans-serif;
-    font-size: 1.2rem; font-weight: 800;
-    margin-bottom: 0.3rem;
-  }
-  .loader-sub { font-size: 0.78rem; color: rgba(255,255,255,0.4); }
-  @keyframes pulse {
-    0%,100% { box-shadow: 0 0 20px rgba(0,201,127,0.3); }
-    50% { box-shadow: 0 0 50px rgba(0,201,127,0.6); }
-  }
+:root {
+  --emerald: #00C97F;
+  --emerald-dark: #00A566;
+  --navy: #0A1628;
+  --navy-card: #131F33;
+  --white: #FFFFFF;
+  --gray: rgba(255,255,255,0.5);
+  --border: rgba(255,255,255,0.08);
+  --accent: #FFD166;
+  --red: #FF5C5C;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--navy);
+  color: var(--white);
+  min-height: 100vh;
+}
+nav {
+  background: rgba(10,22,40,0.95);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  padding: 1rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.logo {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 1.4rem;
+  text-decoration: none;
+  color: white;
+}
+.logo span { color: var(--emerald); }
+.btn-nav {
+  background: var(--emerald);
+  color: var(--navy);
+  padding: 0.55rem 1.3rem;
+  border-radius: 10px;
+  font-weight: 700;
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+  display: inline-block;
+}
+.btn-nav:hover { background: var(--emerald-dark); transform: translateY(-1px); }
+
+/* Hero */
+.hero {
+  text-align: center;
+  padding: 5rem 2rem 3rem;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, rgba(0,201,127,0.12) 0%, transparent 70%);
+  top: -100px; left: 50%;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(0,201,127,0.1);
+  border: 1px solid rgba(0,201,127,0.3);
+  border-radius: 50px;
+  padding: 0.4rem 1rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--emerald);
+  margin-bottom: 1.5rem;
+}
+.dot { width: 6px; height: 6px; background: var(--emerald); border-radius: 50%; animation: blink 1.5s infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+h1 {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(2.2rem, 5vw, 4rem);
+  font-weight: 800;
+  margin-bottom: 1rem;
+  letter-spacing: -1.5px;
+  line-height: 1.1;
+  position: relative;
+}
+h1 span { color: var(--emerald); }
+.hero-sub {
+  color: var(--gray);
+  font-size: 1.1rem;
+  margin-bottom: 2.5rem;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+  line-height: 1.7;
+  position: relative;
+}
+
+/* Big CTA Buttons */
+.hero-btns {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 3rem;
+  position: relative;
+}
+.btn-big {
+  padding: 1rem 2rem;
+  border-radius: 14px;
+  font-size: 1rem;
+  font-weight: 700;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.25s;
+  cursor: pointer;
+  border: none;
+  font-family: 'DM Sans', sans-serif;
+}
+.btn-green {
+  background: var(--emerald);
+  color: var(--navy);
+  box-shadow: 0 8px 30px rgba(0,201,127,0.35);
+}
+.btn-green:hover { background: var(--emerald-dark); transform: translateY(-3px); box-shadow: 0 14px 40px rgba(0,201,127,0.45); }
+.btn-outline {
+  background: rgba(255,255,255,0.06);
+  color: var(--white);
+  border: 1.5px solid rgba(255,255,255,0.15) !important;
+}
+.btn-outline:hover { background: rgba(255,255,255,0.12); transform: translateY(-3px); border-color: rgba(0,201,127,0.4) !important; }
+
+/* Stats */
+.stats {
+  display: flex;
+  justify-content: center;
+  gap: 3rem;
+  flex-wrap: wrap;
+  margin-bottom: 4rem;
+  position: relative;
+}
+.stat { text-align: center; }
+.stat-num { font-family: 'Syne', sans-serif; font-size: 2rem; font-weight: 800; color: var(--emerald); display: block; }
+.stat-label { font-size: 0.78rem; color: var(--gray); text-transform: uppercase; letter-spacing: 0.5px; }
+
+/* Role Cards */
+.roles-section {
+  padding: 3rem 2rem;
+  max-width: 900px;
+  margin: 0 auto;
+}
+.roles-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.8rem;
+  font-weight: 800;
+  text-align: center;
+  margin-bottom: 0.5rem;
+  letter-spacing: -0.5px;
+}
+.roles-sub { text-align: center; color: var(--gray); margin-bottom: 2rem; font-size: 0.95rem; }
+
+.roles-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.2rem;
+}
+.role-card {
+  background: #131F33;
+  border: 1.5px solid var(--border);
+  border-radius: 20px;
+  padding: 2rem 1.5rem;
+  text-decoration: none;
+  color: white;
+  transition: all 0.3s;
+  position: relative;
+  overflow: hidden;
+  display: block;
+}
+.role-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.role-card.patient::before { background: var(--emerald); }
+.role-card.pharmacy::before { background: var(--accent); }
+.role-card.lab::before { background: #4DA6FF; }
+.role-card:hover { transform: translateY(-6px); box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+.role-card:hover::before { opacity: 1; }
+.role-card.patient:hover { border-color: rgba(0,201,127,0.3); }
+.role-card.pharmacy:hover { border-color: rgba(255,209,102,0.3); }
+.role-card.lab:hover { border-color: rgba(77,166,255,0.3); }
+
+.role-emoji { font-size: 2.5rem; display: block; margin-bottom: 1rem; }
+.role-title { font-family: 'Syne', sans-serif; font-size: 1.2rem; font-weight: 800; margin-bottom: 0.5rem; }
+.role-desc { font-size: 0.85rem; color: var(--gray); line-height: 1.6; margin-bottom: 1.2rem; }
+.role-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.55rem 1.2rem;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  transition: all 0.2s;
+}
+.role-card.patient .role-btn { background: var(--emerald); color: var(--navy); }
+.role-card.pharmacy .role-btn { background: var(--accent); color: var(--navy); }
+.role-card.lab .role-btn { background: #4DA6FF; color: var(--navy); }
+
+/* Features strip */
+.features-strip {
+  background: #0F1E35;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  padding: 2rem;
+  display: flex;
+  justify-content: center;
+  gap: 3rem;
+  flex-wrap: wrap;
+  margin-bottom: 3rem;
+}
+.feature-item { display: flex; align-items: center; gap: 0.6rem; font-size: 0.88rem; }
+.feature-item span { font-size: 1.2rem; }
+
+footer {
+  text-align: center;
+  padding: 2rem;
+  color: var(--gray);
+  font-size: 0.82rem;
+  border-top: 1px solid var(--border);
+}
+footer strong { color: var(--emerald); }
+
+@media (max-width: 480px) {
+  .stats { gap: 1.5rem; }
+  .features-strip { gap: 1.5rem; }
+  .hero-btns { flex-direction: column; align-items: center; }
+  .btn-big { width: 100%; justify-content: center; }
+}
 </style>
 </head>
 <body>
-<div id="root">
-  <div class="initial-loader">
-    <div class="loader-icon">💊</div>
-    <div class="loader-title">Medi<span style="color:#00C97F">Fast</span></div>
-    <div class="loader-sub">Loading v2.0...</div>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="logo">Medi<span>Fast</span> 💊</a>
+  <a href="medifast-auth.html" class="btn-nav">Login / Sign Up →</a>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="badge"><span class="dot"></span> MediFast is Live in India!</div>
+  <h1>Medicine Delivered<br/><span>in 10 Minutes</span> ⚡</h1>
+  <p class="hero-sub">India's first hyperlocal medicine delivery app. Connecting patients with local pharmacies — no middlemen, no delays.</p>
+
+  <div class="hero-btns">
+    <a href="medifast-auth.html" class="btn-big btn-green">💊 Get Medicine Now →</a>
+    <a href="medifast-landing.html" class="btn-big btn-outline">🌐 Learn More</a>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><span class="stat-num">⚡ 10</span><span class="stat-label">Min Delivery</span></div>
+    <div class="stat"><span class="stat-num">2 km</span><span class="stat-label">Radius Only</span></div>
+    <div class="stat"><span class="stat-num">0</span><span class="stat-label">Third Parties</span></div>
+    <div class="stat"><span class="stat-num">Local</span><span class="stat-label">Always First</span></div>
   </div>
 </div>
 
-<script>
-// HTTPS enforcement
-if(location.protocol !== 'https:' && location.hostname !== 'localhost') {
-  location.replace('https:' + window.location.href.substring(window.location.protocol.length));
-}
-</script>
+<!-- FEATURES STRIP -->
+<div class="features-strip">
+  <div class="feature-item"><span>📍</span> Live Location Tracking</div>
+  <div class="feature-item"><span>💰</span> Price Comparison</div>
+  <div class="feature-item"><span>📄</span> Prescription Upload</div>
+  <div class="feature-item"><span>🔔</span> Real Time Alerts</div>
+  <div class="feature-item"><span>🏪</span> Local Pharmacies Only</div>
+</div>
 
-<!-- React 18 via CDN -->
-<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-<!-- Babel for JSX -->
-<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<!-- ROLE CARDS -->
+<div class="roles-section">
+  <div class="roles-title">Who Are You? 👋</div>
+  <p class="roles-sub">Choose your role to get started with MediFast</p>
 
-<script type="text/babel" data-type="module">
-  // Import and render the main app
-  import MediFastApp from './MediFastApp.jsx';
+  <div class="roles-grid">
 
-  const root = ReactDOM.createRoot(document.getElementById('root'));
-  root.render(React.createElement(MediFastApp));
-</script>
+    <!-- Patient -->
+    <a href="medifast-auth.html" class="role-card patient">
+      <span class="role-emoji">🧑‍⚕️</span>
+      <div class="role-title">I'm a Patient</div>
+      <p class="role-desc">Search medicines, find nearby pharmacies, compare prices and get delivery in 10 minutes!</p>
+      <span class="role-btn">Get Medicine →</span>
+    </a>
+
+    <!-- Pharmacy -->
+    <a href="medifast-auth.html" class="role-card pharmacy">
+      <span class="role-emoji">🏪</span>
+      <div class="role-title">I'm a Pharmacist</div>
+      <p class="role-desc">Join MediFast, manage your inventory, accept orders and grow your local pharmacy business!</p>
+      <span class="role-btn">Join as Pharmacy →</span>
+    </a>
+
+    <!-- Lab -->
+    <a href="medifast-auth.html" class="role-card lab">
+      <span class="role-emoji">🧪</span>
+      <div class="role-title">I'm a Lab / Doctor</div>
+      <p class="role-desc">Connect with nearby patients, accept test bookings and manage appointments on MediFast!</p>
+      <span class="role-btn">Join as Partner →</span>
+    </a>
+
+  </div>
+</div>
+
+<footer>
+  © 2026 <strong>MediFast</strong> — Empowering local pharmacies. Built with ❤️ for India.
+</footer>
 
 </body>
 </html>
+<script>
+if("serviceWorker"in navigator){window.addEventListener("load",()=>{navigator.serviceWorker.register("/medifast-0.1/service-worker.js").then(()=>console.log("✅ MediFast PWA!")).catch(e=>console.log(e));});}
+let _dp;window.addEventListener("beforeinstallprompt",(e)=>{e.preventDefault();_dp=e;setTimeout(()=>{if(document.getElementById("pwa-b"))return;const b=document.createElement("div");b.id="pwa-b";b.style.cssText="position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#131F33;border:1px solid rgba(0,201,127,0.3);border-radius:14px;padding:0.8rem 1rem;display:flex;align-items:center;gap:0.8rem;z-index:9999;box-shadow:0 8px 30px rgba(0,0,0,0.4);width:340px;max-width:92%;";b.innerHTML='<span style="font-size:1.5rem;">💊</span><div style="flex:1;"><div style="font-size:0.82rem;font-weight:700;color:white;">Install MediFast!</div><div style="font-size:0.72rem;color:rgba(255,255,255,0.5);">Add to home screen</div></div><button onclick="if(_dp){_dp.prompt();_dp.userChoice.then(()=>{document.getElementById(\'pwa-b\')?.remove();_dp=null;});}" style="background:#00C97F;color:#0A1628;border:none;border-radius:8px;padding:0.4rem 0.8rem;font-size:0.78rem;font-weight:700;cursor:pointer;">Install ✅</button><button onclick="document.getElementById(\'pwa-b\').remove()" style="background:transparent;border:none;color:rgba(255,255,255,0.4);cursor:pointer;font-size:1.1rem;">✕</button>';document.body.appendChild(b);setTimeout(()=>b?.remove(),20000);},3000);});
+</script>

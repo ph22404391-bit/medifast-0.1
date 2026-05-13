@@ -1,9 +1,9 @@
 // ═══════════════════════════════════════════
-// MEDIFAST SERVICE WORKER v1.0
+// MEDIFAST SERVICE WORKER v2.0
 // Enables offline support, caching & PWA
 // ═══════════════════════════════════════════
 
-const CACHE_NAME = 'medifast-v1.0';
+const CACHE_NAME = 'medifast-v2.1';
 const OFFLINE_URL = '/medifast-0.1/offline.html';
 
 // Files to cache for offline use
