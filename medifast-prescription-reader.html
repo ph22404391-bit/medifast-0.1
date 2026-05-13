@@ -341,6 +341,51 @@ body {
 </style>
 </head>
 <body>
+<!-- NETWORK STATUS BANNER -->
+<div id="mf-offline-bar" style="
+  display:none;position:fixed;top:0;left:0;right:0;
+  background:linear-gradient(135deg,#FF5C5C,#E53E3E);
+  color:white;padding:0.5rem;text-align:center;
+  font-size:0.78rem;font-weight:700;z-index:99997;
+  font-family:'DM Sans',sans-serif;
+  animation:slideDown 0.3s ease;
+">
+  📶 No internet connection — Working offline. Data will sync when connected!
+</div>
+<div id="mf-online-bar" style="
+  display:none;position:fixed;top:0;left:0;right:0;
+  background:linear-gradient(135deg,#00C97F,#00A566);
+  color:#0A1628;padding:0.5rem;text-align:center;
+  font-size:0.78rem;font-weight:700;z-index:99997;
+  font-family:'DM Sans',sans-serif;
+">
+  ✅ Back online! Syncing data...
+</div>
+<style>
+@keyframes slideDown{from{transform:translateY(-100%)}to{transform:translateY(0)}}
+</style>
+<script>
+window.addEventListener('offline',function(){
+  const bar = document.getElementById('mf-offline-bar');
+  if(bar) bar.style.display='block';
+});
+window.addEventListener('online',function(){
+  const offBar = document.getElementById('mf-offline-bar');
+  const onBar = document.getElementById('mf-online-bar');
+  if(offBar) offBar.style.display='none';
+  if(onBar){
+    onBar.style.display='block';
+    setTimeout(()=>onBar.style.display='none', 3000);
+  }
+});
+// Check immediately
+if(!navigator.onLine){
+  setTimeout(()=>{
+    const bar = document.getElementById('mf-offline-bar');
+    if(bar) bar.style.display='block';
+  }, 1000);
+}
+</script>
 <script>
 // MEDIFAST SECURITY LAYER v1.0
 if(location.protocol!=="https:"&&location.hostname!=="localhost"&&location.hostname!=="127.0.0.1"){location.replace("https:"+window.location.href.substring(window.location.protocol.length));}

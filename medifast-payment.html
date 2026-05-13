@@ -44,6 +44,51 @@ body{font-family:'DM Sans',sans-serif;background:var(--navy);color:var(--white);
 </style>
 </head>
 <body>
+<!-- NETWORK STATUS BANNER -->
+<div id="mf-offline-bar" style="
+  display:none;position:fixed;top:0;left:0;right:0;
+  background:linear-gradient(135deg,#FF5C5C,#E53E3E);
+  color:white;padding:0.5rem;text-align:center;
+  font-size:0.78rem;font-weight:700;z-index:99997;
+  font-family:'DM Sans',sans-serif;
+  animation:slideDown 0.3s ease;
+">
+  📶 No internet connection — Working offline. Data will sync when connected!
+</div>
+<div id="mf-online-bar" style="
+  display:none;position:fixed;top:0;left:0;right:0;
+  background:linear-gradient(135deg,#00C97F,#00A566);
+  color:#0A1628;padding:0.5rem;text-align:center;
+  font-size:0.78rem;font-weight:700;z-index:99997;
+  font-family:'DM Sans',sans-serif;
+">
+  ✅ Back online! Syncing data...
+</div>
+<style>
+@keyframes slideDown{from{transform:translateY(-100%)}to{transform:translateY(0)}}
+</style>
+<script>
+window.addEventListener('offline',function(){
+  const bar = document.getElementById('mf-offline-bar');
+  if(bar) bar.style.display='block';
+});
+window.addEventListener('online',function(){
+  const offBar = document.getElementById('mf-offline-bar');
+  const onBar = document.getElementById('mf-online-bar');
+  if(offBar) offBar.style.display='none';
+  if(onBar){
+    onBar.style.display='block';
+    setTimeout(()=>onBar.style.display='none', 3000);
+  }
+});
+// Check immediately
+if(!navigator.onLine){
+  setTimeout(()=>{
+    const bar = document.getElementById('mf-offline-bar');
+    if(bar) bar.style.display='block';
+  }, 1000);
+}
+</script>
 <script>
 if(location.protocol!=="https:"&&location.hostname!=="localhost"){location.replace("https:"+window.location.href.substring(window.location.protocol.length));}
 window.sanitize=function(s){if(!s)return"";return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");};
@@ -221,17 +266,21 @@ window.initiatePayment = async function() {
 
   try {
     if (selectedMethod === 'cod') {
-      // Cash on Delivery
       await placeCODOrder();
     } else {
-      // Online Payment via Razorpay
       await initiateRazorpayPayment();
     }
   } catch(e) {
-    showAlert('⚠️ Payment failed: ' + e.message, 'error');
+    showAlert('⚠️ Payment failed! Please try again or use Cash on Delivery.', 'error');
     btn.disabled = false;
     spinner.style.display = 'none';
-    btnText.textContent = `🔐 Pay ₹${orderData.amount}`;
+    btnText.textContent = `🔐 Pay ₹${orderData?.amount || 0}`;
+  } finally {
+    // Always re-enable if not succeeded
+    if(document.getElementById('paymentSection').style.display !== 'none') {
+      btn.disabled = false;
+      spinner.style.display = 'none';
+    }
   }
 };
 
@@ -345,5 +394,76 @@ function showAlert(msg, type) {
   <a href="medifast-terms.html" style="color:rgba(0,201,127,0.6);text-decoration:none;">Terms</a>
 </div>
 
+<script>
+// ── PROFESSIONAL TOAST NOTIFICATION ──
+function showToast(msg, type='info', duration=3500) {
+  const existing = document.getElementById('mf-toast');
+  if(existing) existing.remove();
+  
+  const colors = {
+    success: {bg:'rgba(0,201,127,0.12)', border:'rgba(0,201,127,0.3)', icon:'✅'},
+    error: {bg:'rgba(255,92,92,0.12)', border:'rgba(255,92,92,0.3)', icon:'⚠️'},
+    info: {bg:'rgba(77,166,255,0.12)', border:'rgba(77,166,255,0.3)', icon:'ℹ️'},
+    warning: {bg:'rgba(255,209,102,0.12)', border:'rgba(255,209,102,0.3)', icon:'⚠️'}
+  };
+  const c = colors[type] || colors.info;
+  
+  const toast = document.createElement('div');
+  toast.id = 'mf-toast';
+  toast.style.cssText = `
+    position:fixed;bottom:90px;left:50%;
+    transform:translateX(-50%);
+    background:${c.bg};
+    border:1px solid ${c.border};
+    backdrop-filter:blur(20px);
+    color:white;padding:0.85rem 1.2rem;
+    border-radius:14px;font-size:0.84rem;
+    font-weight:600;z-index:99999;
+    box-shadow:0 8px 30px rgba(0,0,0,0.4);
+    max-width:92%;min-width:260px;
+    text-align:center;
+    font-family:'DM Sans',sans-serif;
+    display:flex;align-items:center;
+    gap:0.5rem;justify-content:center;
+    animation:toastIn 0.3s ease;
+  `;
+  
+  if(!document.getElementById('mf-toast-style')) {
+    const style = document.createElement('style');
+    style.id = 'mf-toast-style';
+    style.textContent = '@keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}';
+    document.head.appendChild(style);
+  }
+  
+  toast.innerHTML = `<span>${c.icon}</span><span>${msg}</span>`;
+  document.body.appendChild(toast);
+  
+  setTimeout(() => {
+    toast.style.animation = 'toastIn 0.3s ease reverse';
+    setTimeout(() => toast.remove(), 300);
+  }, duration);
+}
+
+// Global error handler
+window.addEventListener('unhandledrejection', function(e) {
+  e.preventDefault();
+  showToast('Something went wrong. Please try again!', 'error');
+});
+
+window.addEventListener('error', function(e) {
+  if(e.message && !e.message.includes('Script error')) {
+    showToast('An error occurred. Please refresh if needed!', 'error');
+  }
+});
+
+// Online/Offline detection
+window.addEventListener('offline', function() {
+  showToast('No internet connection! Some features may not work.', 'warning', 5000);
+});
+
+window.addEventListener('online', function() {
+  showToast('Back online! ✅', 'success', 2000);
+});
+</script>
 </body>
 </html>
