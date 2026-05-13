@@ -488,7 +488,7 @@ window.addEventListener("unhandledrejection",function(e){e.preventDefault();});
   </div>
 
   <nav class="nav-section">
-    <div class="nav-label">Overview</div>
+    <div class="nav-label">OVERVIEW</div>
     <a class="nav-item active" onclick="showSection('dashboard', this)">
       <span class="nav-icon">📊</span> Dashboard
     </a>
@@ -497,16 +497,16 @@ window.addEventListener("unhandledrejection",function(e){e.preventDefault();});
       <span class="nav-badge blue" id="activityBadge">0</span>
     </a>
 
-    <div class="nav-label">Approvals</div>
+    <div class="nav-label">APPROVALS</div>
     <a class="nav-item" onclick="showSection('pharmacies', this)">
       <span class="nav-icon">🏪</span> Pharmacies
       <span class="nav-badge yellow" id="pendingBadge">0</span>
     </a>
     <a class="nav-item" onclick="showSection('labs', this)">
-      <span class="nav-icon">🧪</span> Labs & Doctors
+      <span class="nav-icon">👨‍⚕️</span> Doctors & Labs
     </a>
 
-    <div class="nav-label">Management</div>
+    <div class="nav-label">MANAGEMENT</div>
     <a class="nav-item" onclick="showSection('users', this)">
       <span class="nav-icon">👥</span> Users
     </a>
@@ -514,7 +514,7 @@ window.addEventListener("unhandledrejection",function(e){e.preventDefault();});
       <span class="nav-icon">📦</span> All Orders
     </a>
     <a class="nav-item" onclick="showSection('medicines', this)">
-      <span class="nav-icon">💊</span> Medicine Master
+      <span class="nav-icon">💊</span> Medicines
     </a>
     <a class="nav-item" onclick="showSection('prescriptions', this)">
       <span class="nav-icon">📄</span> Prescriptions
@@ -529,17 +529,17 @@ window.addEventListener("unhandledrejection",function(e){e.preventDefault();});
       <span class="nav-icon">🏥</span> Hospitals
     </a>
 
-    <div class="nav-label">Support</div>
+    <div class="nav-label">SUPPORT</div>
     <a class="nav-item" onclick="showSection('complaints', this)">
       <span class="nav-icon">🚨</span> Complaints
-      <span class="nav-badge" id="complaintBadge">0</span>
+      <span class="nav-badge red" id="complaintBadge">0</span>
     </a>
     <a class="nav-item" onclick="showSection('errors', this)">
       <span class="nav-icon">⚠️</span> System Errors
       <span class="nav-badge" id="errorBadge">0</span>
     </a>
 
-    <div class="nav-label">Finance</div>
+    <div class="nav-label">FINANCE</div>
     <a class="nav-item" onclick="showSection('revenue', this)">
       <span class="nav-icon">💰</span> Revenue
     </a>
@@ -547,7 +547,7 @@ window.addEventListener("unhandledrejection",function(e){e.preventDefault();});
       <span class="nav-icon">🏦</span> Settlements
     </a>
 
-    <div class="nav-label">Tools</div>
+    <div class="nav-label">TOOLS</div>
     <a class="nav-item" onclick="showSection('announcements', this)">
       <span class="nav-icon">📢</span> Announcements
     </a>
@@ -555,7 +555,7 @@ window.addEventListener("unhandledrejection",function(e){e.preventDefault();});
       <span class="nav-icon">🗺️</span> Coverage Map
     </a>
     <a class="nav-item" onclick="showSection('settings', this)">
-      <span class="nav-icon">⚙️</span> App Settings
+      <span class="nav-icon">⚙️</span> Settings
     </a>
   </nav>
 
@@ -1621,7 +1621,9 @@ async function loadDashboard() {
     document.getElementById('totalPharmacies').textContent = pharmacyList.length;
     document.getElementById('pendingApprovals').textContent = pending;
     document.getElementById('pendingBadge').textContent = pending;
-    document.getElementById('covPharmacies').textContent = pharmacyList.filter(p => p.status === 'approved').length;
+    if(document.getElementById('covPharmacies')) {
+      document.getElementById('covPharmacies').textContent = pharmacyList.filter(p => p.status === 'approved').length;
+    }
 
     // Analytics bars
     if (total > 0) {
@@ -1639,11 +1641,19 @@ async function loadDashboard() {
     }
 
     renderDashPending(pharmacyList.filter(p => !p.status || p.status === 'pending').slice(0, 3));
-  } catch(e) { console.error(e); }
+  } catch(e) {
+    // Show zeros on error instead of crashing
+    ['totalUsers','totalPharmacies','pendingApprovals'].forEach(id => {
+      const el = document.getElementById(id);
+      if(el && !el.textContent) el.textContent = '0';
+    });
+    renderDashPending([]);
+  }
 }
 
 function renderDashPending(list) {
   const container = document.getElementById('dashPendingList');
+  if (!container) return;
   if (list.length === 0) {
     container.innerHTML = `<div class="empty"><span class="empty-icon">✅</span><p>No pending approvals!</p></div>`;
     return;
@@ -2781,10 +2791,23 @@ document.querySelectorAll('.modal-overlay').forEach(overlay => {
 <div id="medifast-copyright" style="display:none;">© 2026 MediFast Technology. All Rights Reserved.</div>
 
 <!-- MEDIFAST LEGAL FOOTER -->
-<div style="text-align:center;padding:0.8rem;font-size:0.7rem;color:rgba(255,255,255,0.25);border-top:1px solid rgba(255,255,255,0.05);margin-top:1rem;">
-  © 2026 MediFast Technology. All Rights Reserved. &nbsp;|&nbsp;
-  <a href="medifast-privacy.html" style="color:rgba(0,201,127,0.5);text-decoration:none;">Privacy Policy</a> &nbsp;|&nbsp;
-  <a href="medifast-terms.html" style="color:rgba(0,201,127,0.5);text-decoration:none;">Terms of Service</a>
+<div style="
+  text-align:center;
+  padding:1rem 1rem 1.5rem;
+  font-size:0.7rem;
+  color:rgba(255,255,255,0.2);
+  border-top:1px solid rgba(255,255,255,0.05);
+  margin-top:2rem;
+  width:100%;
+  clear:both;
+  position:relative;
+  z-index:1;
+">
+  © 2026 MediFast Technology. All Rights Reserved.
+  &nbsp;|&nbsp;
+  <a href="medifast-privacy.html" style="color:rgba(0,201,127,0.4);text-decoration:none;">Privacy Policy</a>
+  &nbsp;|&nbsp;
+  <a href="medifast-terms.html" style="color:rgba(0,201,127,0.4);text-decoration:none;">Terms of Service</a>
 </div>
 <script>
 // ── PROFESSIONAL TOAST NOTIFICATION ──

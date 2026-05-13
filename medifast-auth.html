@@ -31,11 +31,15 @@ body {
   color: var(--white);
   min-height: 100vh;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   padding: 1.5rem;
+  padding-top: 2.5rem;
+  padding-bottom: 2rem;
   position: relative;
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 body::before {
   content: '';
@@ -44,6 +48,7 @@ body::before {
   background: radial-gradient(circle, rgba(0,201,127,0.12) 0%, transparent 70%);
   top: -100px; right: -100px;
   pointer-events: none;
+  z-index: 0;
 }
 body::after {
   content: '';
@@ -52,6 +57,7 @@ body::after {
   background: radial-gradient(circle, rgba(0,160,255,0.08) 0%, transparent 70%);
   bottom: -100px; left: -100px;
   pointer-events: none;
+  z-index: 0;
 }
 .auth-card {
   background: var(--navy-card);
@@ -64,6 +70,8 @@ body::after {
   z-index: 1;
   box-shadow: 0 30px 80px rgba(0,0,0,0.4);
   animation: fadeUp 0.6s ease both;
+  margin-bottom: 1rem;
+  overflow: visible;
 }
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(24px); }
@@ -566,7 +574,10 @@ window.addEventListener("unhandledrejection",function(e){e.preventDefault();});
       </div>
       <button class="btn-secondary" onclick="handleGoogleLogin()">🔵 Continue with Google</button>
       <p class="terms-text">
-        By signing up you agree to our <a href="#">Terms</a> & <a href="#">Privacy Policy</a>
+        By signing up you agree to our
+        <a href="medifast-terms.html" style="color:var(--emerald);">Terms of Service</a>
+        &amp;
+        <a href="medifast-privacy.html" style="color:var(--emerald);">Privacy Policy</a>
       </p>
     </div>
   </div>
@@ -1075,10 +1086,24 @@ function showLoginAlert(msg, type) {
 <div id="medifast-copyright" style="display:none;">© 2026 MediFast Technology. All Rights Reserved.</div>
 
 <!-- MEDIFAST LEGAL FOOTER -->
-<div style="text-align:center;padding:0.8rem;font-size:0.7rem;color:rgba(255,255,255,0.25);border-top:1px solid rgba(255,255,255,0.05);margin-top:1rem;">
-  © 2026 MediFast Technology. All Rights Reserved. &nbsp;|&nbsp;
-  <a href="medifast-privacy.html" style="color:rgba(0,201,127,0.5);text-decoration:none;">Privacy Policy</a> &nbsp;|&nbsp;
-  <a href="medifast-terms.html" style="color:rgba(0,201,127,0.5);text-decoration:none;">Terms of Service</a>
+<div style="
+  text-align:center;
+  padding:1rem 1rem 1.5rem;
+  font-size:0.7rem;
+  color:rgba(255,255,255,0.2);
+  border-top:1px solid rgba(255,255,255,0.05);
+  margin-top:0;
+  width:100%;
+  max-width:420px;
+  clear:both;
+  position:relative;
+  z-index:1;
+">
+  © 2026 MediFast Technology. All Rights Reserved.
+  &nbsp;|&nbsp;
+  <a href="medifast-privacy.html" style="color:rgba(0,201,127,0.4);text-decoration:none;">Privacy Policy</a>
+  &nbsp;|&nbsp;
+  <a href="medifast-terms.html" style="color:rgba(0,201,127,0.4);text-decoration:none;">Terms of Service</a>
 </div>
 <script>
 // ── PROFESSIONAL TOAST NOTIFICATION ──
