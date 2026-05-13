@@ -1373,77 +1373,7 @@ window.printPrescription = function() {
   &nbsp;|&nbsp;
   <a href="medifast-terms.html" style="color:rgba(0,201,127,0.4);text-decoration:none;">Terms of Service</a>
 </div>
-<script>
-// ── PROFESSIONAL TOAST NOTIFICATION ──
-function showToast(msg, type='info', duration=3500) {
-  const existing = document.getElementById('mf-toast');
-  if(existing) existing.remove();
-  
-  const colors = {
-    success: {bg:'rgba(0,201,127,0.12)', border:'rgba(0,201,127,0.3)', icon:'✅'},
-    error: {bg:'rgba(255,92,92,0.12)', border:'rgba(255,92,92,0.3)', icon:'⚠️'},
-    info: {bg:'rgba(77,166,255,0.12)', border:'rgba(77,166,255,0.3)', icon:'ℹ️'},
-    warning: {bg:'rgba(255,209,102,0.12)', border:'rgba(255,209,102,0.3)', icon:'⚠️'}
-  };
-  const c = colors[type] || colors.info;
-  
-  const toast = document.createElement('div');
-  toast.id = 'mf-toast';
-  toast.style.cssText = `
-    position:fixed;bottom:90px;left:50%;
-    transform:translateX(-50%);
-    background:${c.bg};
-    border:1px solid ${c.border};
-    backdrop-filter:blur(20px);
-    color:white;padding:0.85rem 1.2rem;
-    border-radius:14px;font-size:0.84rem;
-    font-weight:600;z-index:99999;
-    box-shadow:0 8px 30px rgba(0,0,0,0.4);
-    max-width:92%;min-width:260px;
-    text-align:center;
-    font-family:'DM Sans',sans-serif;
-    display:flex;align-items:center;
-    gap:0.5rem;justify-content:center;
-    animation:toastIn 0.3s ease;
-  `;
-  
-  if(!document.getElementById('mf-toast-style')) {
-    const style = document.createElement('style');
-    style.id = 'mf-toast-style';
-    style.textContent = '@keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}';
-    document.head.appendChild(style);
-  }
-  
-  toast.innerHTML = `<span>${c.icon}</span><span>${msg}</span>`;
-  document.body.appendChild(toast);
-  
-  setTimeout(() => {
-    toast.style.animation = 'toastIn 0.3s ease reverse';
-    setTimeout(() => toast.remove(), 300);
-  }, duration);
-}
 
-// Global error handler
-window.addEventListener('unhandledrejection', function(e) {
-  e.preventDefault();
-  showToast('Something went wrong. Please try again!', 'error');
-});
-
-window.addEventListener('error', function(e) {
-  if(e.message && !e.message.includes('Script error')) {
-    showToast('An error occurred. Please refresh if needed!', 'error');
-  }
-});
-
-// Online/Offline detection
-window.addEventListener('offline', function() {
-  showToast('No internet connection! Some features may not work.', 'warning', 5000);
-});
-
-window.addEventListener('online', function() {
-  showToast('Back online! ✅', 'success', 2000);
-});
-</script>
 </body>
     </html>
   `);
@@ -1904,8 +1834,80 @@ setInterval(() => {
 }, 60000);
 </script>
 
-</body>
-</html>
 <script>
 let _dp2;window.addEventListener("beforeinstallprompt",(e)=>{e.preventDefault();_dp2=e;setTimeout(()=>{if(document.getElementById("pwa-b"))return;const b=document.createElement("div");b.id="pwa-b";b.style.cssText="position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#131F33;border:1px solid rgba(0,201,127,0.3);border-radius:14px;padding:0.8rem 1rem;display:flex;align-items:center;gap:0.8rem;z-index:9999;box-shadow:0 8px 30px rgba(0,0,0,0.4);width:340px;max-width:92%;";b.innerHTML='<span style="font-size:1.5rem;">💊</span><div style="flex:1;"><div style="font-size:0.82rem;font-weight:700;color:white;">Install MediFast!</div><div style="font-size:0.72rem;color:rgba(255,255,255,0.5);">Add to home screen</div></div><button onclick="if(_dp2){_dp2.prompt();_dp2.userChoice.then(()=>{document.getElementById(\'pwa-b\')?.remove();_dp2=null;});}" style="background:#00C97F;color:#0A1628;border:none;border-radius:8px;padding:0.4rem 0.8rem;font-size:0.78rem;font-weight:700;cursor:pointer;">Install ✅</button><button onclick="document.getElementById(\'pwa-b\').remove()" style="background:transparent;border:none;color:rgba(255,255,255,0.4);cursor:pointer;font-size:1.1rem;">✕</button>';document.body.appendChild(b);setTimeout(()=>b?.remove(),20000);},3000);});
 </script>
+
+<script>
+// ── PROFESSIONAL TOAST NOTIFICATION ──
+function showToast(msg, type='info', duration=3500) {
+  const existing = document.getElementById('mf-toast');
+  if(existing) existing.remove();
+  
+  const colors = {
+    success: {bg:'rgba(0,201,127,0.12)', border:'rgba(0,201,127,0.3)', icon:'✅'},
+    error: {bg:'rgba(255,92,92,0.12)', border:'rgba(255,92,92,0.3)', icon:'⚠️'},
+    info: {bg:'rgba(77,166,255,0.12)', border:'rgba(77,166,255,0.3)', icon:'ℹ️'},
+    warning: {bg:'rgba(255,209,102,0.12)', border:'rgba(255,209,102,0.3)', icon:'⚠️'}
+  };
+  const c = colors[type] || colors.info;
+  
+  const toast = document.createElement('div');
+  toast.id = 'mf-toast';
+  toast.style.cssText = `
+    position:fixed;bottom:90px;left:50%;
+    transform:translateX(-50%);
+    background:${c.bg};
+    border:1px solid ${c.border};
+    backdrop-filter:blur(20px);
+    color:white;padding:0.85rem 1.2rem;
+    border-radius:14px;font-size:0.84rem;
+    font-weight:600;z-index:99999;
+    box-shadow:0 8px 30px rgba(0,0,0,0.4);
+    max-width:92%;min-width:260px;
+    text-align:center;
+    font-family:'DM Sans',sans-serif;
+    display:flex;align-items:center;
+    gap:0.5rem;justify-content:center;
+    animation:toastIn 0.3s ease;
+  `;
+  
+  if(!document.getElementById('mf-toast-style')) {
+    const style = document.createElement('style');
+    style.id = 'mf-toast-style';
+    style.textContent = '@keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}';
+    document.head.appendChild(style);
+  }
+  
+  toast.innerHTML = `<span>${c.icon}</span><span>${msg}</span>`;
+  document.body.appendChild(toast);
+  
+  setTimeout(() => {
+    toast.style.animation = 'toastIn 0.3s ease reverse';
+    setTimeout(() => toast.remove(), 300);
+  }, duration);
+}
+
+// Global error handler
+window.addEventListener('unhandledrejection', function(e) {
+  e.preventDefault();
+  showToast('Something went wrong. Please try again!', 'error');
+});
+
+window.addEventListener('error', function(e) {
+  if(e.message && !e.message.includes('Script error')) {
+    showToast('An error occurred. Please refresh if needed!', 'error');
+  }
+});
+
+// Online/Offline detection
+window.addEventListener('offline', function() {
+  showToast('No internet connection! Some features may not work.', 'warning', 5000);
+});
+
+window.addEventListener('online', function() {
+  showToast('Back online! ✅', 'success', 2000);
+});
+</script>
+</body>
+</html>
