@@ -870,8 +870,13 @@ window.switchLoginMethod = function(method) {
     phoneBtn.style.color = 'var(--navy)';
     emailBtn.style.background = 'transparent';
     emailBtn.style.color = 'var(--gray)';
-    // Setup reCAPTCHA
-    setupRecaptcha();
+
+    // Setup reCAPTCHA after short delay for DOM to render
+    setTimeout(() => {
+      if (!window.recaptchaVerifier) {
+        setupRecaptcha();
+      }
+    }, 300);
   }
 };
 
@@ -879,16 +884,30 @@ window.switchLoginMethod = function(method) {
 function setupRecaptcha() {
   if (window.recaptchaVerifier) return;
   try {
-    window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-      size: 'invisible', // Changed to invisible for better UX!
-      callback: () => {},
-      'expired-callback': () => {
-        window.recaptchaVerifier = null;
+    window.recaptchaVerifier = new RecaptchaVerifier(
+      auth,
+      'recaptcha-container',
+      {
+        size: 'normal',
+        theme: 'dark',
+        callback: (response) => {
+          // reCAPTCHA solved - enable send button
+          const btn = document.getElementById('sendOtpBtn');
+          if (btn) btn.disabled = false;
+        },
+        'expired-callback': () => {
+          window.recaptchaVerifier = null;
+          setupRecaptcha();
+        }
       }
+    );
+    window.recaptchaVerifier.render().then((widgetId) => {
+      window.recaptchaWidgetId = widgetId;
+    }).catch(e => {
+      window.recaptchaVerifier = null;
     });
-    window.recaptchaVerifier.render();
   } catch(e) {
-    // reCAPTCHA setup failed silently
+    window.recaptchaVerifier = null;
   }
 }
 
@@ -896,15 +915,9 @@ function setupRecaptcha() {
 window.sendOTP = async function() {
   const phone = document.getElementById('phoneNumber').value.trim();
 
-  // Validate phone
+  // Validate 10 digit Indian number
   if (!phone || !/^[6-9]\d{9}$/.test(phone)) {
-    showLoginAlert('⚠️ Please enter valid 10 digit Indian phone number!', 'error');
-    return;
-  }
-
-  // Rate limiting — max 3 OTP requests per 5 minutes
-  if (!rateLimiter.check('otp_send', 3, 300000)) {
-    showLoginAlert('⚠️ Too many OTP requests! Please wait 5 minutes.', 'error');
+    showLoginAlert('⚠️ Enter valid 10 digit phone number (starts with 6-9)!', 'error');
     return;
   }
 
@@ -914,56 +927,63 @@ window.sendOTP = async function() {
 
   btn.disabled = true;
   spinner.style.display = 'block';
-  btnText.textContent = 'Sending OTP...';
+  btnText.textContent = 'Sending...';
 
   try {
-    // Setup recaptcha if not done
+    // Ensure recaptcha is ready
     if (!window.recaptchaVerifier) {
       setupRecaptcha();
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise(resolve => setTimeout(resolve, 2000));
     }
 
     const phoneNumber = '+91' + phone;
     window.confirmationResult = await signInWithPhoneNumber(
-      auth, phoneNumber, window.recaptchaVerifier
+      auth,
+      phoneNumber,
+      window.recaptchaVerifier
     );
 
-    // Show OTP input step
+    // Show OTP boxes
     document.getElementById('phoneStep1').style.display = 'none';
     document.getElementById('phoneStep2').style.display = 'block';
-    document.getElementById('otpSentTo').textContent = `OTP sent to +91 ${phone.slice(0,5)}XXXXX`;
+    document.getElementById('otpSentTo').textContent =
+      `OTP sent to +91 ${phone.slice(0,3)}XXXXXXX`;
     document.getElementById('otp1').focus();
-
-    // Store phone for resend
     window._otpPhone = phone;
 
     startResendTimer();
-    showLoginAlert('✅ OTP sent successfully!', 'success');
+    showLoginAlert('✅ OTP sent! Check your SMS.', 'success');
 
   } catch(e) {
     btn.disabled = false;
     spinner.style.display = 'none';
     btnText.textContent = '📤 Send OTP';
 
-    // Reset recaptcha
-    if (window.recaptchaVerifier) {
-      window.recaptchaVerifier.clear();
-      window.recaptchaVerifier = null;
-    }
+    // Clear broken recaptcha
+    try {
+      if (window.recaptchaVerifier) {
+        window.recaptchaVerifier.clear();
+      }
+    } catch(ce) {}
+    window.recaptchaVerifier = null;
 
-    // Show user-friendly error
-    if (e.code === 'auth/too-many-requests') {
-      showLoginAlert('⚠️ Too many requests! Please try after some time.', 'error');
-    } else if (e.code === 'auth/invalid-phone-number') {
-      showLoginAlert('⚠️ Invalid phone number! Please check and try again.', 'error');
-    } else if (e.code === 'auth/captcha-check-failed') {
-      showLoginAlert('⚠️ Security check failed! Please refresh and try again.', 'error');
-    } else {
-      showLoginAlert('⚠️ Could not send OTP: ' + (e.message || 'Please try again'), 'error');
-    }
+    // Clear recaptcha container and reinit
+    const container = document.getElementById('recaptcha-container');
+    if (container) container.innerHTML = '';
 
-    // Reinitialize recaptcha
-    setTimeout(setupRecaptcha, 1000);
+    setTimeout(setupRecaptcha, 500);
+
+    // Friendly errors
+    const errMap = {
+      'auth/too-many-requests': '⚠️ Too many OTP requests! Wait 10 minutes.',
+      'auth/invalid-phone-number': '⚠️ Invalid phone number format!',
+      'auth/captcha-check-failed': '⚠️ Security check failed! Refresh and try again.',
+      'auth/quota-exceeded': '⚠️ OTP quota exceeded. Try after some time.',
+      'auth/network-request-failed': '⚠️ Network error! Check your internet.',
+      'auth/internal-error': '⚠️ Internal error. Please try again.',
+    };
+    const msg = errMap[e.code] || `⚠️ ${e.message || 'Failed to send OTP. Try again!'}`;
+    showLoginAlert(msg, 'error');
   }
 };
 

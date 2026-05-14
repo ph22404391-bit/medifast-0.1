@@ -75,7 +75,7 @@ body {
   margin-bottom: 1.2rem;
   text-align: center;
   position: relative;
-  overflow: hidden;
+  overflow-x: hidden;
 }
 .hero::before {
   content: '';
@@ -134,7 +134,7 @@ body {
   background: var(--navy-card);
   border: 1px solid var(--border);
   border-radius: 14px;
-  overflow: hidden;
+  overflow-x: hidden;
   margin-bottom: 1.2rem;
   display: none;
 }
@@ -202,7 +202,7 @@ body {
   background: var(--navy-card);
   border: 1px solid var(--border);
   border-radius: 16px;
-  overflow: hidden;
+  overflow-x: hidden;
   margin-bottom: 1.2rem;
   display: none;
 }
@@ -428,6 +428,19 @@ window.addEventListener("unhandledrejection",function(e){e.preventDefault();});
     </div>
   </div>
 
+  <!-- PHOTO TIPS -->
+  <div style="background:rgba(77,166,255,0.06);border:1px solid rgba(77,166,255,0.15);border-radius:14px;padding:1rem;margin-bottom:1rem;">
+    <div style="font-size:0.8rem;font-weight:700;color:var(--blue);margin-bottom:0.6rem;">📷 Tips for Best AI Reading</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.4rem;">
+      <div style="font-size:0.73rem;color:rgba(255,255,255,0.6);">✅ Good lighting</div>
+      <div style="font-size:0.73rem;color:rgba(255,255,255,0.6);">✅ Flat surface</div>
+      <div style="font-size:0.73rem;color:rgba(255,255,255,0.6);">✅ Close up shot</div>
+      <div style="font-size:0.73rem;color:rgba(255,255,255,0.6);">✅ No blur/shake</div>
+      <div style="font-size:0.73rem;color:rgba(255,255,255,0.6);">✅ Full prescription</div>
+      <div style="font-size:0.73rem;color:rgba(255,255,255,0.6);">✅ No shadows</div>
+    </div>
+  </div>
+
   <!-- IMAGE PREVIEW -->
   <div class="preview-card" id="previewCard">
     <div class="preview-header">
@@ -438,7 +451,7 @@ window.addEventListener("unhandledrejection",function(e){e.preventDefault();});
     <div class="preview-file-info">
       <span>📄</span>
       <span id="fileInfoText">prescription.jpg</span>
-      <button onclick="analyzePresc ription()" style="margin-left:auto;background:var(--purple);color:white;border:none;border-radius:8px;padding:0.4rem 0.9rem;font-size:0.8rem;font-weight:700;cursor:pointer;">🤖 Read with AI →</button>
+      <button onclick="analyzePrescription()" style="margin-left:auto;background:var(--purple);color:white;border:none;border-radius:8px;padding:0.4rem 0.9rem;font-size:0.8rem;font-weight:700;cursor:pointer;">🤖 Read with AI →</button>
     </div>
   </div>
 
@@ -579,20 +592,24 @@ async function analyzePrescription() {
   document.getElementById('actionButtons').style.display = 'none';
   document.getElementById('pharmacyResults').style.display = 'none';
 
-  // Animate steps
   animateSteps();
 
   try {
-    // Convert image to base64
-    const base64 = await fileToBase64(selectedFile);
+    // Preprocess image — enhance contrast for better OCR
+    const base64 = await preprocessImage(selectedFile);
+    const mediaType = selectedFile.type === 'image/png' ? 'image/png' : 'image/jpeg';
 
-    // Call Claude AI API
+    // Call Claude AI with enhanced prompt
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1000,
+        model: 'claude-opus-4-5',
+        max_tokens: 2000,
         messages: [{
           role: 'user',
           content: [
@@ -600,58 +617,102 @@ async function analyzePrescription() {
               type: 'image',
               source: {
                 type: 'base64',
-                media_type: selectedFile.type || 'image/jpeg',
+                media_type: mediaType,
                 data: base64
               }
             },
             {
               type: 'text',
-              text: `You are a medical prescription decoder for India. Analyze this prescription image carefully.
+              text: `You are an expert Indian medical prescription decoder and drug safety officer with 20 years experience.
 
-Extract ALL medicines and decode ALL medical shortforms. Return ONLY a valid JSON object, no other text, no markdown.
+TASK: Analyze this prescription image completely including date validation and drug safety checks.
 
-Medical shortforms to decode:
-- Tab/Cap/Syp/Inj/Drop/Cream/Oint = Tablet/Capsule/Syrup/Injection/Eye Drop/Cream/Ointment
-- OD=Once daily, BD/BID=Twice daily, TDS/TID=Three times daily, QID=Four times daily, SOS=When needed, HS=At bedtime
-- AC=Before food, PC=After food, CC=With food
-- PCM=Paracetamol, Amox=Amoxicillin, Azithro=Azithromycin, Cetiriz=Cetirizine, Pantop=Pantoprazole, Met=Metformin, Atorva=Atorvastatin, Aspirin/ASA=Aspirin, Cefixime/Cefpodox=Cefixime, Ibu=Ibuprofen, Dolo=Paracetamol 650mg
-- BD x 5d = twice daily for 5 days
-- mg=milligram, ml=milliliter, mcg=microgram
+CRITICAL SAFETY CHECKS YOU MUST PERFORM:
+1. Extract and validate prescription DATE - is it present? Is it recent (within 30 days)?
+2. Identify ALL Schedule H, H1, and X (narcotic/controlled) drugs
+3. Check if controlled drugs have proper prescription with date + doctor signature
+4. Flag any expired prescriptions (older than 30 days for regular, 7 days for Schedule X)
 
-Return this exact JSON format:
+SCHEDULE CLASSIFICATION (Indian Drugs & Cosmetics Act):
+Schedule H (Prescription only):
+- Antibiotics: Amoxicillin, Azithromycin, Ciprofloxacin, Levofloxacin, Cefixime, Cefpodoxime, Metronidazole, Clindamycin, Doxycycline, Clarithromycin
+- Antidiabetics: Metformin, Glimepiride, Insulin, Voglibose, Teneligliptin, Sitagliptin
+- Cardiac: Atenolol, Amlodipine, Telmisartan, Ramipril, Losartan, Digoxin, Furosemide, Atorvastatin, Rosuvastatin, Clopidogrel, Warfarin
+- Steroids: Prednisolone, Dexamethasone, Betamethasone, Hydrocortisone, Budesonide
+- Others: Omeprazole, Pantoprazole, Cetirizine (high dose), Montelukast, Salbutamol inhaler
+
+Schedule H1 (Special prescription - quantity restricted):
+- Antibiotics: Meropenem, Imipenem, Vancomycin, Linezolid, Colistin, Tigecycline (reserve antibiotics)
+- Antifungals: Voriconazole, Posaconazole, Caspofungin
+- Antivirals: Oseltamivir, Tenofovir, Efavirenz, Lopinavir
+
+Schedule X - NARCOTIC & PSYCHOTROPIC (HIGHEST RESTRICTION):
+- Opioids: Morphine, Codeine, Tramadol (injection), Buprenorphine, Fentanyl, Oxycodone, Hydrocodone, Pethidine/Meperidine, Nalbuphine, Pentazocine
+- Benzodiazepines: Alprazolam, Clonazepam, Diazepam, Lorazepam, Nitrazepam, Triazolam, Midazolam, Temazepam
+- Barbiturates: Phenobarbital, Pentobarbital, Secobarbital
+- Others: Zolpidem (sleeping pill), Eszopiclone, Methylphenidate (Ritalin), Amphetamine, Buprenorphine, Ketamine, GHB
+
+ABBREVIATION DICTIONARY:
+Dosage Forms: Tab=Tablet, Cap=Capsule, Syp=Syrup, Inj=Injection, Oint=Ointment, Crm=Cream, Sus=Suspension, Pwd=Powder, Sach=Sachet, Gel=Gel, Drp=Drops
+Frequency: OD/QD=Once daily, BD/BID=Twice daily, TDS/TID=Thrice daily, QID=4x daily, SOS/PRN=When needed, HS/NN=At night, AM=Morning, PM=Evening, Stat=Immediately
+Timing: AC=Before food, PC=After food, CC=With food
+Duration: xD=days, xW=weeks, xM=months
+Common drugs: PCM/Dolo/Calpol=Paracetamol, Amox=Amoxicillin, Azee/Azithro=Azithromycin, Pantop/Pan=Pantoprazole, Met=Metformin, Atorva=Atorvastatin, Ecosprin=Aspirin, Cetriz=Cetirizine, Combiflam=Ibuprofen+Paracetamol, Nise=Nimesulide, Voveran=Diclofenac, Taxim=Cefixime, Alprax=Alprazolam, Clonotril=Clonazepam, Nexito=Escitalopram, Zoloft=Sertraline, Macpod=Cefpodoxime, Monocef=Ceftriaxone
+
+RETURN ONLY valid JSON, no markdown, no explanation:
 {
   "medicines": [
     {
-      "original": "exact text from prescription",
-      "name": "full medicine name",
-      "type": "Tablet/Capsule/Syrup/etc",
-      "dose": "500mg/5ml/etc",
-      "frequency": "Once daily/Twice daily/etc",
-      "duration": "5 days/1 week/etc",
-      "timing": "After food/Before food/With food/At bedtime",
-      "instructions": "any special instructions",
-      "rxRequired": true/false
+      "original": "exact text as written",
+      "name": "complete generic medicine name",
+      "brand": "brand name if identifiable",
+      "type": "Tablet/Capsule/Syrup/Injection/Ointment/etc",
+      "dose": "strength like 500mg or 10ml",
+      "frequency": "human readable like Twice daily",
+      "duration": "like 5 days or 1 week",
+      "timing": "After food/Before food/At bedtime/etc",
+      "instructions": "special instructions if any",
+      "schedule": "H/H1/X/OTC",
+      "rxRequired": true or false,
+      "isNarcotic": true or false,
+      "safetyNote": "any safety concern about this drug"
     }
   ],
-  "doctorNotes": "any general instructions from doctor",
-  "doctorName": "doctor name if visible",
-  "patientName": "patient name if visible",
-  "confidence": "high/medium/low"
-}
-
-If you cannot read the prescription clearly, still try your best and set confidence to low.
-If no prescription is found in image, return {"medicines":[],"error":"No prescription found"}`
+  "doctorName": "doctor name if visible or null",
+  "doctorRegNumber": "doctor registration number if visible or null",
+  "patientName": "patient name if visible or null",
+  "patientAge": "patient age if visible or null",
+  "date": "prescription date in DD/MM/YYYY format if visible or null",
+  "dateRaw": "exact date text as written on prescription",
+  "dateValid": true if date present and within 30 days else false,
+  "dateExpired": true if prescription older than 30 days else false,
+  "diagnosis": "diagnosis if mentioned or null",
+  "doctorNotes": "general instructions like rest, diet, follow up",
+  "hasNarcotics": true if any Schedule X drugs present else false,
+  "hasScheduleH1": true if any Schedule H1 drugs present else false,
+  "narcoticDrugs": ["list of narcotic drug names if any"],
+  "scheduleH1Drugs": ["list of Schedule H1 drug names if any"],
+  "complianceStatus": "COMPLIANT/NON_COMPLIANT/REVIEW_NEEDED",
+  "complianceIssues": ["list of issues if any, empty array if none"],
+  "confidence": "high/medium/low",
+  "readabilityNote": "brief note about image quality"
+}`
             }
           ]
         }]
       })
     });
 
+    if (!response.ok) {
+      const errData = await response.json().catch(() => ({}));
+      throw new Error(errData?.error?.message || `API Error ${response.status}`);
+    }
+
     const data = await response.json();
 
     if (data.error) throw new Error(data.error.message || 'AI Error');
 
-    const text = data.content[0].text;
+    const text = data.content?.[0]?.text || '';
 
     // Parse JSON response
     let result;
@@ -659,7 +720,6 @@ If no prescription is found in image, return {"medicines":[],"error":"No prescri
       const clean = text.replace(/```json|```/g, '').trim();
       result = JSON.parse(clean);
     } catch(e) {
-      // Try to extract JSON from text
       const jsonMatch = text.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
         result = JSON.parse(jsonMatch[0]);
@@ -668,13 +728,18 @@ If no prescription is found in image, return {"medicines":[],"error":"No prescri
       }
     }
 
-    // Hide processing
     document.getElementById('aiProcessing').style.display = 'none';
 
     if (!result.medicines || result.medicines.length === 0) {
-      showAlert('error', '⚠️ Could not read prescription clearly. Please try with a clearer photo!');
-      resetAll();
+      // Show helpful message with tips
+      showAlert('error', '⚠️ Could not detect medicines. Please try: Better lighting, Flat surface, Close up photo, Good focus!');
+      document.getElementById('previewCard').style.display = 'block';
       return;
+    }
+
+    // Show low confidence warning
+    if (result.confidence === 'low') {
+      showAlert('warning', '⚠️ Image quality is low. Please verify medicines carefully before ordering!');
     }
 
     decodedMedicines = result.medicines;
@@ -682,11 +747,89 @@ If no prescription is found in image, return {"medicines":[],"error":"No prescri
 
   } catch(e) {
     document.getElementById('aiProcessing').style.display = 'none';
-    console.error('AI Error:', e);
 
-    // Fallback — show manual entry
-    showManualEntry();
+    if (e.message?.includes('401') || e.message?.includes('auth')) {
+      showAlert('error', '⚠️ AI service authentication error. Please try again!');
+    } else if (e.message?.includes('network') || e.message?.includes('fetch')) {
+      showAlert('error', '⚠️ Network error! Check internet connection and try again.');
+    } else {
+      showAlert('error', '⚠️ AI reading failed. Try with a clearer photo!');
+    }
+
+    // Show manual entry as fallback
+    setTimeout(() => showManualEntry(), 1000);
   }
+}
+
+// ── PREPROCESS IMAGE for better AI reading ──
+async function preprocessImage(file) {
+  return new Promise((resolve) => {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+
+    img.onload = () => {
+      // Scale up small images for better OCR
+      let width = img.width;
+      let height = img.height;
+      const maxSize = 1600;
+      const minSize = 800;
+
+      if (width < minSize) {
+        const scale = minSize / width;
+        width = minSize;
+        height = Math.round(img.height * scale);
+      } else if (width > maxSize) {
+        const scale = maxSize / width;
+        width = maxSize;
+        height = Math.round(img.height * scale);
+      }
+
+      canvas.width = width;
+      canvas.height = height;
+
+      // Draw with white background
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillRect(0, 0, width, height);
+      ctx.drawImage(img, 0, 0, width, height);
+
+      // Enhance contrast for handwriting
+      const imageData = ctx.getImageData(0, 0, width, height);
+      const data = imageData.data;
+
+      for (let i = 0; i < data.length; i += 4) {
+        // Convert to grayscale first
+        const avg = (data[i] * 0.299 + data[i+1] * 0.587 + data[i+2] * 0.114);
+
+        // Apply contrast enhancement
+        const contrast = 1.3;
+        const factor = (259 * (contrast * 255 + 255)) / (255 * (259 - contrast * 255));
+        const enhanced = Math.min(255, Math.max(0, factor * (avg - 128) + 128));
+
+        data[i] = enhanced;
+        data[i+1] = enhanced;
+        data[i+2] = enhanced;
+      }
+
+      ctx.putImageData(imageData, 0, 0);
+      URL.revokeObjectURL(url);
+
+      // Convert to base64 with high quality
+      const base64 = canvas.toDataURL('image/jpeg', 0.95).split(',')[1];
+      resolve(base64);
+    };
+
+    img.onerror = () => {
+      // Fallback to original
+      const reader = new FileReader();
+      reader.onload = (e) => resolve(e.target.result.split(',')[1]);
+      reader.readAsDataURL(file);
+      URL.revokeObjectURL(url);
+    };
+
+    img.src = url;
+  });
 }
 
 // ── SHOW RESULTS ──
@@ -696,20 +839,116 @@ function showResults(result) {
 
   document.getElementById('resultsCard').style.display = 'block';
   document.getElementById('actionButtons').style.display = 'flex';
-  document.getElementById('medCount').textContent = `${medicines.length} medicine${medicines.length > 1 ? 's' : ''} found`;
+  document.getElementById('medCount').textContent =
+    `${medicines.length} medicine${medicines.length > 1 ? 's' : ''} found`;
 
-  // Render medicines
+  // ── COMPLIANCE & DATE BANNER ──
+  const complianceContainer = document.getElementById('complianceBanner') ||
+    (() => {
+      const div = document.createElement('div');
+      div.id = 'complianceBanner';
+      div.style.marginBottom = '1rem';
+      document.getElementById('resultsCard').insertAdjacentElement('beforebegin', div);
+      return div;
+    })();
+
+  let banners = '';
+
+  // Date validation banner
+  if (!result.date) {
+    banners += `
+      <div style="background:rgba(255,92,92,0.1);border:1px solid rgba(255,92,92,0.3);border-radius:12px;padding:1rem;margin-bottom:0.7rem;">
+        <div style="font-weight:700;color:#FF5C5C;font-size:0.88rem;margin-bottom:0.3rem;">❌ No Prescription Date Found!</div>
+        <div style="font-size:0.78rem;color:rgba(255,255,255,0.6);">
+          Prescription date is mandatory for all medicines especially controlled drugs.
+          Pharmacist CANNOT dispense Schedule H1 or X drugs without a valid dated prescription.
+        </div>
+      </div>`;
+  } else if (result.dateExpired) {
+    banners += `
+      <div style="background:rgba(255,92,92,0.1);border:1px solid rgba(255,92,92,0.3);border-radius:12px;padding:1rem;margin-bottom:0.7rem;">
+        <div style="font-weight:700;color:#FF5C5C;font-size:0.88rem;margin-bottom:0.3rem;">❌ Prescription Expired!</div>
+        <div style="font-size:0.78rem;color:rgba(255,255,255,0.6);">
+          Prescription date: <strong>${result.dateRaw || result.date}</strong><br/>
+          This prescription is older than 30 days. Please get a fresh prescription from your doctor.
+        </div>
+      </div>`;
+  } else {
+    banners += `
+      <div style="background:rgba(0,201,127,0.08);border:1px solid rgba(0,201,127,0.2);border-radius:12px;padding:0.8rem 1rem;margin-bottom:0.7rem;display:flex;align-items:center;gap:0.7rem;">
+        <span style="font-size:1.2rem;">📅</span>
+        <div>
+          <div style="font-weight:700;color:#00C97F;font-size:0.82rem;">Valid Prescription Date ✅</div>
+          <div style="font-size:0.75rem;color:rgba(255,255,255,0.5);">Date: ${result.dateRaw || result.date}</div>
+        </div>
+      </div>`;
+  }
+
+  // Narcotic / Schedule X warning
+  if (result.hasNarcotics && result.narcoticDrugs?.length > 0) {
+    banners += `
+      <div style="background:rgba(255,92,92,0.12);border:2px solid rgba(255,92,92,0.4);border-radius:12px;padding:1rem;margin-bottom:0.7rem;">
+        <div style="font-weight:800;color:#FF5C5C;font-size:0.9rem;margin-bottom:0.5rem;">🚫 SCHEDULE X — NARCOTIC DRUGS DETECTED!</div>
+        <div style="font-size:0.78rem;color:rgba(255,255,255,0.7);margin-bottom:0.5rem;">
+          <strong>Drugs found:</strong> ${result.narcoticDrugs.join(', ')}
+        </div>
+        <div style="font-size:0.75rem;color:rgba(255,255,255,0.55);line-height:1.5;">
+          ⚠️ These are CONTROLLED SUBSTANCES under Narcotic Drugs & Psychotropic Substances Act 1985.<br/>
+          ⚠️ Cannot be sold WITHOUT original prescription with date + doctor's stamp + registration number.<br/>
+          ⚠️ Valid for 7 days only from prescription date.<br/>
+          ⚠️ Pharmacist must maintain Narcotic Register (Form 7).<br/>
+          ${!result.date ? '🔴 NO DATE on prescription — CANNOT DISPENSE!' : ''}
+          ${result.dateExpired ? '🔴 PRESCRIPTION EXPIRED — CANNOT DISPENSE!' : ''}
+        </div>
+      </div>`;
+  }
+
+  // Schedule H1 warning
+  if (result.hasScheduleH1 && result.scheduleH1Drugs?.length > 0) {
+    banners += `
+      <div style="background:rgba(255,209,102,0.1);border:1px solid rgba(255,209,102,0.3);border-radius:12px;padding:0.9rem 1rem;margin-bottom:0.7rem;">
+        <div style="font-weight:700;color:#FFD166;font-size:0.85rem;margin-bottom:0.3rem;">⚠️ SCHEDULE H1 — Restricted Antibiotics</div>
+        <div style="font-size:0.75rem;color:rgba(255,255,255,0.6);">
+          ${result.scheduleH1Drugs.join(', ')} — Dispensing must be recorded with patient details. 
+          Not to be sold without valid prescription.
+        </div>
+      </div>`;
+  }
+
+  // Compliance status
+  if (result.complianceIssues?.length > 0) {
+    banners += `
+      <div style="background:rgba(255,209,102,0.08);border:1px solid rgba(255,209,102,0.2);border-radius:12px;padding:0.9rem 1rem;margin-bottom:0.7rem;">
+        <div style="font-weight:700;color:#FFD166;font-size:0.82rem;margin-bottom:0.4rem;">📋 Compliance Issues</div>
+        ${result.complianceIssues.map(issue =>
+          `<div style="font-size:0.75rem;color:rgba(255,255,255,0.6);margin-bottom:0.2rem;">• ${issue}</div>`
+        ).join('')}
+      </div>`;
+  }
+
+  complianceContainer.innerHTML = banners;
+
+  // ── RENDER MEDICINES ──
   const container = document.getElementById('medicinesList');
   container.innerHTML = medicines.map((med, i) => `
-    <div class="med-result-item" style="animation:fadeUp 0.4s ease ${i * 0.1}s both;">
+    <div class="med-result-item" style="animation:fadeUp 0.4s ease ${i * 0.1}s both;
+      ${med.isNarcotic ? 'border:1px solid rgba(255,92,92,0.3);background:rgba(255,92,92,0.04);' :
+        med.schedule === 'H1' ? 'border:1px solid rgba(255,209,102,0.3);' : ''}">
       <div class="med-top">
         <div class="med-icon-wrap">${getMedIcon(med.type)}</div>
         <div style="flex:1;">
-          <div class="med-name">${med.name}</div>
+          <div class="med-name">${med.name}
+            ${med.brand ? `<span style="font-size:0.68rem;color:var(--gray);font-weight:400;"> (${med.brand})</span>` : ''}
+          </div>
           <div class="med-decoded">${med.type} ${med.dose || ''}</div>
           ${med.original ? `<div class="med-original">Original: "${med.original}"</div>` : ''}
         </div>
-        ${med.rxRequired ? '<span style="font-size:0.65rem;background:rgba(255,92,92,0.1);color:var(--red);border:1px solid rgba(255,92,92,0.2);padding:0.15rem 0.4rem;border-radius:50px;font-weight:700;">Rx</span>' : ''}
+        <div style="display:flex;flex-direction:column;gap:0.2rem;align-items:flex-end;">
+          ${med.isNarcotic ? `<span style="font-size:0.6rem;background:rgba(255,92,92,0.15);color:#FF5C5C;border:1px solid rgba(255,92,92,0.3);padding:0.15rem 0.4rem;border-radius:50px;font-weight:800;">🚫 SCH-X</span>` : ''}
+          ${med.schedule === 'H1' ? `<span style="font-size:0.6rem;background:rgba(255,209,102,0.15);color:#FFD166;border:1px solid rgba(255,209,102,0.3);padding:0.15rem 0.4rem;border-radius:50px;font-weight:800;">⚠️ SCH-H1</span>` : ''}
+          ${med.schedule === 'H' ? `<span style="font-size:0.6rem;background:rgba(77,166,255,0.1);color:#4DA6FF;border:1px solid rgba(77,166,255,0.2);padding:0.15rem 0.4rem;border-radius:50px;font-weight:700;">Rx SCH-H</span>` : ''}
+          ${med.rxRequired && !med.isNarcotic && med.schedule !== 'H1' && med.schedule !== 'H' ? `<span style="font-size:0.6rem;background:rgba(255,92,92,0.1);color:#FF5C5C;border:1px solid rgba(255,92,92,0.2);padding:0.15rem 0.4rem;border-radius:50px;font-weight:700;">Rx</span>` : ''}
+        </div>
       </div>
       <div class="med-details">
         ${med.frequency ? `<span class="med-tag tag-freq">🕐 ${med.frequency}</span>` : ''}
@@ -718,8 +957,23 @@ function showResults(result) {
         ${med.dose ? `<span class="med-tag tag-dose">💊 ${med.dose}</span>` : ''}
       </div>
       ${med.instructions ? `<div style="font-size:0.75rem;color:rgba(255,255,255,0.5);margin-top:0.4rem;padding-top:0.4rem;border-top:1px solid var(--border);">📝 ${med.instructions}</div>` : ''}
+      ${med.safetyNote ? `<div style="font-size:0.72rem;color:rgba(255,209,102,0.7);margin-top:0.3rem;">⚠️ ${med.safetyNote}</div>` : ''}
+      ${med.isNarcotic ? `<div style="font-size:0.72rem;color:rgba(255,92,92,0.8);margin-top:0.3rem;font-weight:600;">🚫 Controlled substance — Original prescription mandatory for dispensing!</div>` : ''}
     </div>
   `).join('');
+
+  // Doctor info
+  if (result.doctorName || result.date || result.patientName) {
+    const infoHtml = `
+      <div style="background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:12px;padding:0.8rem 1rem;margin-top:0.8rem;">
+        <div style="font-size:0.75rem;font-weight:700;color:var(--gray);margin-bottom:0.5rem;">📋 PRESCRIPTION INFO</div>
+        ${result.patientName ? `<div style="font-size:0.78rem;margin-bottom:0.2rem;">👤 Patient: <strong>${result.patientName}</strong>${result.patientAge ? ` (Age: ${result.patientAge})` : ''}</div>` : ''}
+        ${result.doctorName ? `<div style="font-size:0.78rem;margin-bottom:0.2rem;">👨‍⚕️ Doctor: <strong>${result.doctorName}</strong>${result.doctorRegNumber ? ` | Reg: ${result.doctorRegNumber}` : ''}</div>` : ''}
+        ${result.date ? `<div style="font-size:0.78rem;margin-bottom:0.2rem;">📅 Date: <strong>${result.dateRaw || result.date}</strong> ${result.dateExpired ? '🔴 EXPIRED' : result.dateValid ? '✅ Valid' : ''}</div>` : ''}
+        ${result.diagnosis ? `<div style="font-size:0.78rem;">🩺 Diagnosis: <strong>${result.diagnosis}</strong></div>` : ''}
+      </div>`;
+    document.getElementById('medicinesList').insertAdjacentHTML('afterend', infoHtml);
+  }
 
   // Doctor notes
   if (result.doctorNotes) {
@@ -727,11 +981,15 @@ function showResults(result) {
     document.getElementById('doctorNoteText').textContent = result.doctorNotes;
   }
 
-  // Show confidence warning if low
-  if (result.confidence === 'low') {
-    showAlert('info', '⚠️ Low confidence reading. Please verify medicines with your pharmacist!');
+  // Final alert
+  if (result.hasNarcotics && !result.date) {
+    showAlert('error', '🚫 CANNOT DISPENSE — Narcotic drugs without prescription date!');
+  } else if (result.dateExpired && result.hasNarcotics) {
+    showAlert('error', '🚫 CANNOT DISPENSE — Prescription expired for narcotic drugs!');
+  } else if (result.confidence === 'low') {
+    showAlert('warning', '⚠️ Low confidence reading. Please verify medicines carefully!');
   } else {
-    showAlert('success', `✅ Successfully decoded ${medicines.length} medicines from prescription!`);
+    showAlert('success', `✅ Successfully decoded ${medicines.length} medicines!`);
   }
 
   document.getElementById('howItWorks').style.display = 'none';
@@ -883,10 +1141,23 @@ uploadZone.addEventListener('drop', (e) => {
 <div id="medifast-copyright" style="display:none;">© 2026 MediFast Technology. All Rights Reserved.</div>
 
 <!-- MEDIFAST LEGAL FOOTER -->
-<div style="text-align:center;padding:0.8rem;font-size:0.7rem;color:rgba(255,255,255,0.25);border-top:1px solid rgba(255,255,255,0.05);margin-top:1rem;">
-  © 2026 MediFast Technology. All Rights Reserved. &nbsp;|&nbsp;
-  <a href="medifast-privacy.html" style="color:rgba(0,201,127,0.5);text-decoration:none;">Privacy Policy</a> &nbsp;|&nbsp;
-  <a href="medifast-terms.html" style="color:rgba(0,201,127,0.5);text-decoration:none;">Terms of Service</a>
+<div style="
+  text-align:center;
+  padding:1rem 1rem 1.5rem;
+  font-size:0.7rem;
+  color:rgba(255,255,255,0.2);
+  border-top:1px solid rgba(255,255,255,0.05);
+  margin-top:2rem;
+  width:100%;
+  clear:both;
+  position:relative;
+  z-index:1;
+">
+  © 2026 MediFast Technology. All Rights Reserved.
+  &nbsp;|&nbsp;
+  <a href="medifast-privacy.html" style="color:rgba(0,201,127,0.4);text-decoration:none;">Privacy Policy</a>
+  &nbsp;|&nbsp;
+  <a href="medifast-terms.html" style="color:rgba(0,201,127,0.4);text-decoration:none;">Terms of Service</a>
 </div>
 </body>
 </html>
